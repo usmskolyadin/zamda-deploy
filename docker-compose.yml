@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_STATIC_ROOT=/var/www/zamda/backend/staticfiles
+      - DJANGO_MEDIA_ROOT=/var/www/zamda/backend/media
+    volumes:
+      - /var/www/zamda/backend/media:/var/www/zamda/backend/media
+      - /var/www/zamda/backend/staticfiles:/var/www/zamda/backend/staticfiles
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=https://zamda.com
