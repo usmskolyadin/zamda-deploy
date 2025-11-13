@@ -2,6 +2,8 @@ import Tabs from "./Tabs";
 import Link from "next/link";
 import { getCategories } from "@/src/entities/category/api/get-categories";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   let categories: Awaited<ReturnType<typeof getCategories>> = [];
 
