@@ -12,6 +12,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="categories/", blank=True, null=True, storage=MediaStorage())
+    priority = models.IntegerField()
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -148,7 +149,14 @@ class AdvertisementExtraField(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default="/profile.png", storage=MediaStorage())
+    avatar = models.ImageField(
+        upload_to='avatars/',
+        blank=True,
+        null=True,
+        default="avatars/profile.png",
+        storage=MediaStorage()
+    )
+
     city = models.CharField(max_length=100, blank=True)
     # reviews = models.ManyToManyField(Review, blank=True)
 

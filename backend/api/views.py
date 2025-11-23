@@ -265,10 +265,10 @@ class ChatViewSet(viewsets.ModelViewSet):
         count = unread.count()
         unread.update(is_read=True)
         return Response({"marked_as_read": count})
+    
     @action(detail=True, methods=["post"], url_path="block")
     def block_user(self, request, pk=None):
         chat = self.get_object()
-        # Определяем, кого блокируем
         blocked_user = chat.buyer if chat.seller == request.user else chat.seller
         chat.delete()
         return Response({"detail": f"User {blocked_user.username} blocked and chat deleted"}, status=status.HTTP_200_OK)

@@ -28,6 +28,7 @@ export default async function Home() {
     image: cat.image || "/car.png",
     href: `/${cat.slug}`, 
     bg: bgColors[index % bgColors.length],
+    priority: cat.priority
   }));
 
   return (
@@ -35,7 +36,9 @@ export default async function Home() {
       <section className="bg-[#F5F5F5] pb-16 pt-16 p-4">
         <div className="max-w-screen-xl mx-auto">
           <div className="grid md:grid-cols-5 grid-cols-2 lg:gap-14 gap-8">
-            {cards.map((card, index) => (
+            {cards
+            .sort((a, b) => Number(b.priority) - Number(a.priority))
+            .map((card, index) => (
               <Link key={index} href={card.href}>
                 <div className={`${card.bg} lg:w-[200px] hover:opacity-70 transition w-full lg:h-[175px] h-[170px] rounded-2xl p-4`}>
                   <img
