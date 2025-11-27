@@ -31,7 +31,8 @@ from rest_framework.response import Response
 from .models import Notification
 from .serializers import NotificationSerializer
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
-
+import logging
+logger = logging.getLogger(__name__)
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by('name')
@@ -98,7 +99,15 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     
     lookup_field = "slug" 
     lookup_value_regex = "[^/]+"
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
 
+        for ad in qs:
+            ad.check_expiration()
+
+        return qs.filter(is_active=True)
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
@@ -365,38 +374,49 @@ class RegisterRequestView(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        logger.error("RegisterRequestView started with data: %s", request.data)
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            logger.error("Serializer is valid")
+            
+            code = str(random.randint(100000, 999999))
+            data = serializer.validated_data
+            
+            logger.error("Generated code: %s for email: %s", code, data["email"])
 
-        code = str(random.randint(100000, 999999))
-        data = serializer.validated_data
+            EmailVerification.objects.update_or_create(
+                email=data["email"],
+                defaults={
+                    "code": code,
+                    "first_name": data["first_name"],
+                    "last_name": data["last_name"],
+                    "password": make_password(data["password"]),
+                },
+            )
+            logger.error("EmailVerification updated")
 
-        EmailVerification.objects.update_or_create(
-            email=data["email"],
-            defaults={
-                "code": code,
-                "first_name": data["first_name"],
-                "last_name": data["last_name"],
-                "password": make_password(data["password"]),
-            },
-        )
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            import os
 
-        from sendgrid import SendGridAPIClient
-        from sendgrid.helpers.mail import Mail
-        import os
+            message = Mail(
+                from_email="support@zamda.net",
+                to_emails=data["email"],
+                subject="ZAMDA - Confirm your registration",
+                html_content=f"Your verification code: {code}"
+            )
 
-        message = Mail(
-            from_email="support@zamda.net",
-            to_emails=data["email"],
-            subject="ZAMDA - Confirm your registration",
-            html_content=f"Your verification code: {code}"
-        )
+            sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
+            logger.error("Sending email via SendGrid…")
+            response = sg.send(message)
+            logger.error("SendGrid response: %s", response.status_code)
 
-        sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
-        response = sg.send(message)
-
-        return Response({"detail": "Verification code sent to email."}, status=200)
-
+            return Response({"detail": "Verification code sent to email."}, status=200)
+        
+        except Exception as e:
+            logger.exception("ERROR IN REGISTER REQUEST")
+            return Response({"detail": "Server error"}, status=500)
 
 class VerifyCodeView(generics.GenericAPIView):
     serializer_class = VerifyCodeSerializer

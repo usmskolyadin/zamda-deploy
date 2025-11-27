@@ -43,6 +43,16 @@ export default function Listings() {
     fetchAds();
     }, [user]);
 
+  function formatTimeLeft(seconds: number) {
+    if (seconds <= 0) return "Expired";
+
+    const days = Math.floor(seconds / (3600 * 24));
+    const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    return `${days}d ${hours}h ${minutes}m`;
+  }
+
   return (
     <div className=" w-full">
       <section className="bg-[#ffffff]  pb-16 p-4">
@@ -156,7 +166,7 @@ export default function Listings() {
                 </div>
                 <div>
             </div>
-            <div className="flex flex-col">
+            <div className={`flex flex-col ${activeTab == "archived" ? "hidden" : ""}`}>
                {ads.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <img
@@ -164,12 +174,12 @@ export default function Listings() {
                     alt="No ads available"
                     className="w-86 h-86 object-contain"
                   />
-                <p className="text-black text-3xl font-bold text-center">
-                  So far you do not have any ads.
-                </p>
-                <p className="text-black text-xl font-medium text-center mt-2">
-                  You can always create your own ad.
-                </p>
+                    <p className="text-black text-3xl font-bold text-center">
+                      So far you do not have any ads.
+                    </p>
+                    <p className="text-black text-xl font-medium text-center mt-2">
+                      You can always create your own ad.
+                    </p>
 
                 </div>
               ) : (
@@ -208,6 +218,19 @@ export default function Listings() {
 
                             <p className="text-md text-gray-600 mt-2 line-clamp-3 break-all overflow-hidden">
                                 {ad.description}
+                            </p>
+                            <p className="mt-2 text-black font-medium text-md">
+                              Times left: {formatTimeLeft(ad.time_left)} 
+                              
+                              <span className="cursor-pointer relative group z-50 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
+                                  ?
+                                  <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap 
+                                                  px-2.5 py-1.5 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 
+                                                  transition pointer-events-none">
+                                          After 30 days, your ad will be moved to the archive. You will need to republish it after that.
+                                  </span>
+                                </span>
+
                             </p>
                             <div className="flex justify-between w-1/3 mt-2">
                             <div className="flex items-center">

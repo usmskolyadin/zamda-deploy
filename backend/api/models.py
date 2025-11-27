@@ -1,3 +1,4 @@
+from datetime import timedelta
 import itertools
 from django.db import models
 from django.conf import settings
@@ -32,6 +33,7 @@ class SubCategory(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField()
     image = models.ImageField(upload_to="categories/", blank=True, null=True, storage=MediaStorage())
+    priority = models.IntegerField()
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -87,9 +89,11 @@ class Advertisement(models.Model):
     slug = models.SlugField(max_length=300, unique=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    location = models.CharField(max_length=255)
 
+    created_at = models.DateTimeField(auto_now_add=True)     
+    updated_at = models.DateTimeField(auto_now=True)       
+
+    location = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
 
     views_count = models.PositiveIntegerField(default=0)
@@ -99,21 +103,13 @@ class Advertisement(models.Model):
         through="AdvertisementLike",
         blank=True
     )
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title)
-            slug = base_slug
-            for i in itertools.count(1):
-                if not Advertisement.objects.filter(slug=slug).exists():
-                    break
-                slug = f"{base_slug}-{i}"
-            self.slug = slug
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.title
-
+    
+    def check_expiration(self):
+        if self.created_at < timezone.now() - timedelta(days=30):
+            if self.is_active:
+                self.is_active = False
+                self.save(update_fields=["is_active"])
+        return self
 
 class AdvertisementLike(models.Model):
     ad = models.ForeignKey(Advertisement, related_name="ad_likes", on_delete=models.CASCADE)

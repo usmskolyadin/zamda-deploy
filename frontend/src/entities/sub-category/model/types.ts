@@ -4,6 +4,7 @@ export interface SubCategory {
   slug: string;
   image?: string | null;
   category: number; 
+  priority: number;
 //   extra_fields?: ExtraFieldDefinition[];
 //   ads?: Advertisement[];
 }

@@ -27,7 +27,9 @@ export default async function SubCategoriesPage({ params }: Props) {
             {category.name}
           </h1>
           <div className="grid lg:grid-cols-3 grid-cols-2 gap-4">
-            {subcategories.map((subcategory) => (
+            {subcategories
+            .sort((a, b) => Number(b.priority) - Number(a.priority))
+            .map((subcategory) => (
               <Link key={subcategory.id} href={`/${category.slug}/${subcategory.slug}`}>
                 <div className="bg-[#F2F1F0] hover:opacity-70 transition h-[169px] rounded-2xl flex items-center justify-between">
                   <h2 className="font-semibold  p-4 text-black text-xl lg:max-w-[50%]">

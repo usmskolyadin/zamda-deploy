@@ -46,7 +46,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubCategory
-        fields = ('id','category','name','slug','image')
+        fields = ('id','category','name','slug','image', 'priority')
 
 class ExtraFieldDefinitionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -144,6 +144,8 @@ class OwnerSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "first_name", "last_name", "email", "profile"]
 
+from datetime import timedelta
+from django.utils import timezone
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
@@ -167,14 +169,25 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     # )
     owner_profile_id = serializers.IntegerField(source="owner.profile.id", read_only=True)
     category_slug = serializers.CharField(source="subcategory.category.slug", read_only=True)
+    time_left = serializers.SerializerMethodField()
 
     class Meta:
         model = Advertisement
         fields = ('id','owner','subcategory', 'subcategory_slug', 'category_slug', 'slug', 'title','price','description','images',
                   'created_at','is_active','extra_values','extra', 'owner_profile_id', "views_count",
-                   "likes_count", "is_liked", "location")
+                   "likes_count", "is_liked", "location", 'time_left')
         read_only_fields = ('created_at','owner','extra_values')
+    
+    def get_time_left(self, obj):
+        expires_at = obj.created_at + timedelta(days=30)
+        now = timezone.now()
+        
+        if now >= expires_at:
+            return 0
 
+        time_left = expires_at - now
+        return int(time_left.total_seconds()) 
+    
     def get_extra_values(self, obj):
         result = {}
         for v in obj.extra_values.select_related('field_definition').all():

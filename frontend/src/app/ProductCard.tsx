@@ -24,7 +24,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           <div className="h-4 w-full bg-gray-300 rounded"></div>
           <div className="h-4 w-5/6 bg-gray-300 rounded"></div>
           <div className="mt-4 flex justify-between items-center">
-            <div className="h-6 w-16 bg-gray-300 rounded"></div>
+            <div className="h-6 mr-2 w-16 bg-gray-300 rounded"></div>
             <div className="h-6 w-24 bg-gray-300 rounded"></div>
           </div>
         </div>

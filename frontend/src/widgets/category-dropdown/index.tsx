@@ -61,7 +61,7 @@ export default function CategoryDropdown() {
 
       {open && (
         <div className="absolute left-0 mt-2 w-[188px] bg-white rounded-3xl shadow-lg p-4 z-10 transition-opacity duration-200">
-          <ul className="space-y-2">
+          <ul className="space-y-0.5">
             {categories.map((category, index) => (
               <li
                 key={index}

@@ -25,6 +25,7 @@ export interface Advertisement {
   category_slug: string
   location: string;
   images: { id: number; image: string }[];
+  time_left: number;
   owner: {
     id: number;
     username: string;
