@@ -49,12 +49,14 @@ export default function Login() {
       });
 
       const userData = await userRes.json();
+      console.log(userData)
       login(data.access, data.refresh, userData);
       setSuccess('Login successful!');
       setFormData({ email: '', password: '' });
       router.push("/listings")
     } catch (err) {
-      setError('Network error. Please try again later.');
+      setError(`Network error. Please try again later.`);
+      console.log(err)
     }
   };
   
