@@ -24,42 +24,94 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     setError('');
     setSuccess('');
 
+    console.log("=== LOGIN START ===");
+    console.log("API_URL:", API_URL);
+    console.log("Final login URL:", `${API_URL}api/login/`);
+    console.log("FormData:", formData);
+
     try {
+      console.log("Sending LOGIN request...");
+
       const response = await fetch(`${API_URL}api/login/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.email,
-          password: formData.password
+          password: formData.password,
         }),
+      }).catch(err => {
+        console.error("FETCH FAILED BEFORE RESPONSE:", err);
+        throw err;
       });
 
-      const data = await response.json();
+      console.log("Raw response:", response);
+      console.log("Status:", response.status);
+      console.log("Status text:", response.statusText);
+      console.log("Headers:");
+      response.headers.forEach((v, k) => console.log(`  ${k}: ${v}`));
 
-      if (!response.ok) {
-        setError(data.detail || 'Invalid credentials');
+      let data;
+      try {
+        data = await response.json();
+        console.log("Parsed JSON:", data);
+      } catch (jsonErr) {
+        console.error("JSON PARSE ERROR:", jsonErr);
+        const text = await response.text();
+        console.error("Raw text response:", text);
+        setError("Server returned invalid JSON");
         return;
       }
 
-      const userRes = await fetch(`${API_URL}/api/users/me/`, {
+      if (!response.ok) {
+        console.log("Response not OK. Showing error...");
+        console.log("Backend detail:", data?.detail);
+        setError(data?.detail || "Invalid credentials");
+        return;
+      }
+
+      console.log("Login successful. Access token:", data.access);
+
+      // Second request: get user info
+      const userUrl = `${API_URL}/api/users/me/`;
+      console.log("Fetching user info from:", userUrl);
+
+      const userRes = await fetch(userUrl, {
         headers: { Authorization: `Bearer ${data.access}` },
       });
 
-      const userData = await userRes.json();
-      console.log(userData)
+      console.log("Raw userRes:", userRes);
+      console.log("userRes status:", userRes.status);
+
+      let userData;
+      try {
+        userData = await userRes.json();
+        console.log("Parsed userData:", userData);
+      } catch (err2) {
+        console.error("USER JSON ERROR:", err2);
+        const raw = await userRes.text();
+        console.error("Raw userRes text:", raw);
+        setError("Could not parse user info");
+        return;
+      }
+
+      console.log("Calling login() with tokens and user data...");
       login(data.access, data.refresh, userData);
-      setSuccess('Login successful!');
-      setFormData({ email: '', password: '' });
-      router.push("/listings")
-    } catch (err) {
-      setError(`Network error. Please try again later.`);
-      console.log(err)
+
+      console.log("Redirecting to /listings ...");
+      router.push("/listings");
+
+    } catch (err: any) {
+      console.error("GLOBAL CATCH ERROR:", err);
+      setError("Network error. Please try again later.");
     }
+
+    console.log("=== LOGIN END ===");
   };
-  
+    
   return (
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
