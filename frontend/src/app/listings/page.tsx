@@ -50,7 +50,7 @@ export default function Listings() {
     const hours = Math.floor((seconds % (3600 * 24)) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
 
-    return `${days}d ${hours}h ${minutes}m`;
+    return `${days}d`;
   }
 
   return (
@@ -216,7 +216,7 @@ export default function Listings() {
 
                             </div>
 
-                            <p className="text-md text-gray-600 mt-2 line-clamp-3 break-all overflow-hidden">
+                            <p className="text-md text-gray-900 mt-2 line-clamp-3 break-all overflow-hidden">
                                 {ad.description}
                             </p>
                             <p className="mt-2 text-black font-medium text-md">

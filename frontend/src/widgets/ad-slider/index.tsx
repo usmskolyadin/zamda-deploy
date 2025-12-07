@@ -41,7 +41,7 @@ export default function AdSlider({ ad }: AdSliderProps) {
         <img
           src={images[activeIndex].image}
           alt={ad.title}
-          className="rounded-2xl w-full object-cover min-h-[400px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
+          className="rounded-2xl w-full object-cover min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
           onClick={() => setIsFullscreen(true)}
         />
 

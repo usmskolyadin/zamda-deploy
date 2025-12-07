@@ -25,6 +25,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
       .then((data) => {
         setAds(data.results || data);
       })
+      
       .catch((err) => console.error("API error:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -45,9 +46,9 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
       <section className="bg-[#ffffff] pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-gray-500 pb-2">
-            <Link href="/">Home</Link> /{" "}
-            <Link href="/">{ad.category_slug}</Link> {" "}
-            <Link href="/">{ad.subcategory.name}</Link> / {ad.title}
+            <Link className="hover:underline" href="/">Home</Link> /{" "}
+            <Link className="hover:underline" href={`/${ad.category_slug}`}>{ad.category_slug}</Link> {" / "}
+            <Link className="hover:underline" href={`/${ad.category_slug}/${ad.subcategory}`}>{ad.subcategory}</Link> / {ad.title}
           </p>
           <div className="lg:flex">
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 py-1">
@@ -74,7 +75,9 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
                 Description
               </h1>
               <p className="text-black lg:w-2/3 break-words overflow-hidden">{ad.description}</p>
-
+              <div className="lg:hidden">
+                <AdActions ad={ad} />
+              </div>
               <h1 className="text-2xl font-bold text-black mt-24 mb-2">
                 Similar Listings
               </h1>
@@ -87,7 +90,9 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
           </div>
 
           <div className="lg:w-1/3">
-            <AdActions ad={ad} />
+            <div className="hidden lg:block">
+              <AdActions ad={ad} />
+            </div>
             <div className="rounded-3xl w-full bg-[#F2F1F0] h-[300px] mt-6 flex justify-center items-center">
               <h2 className="text-[#333333] text-3xl font-bold opacity-40">
                 Your Ad Here

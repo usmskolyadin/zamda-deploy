@@ -12,6 +12,6 @@ export default async function AdPage({ params }: { params: PageParams }) {
   const ad: Advertisement = await apiFetch<Advertisement>(
     `/api/ads/${params.ad_name}/`
   );
-
+  console.log(ad)
   return <AdPageClient ad={ad} />;
 }

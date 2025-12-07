@@ -34,7 +34,7 @@ export default function ThreeDotsDropdown({ chatId, accessToken }: DropdownProps
         method: "POST",
         });
         alert("User blocked and chat deleted");
-        window.location.href = "/messages"; // редирект после удаления чата
+        window.location.href = "/messages";
     } catch (err: any) {
         console.error("Failed to block user:", err);
         alert("Failed to block user: " + err.message);

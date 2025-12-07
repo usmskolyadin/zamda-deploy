@@ -67,22 +67,7 @@ export default function Filters() {
       <div className="lg:w-1/3 w-full">
         <h1 className="text-black font-bold text-3xl py-4">Filters</h1>
         <div>
-          <h1 className="text-black font-bold text-xl py-4">Subcategory</h1>
-<select
-  value={subcategory}
-  onChange={(e) => setSubcategory(e.target.value)}
-  className="p-3 lg:w-86 w-full rounded-2xl text-black bg-[#E3E2E1] pr-8 appearance-none"
->
-  <option value="">Select subcategory</option>
-  {subcategories.map((sub) => (
-    <option key={sub.id} value={sub.id}>
-      {sub.category.name} → {sub.name}
-    </option>
-  ))}
-</select>
 
-
-          {/* Price */}
           <h1 className="text-black font-bold text-xl py-4">Price</h1>
           <div className="flex">
             <input
@@ -124,7 +109,6 @@ export default function Filters() {
             <option value="30">Last 30 days</option>
           </select>
 
-          {/* Button */}
           <button
             onClick={handleShow}
             className="mt-4 bg-[#2AAEF7] cursor-pointer hover:bg-blue-300 transition rounded-4xl h-[60px] lg:w-[350px] w-full text-white flex items-center justify-center"
@@ -132,7 +116,7 @@ export default function Filters() {
             Show
           </button>
 
-          <div className="rounded-3xl lg:w-86 w-full bg-[#F2F1F0] min-h-200 mt-6 flex justify-center items-center">
+          <div className="rounded-3xl lg:w-86 w-full bg-[#F2F1F0] lg:h-100 h-50 mt-6 flex justify-center items-center">
             <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
           </div>
         </div>

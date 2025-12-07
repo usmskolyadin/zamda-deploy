@@ -121,7 +121,24 @@ export default function ProfileEdit() {
         <div className="max-w-screen-xl lg:flex mx-auto">
           <div className="flex-col items-center mx-auto mt-4 mb-4 lg:mt-0 lg:mb-0 w-full max-w-md">
             <form onSubmit={handleSubmit} encType="multipart/form-data">
+                          <div className="mt-2">
+                {avatarPreview && (
+                    <>
+                        <div className="flex flex-col items-center justify-center py-2">
+                            <img
+                                src={avatarPreview}
+                                alt="Avatar preview"
+                                className="mt-2 w-24 h-24 object-cover rounded-full text-center"
+                            />
+                        </div>
+                        <h1 className="text-gray-900 text-md font-medium text-center">Avatar preview ↑</h1>
+                    </>
+                )}
+                <label className="block mb-1 text-black">Avatar</label>
+                <input className="p-4 border text-gray-900 border-black rounded-3xl h-[55px] w-full " type="file" name="avatar" onChange={handleChange} />
+              </div>
               <div className="flex">
+
                 <input
                   className="p-4 border text-gray-900 border-black rounded-3xl h-[44px] w-1/2 mr-2 mt-2"
                   placeholder="First name"
@@ -158,29 +175,14 @@ export default function ProfileEdit() {
                 value={formData.city}
                 onChange={handleChange}
               />
-              <div className="mt-2">
-                <label className="block mb-1 text-black">Avatar</label>
-                <input className="p-4 border text-gray-900 border-black rounded-3xl h-[55px] w-full " type="file" name="avatar" onChange={handleChange} />
-                {avatarPreview && (
-                    <>
-                        <div className="flex flex-col items-center justify-center py-2">
-                            <img
-                                src={avatarPreview}
-                                alt="Avatar preview"
-                                className="mt-2 w-24 h-24 object-cover rounded-full text-center"
-                            />
-                        </div>
-                        <h1 className="text-black text-lg font-medium text-center">Your avatar will look like this ↑</h1>
-                    </>
-                )}
-              </div>
+
 
               {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
               {success && <p className="text-green-500 mt-2 text-center">{success}</p>}
 
               <button
                 type="submit"
-                className="mt-4 bg-black w-[120px] mx-auto h-[44px] rounded-3xl flex justify-center items-center text-white"
+                className="cursor-pointer hover:opacity-80 transition mt-4 bg-black w-[120px] mx-auto h-[44px] rounded-3xl flex justify-center items-center text-white"
               >
                 Save
               </button>

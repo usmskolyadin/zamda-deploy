@@ -29,7 +29,7 @@ export default async function AdsBySubcategory({ params }: Props) {
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
-          <p className="text-gray-500 pb-2"><Link href="/">Home</Link> / <Link href="/">{params.category_name}</Link> / <Link href="/">{subcategory.name}</Link></p>
+          <p className="text-gray-500 pb-2"><Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={`/${params.category_name}`}>{params.category_name}</Link> / <Link className="hover:underline" href={`/${params.category_name}/${params.subcategory_name}`}>{subcategory.name}</Link></p>
           <h1 className="text-black font-bold text-4xl py-4">{subcategory.name}</h1>
         </div>
       </section>

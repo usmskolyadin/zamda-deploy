@@ -185,36 +185,88 @@ const handleSuggestionClick = (suggestion: any) => {
 
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
-  if (!accessToken) { router.push('/login'); return; }
+
+  // Надёжный токен: сначала из контекста, затем localStorage
+  const token = accessToken || localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('No token found, redirecting to login');
+    router.push('/login');
+    return;
+  }
+
+  // Basic validation (можно расширить)
+  if (!selectedSubcategory) {
+    alert('Выберите подкатегорию');
+    return;
+  }
 
   const formData = new FormData();
   formData.append('title', title);
   formData.append('price', price);
   formData.append('description', description);
-  formData.append('subcategory_slug', selectedSubcategory); 
+  // Если бэк ожидает slug — ок, иначе меняем на id
+  formData.append('subcategory_slug', selectedSubcategory);
   formData.append('is_active', String(isActive));
   formData.append('extra', JSON.stringify(extraValues));
+
+  // Добавляем координаты отдельно, если бэк ожидает lat/lng
+  if (Array.isArray(latLng) && latLng.length >= 2) {
+    formData.append('lat', String((latLng as number[])[0]));
+    formData.append('lon', String((latLng as number[])[1]));
+  }
+
+  // Поле location: используем input, fallback на геокод
   formData.append('location', locationInput || location);
-  console.log('selectedSubcategory:', selectedSubcategory);
-  console.log('extraValues:', extraValues);
-  if (images) Array.from(images).forEach(file => formData.append('images', file));
 
-  console.log(formData)
-  const res = await fetch(`${API_URL}/api/ads/`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: formData,
-  });
+  console.log('Before append images, images state:', images);
+  if (images && images.length > 0) {
+    images.forEach((file, idx) => {
+      // можно использовать 'images' или 'images[]' в зависимости от бэка
+      formData.append('images', file, file.name);
+    });
+  } else {
+    console.log('No images attached');
+  }
 
-  if (res.ok) router.push('/listings');
-  else {
-    const data = await res.json();
-    console.error(data);
-    alert('Ошибка при создании объявления');
+  // Детальный лог FormData (для отладки — потому что нельзя просто console.log(formData))
+  for (const pair of (formData as any).entries()) {
+    console.log('FormData entry:', pair[0], pair[1]);
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/ads/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // НЕ ставьте 'Content-Type' — браузер выставит multipart boundary автоматически
+      },
+      body: formData,
+    });
+
+    console.log('Response status:', res.status);
+
+    if (res.ok) {
+      // можно прочитать тело, если нужно
+      const data = await res.json().catch(() => null);
+      console.log('Created ad response:', data);
+      router.push('/listings');
+      return;
+    } else {
+      let errBody;
+      try {
+        errBody = await res.json();
+      } catch {
+        errBody = await res.text();
+      }
+      console.error('Create ad failed:', res.status, errBody);
+      alert('Ошибка при создании объявления: ' + (errBody?.detail || JSON.stringify(errBody)));
+    }
+  } catch (error) {
+    console.error('Network or unexpected error:', error);
+    alert('Сетевая ошибка при создании объявления. Проверьте CORS и сервер.');
   }
 };
+
 
   return (
 <div className="w-full">
@@ -228,7 +280,7 @@ const handleSubmit = async (e: FormEvent) => {
   <div className="text-black w-full max-w-screen-xl">
     <form
       onSubmit={handleSubmit}
-      className="grid grid-cols-2 gap-4 w-full max-w-3xl mx-auto"
+      className="grid lg:grid-cols-2 grid-cols-1 gap-4 w-full max-w-3xl mx-auto"
     >
         <label className="w-full max-w-md relative flex-col flex font-semibold text-gray-800">
           <p className="font-semibold text-black text-xl">Category</p>

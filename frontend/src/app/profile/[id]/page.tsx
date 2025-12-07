@@ -51,7 +51,7 @@ useEffect(() => {
 
 
   if (!profile) {
-    return <p className="text-center mt-10">Loading profile...</p>;
+    return <p className="text-center flex text-black justify-center text-md items-center h-screen bg-white">Loading profile...</p>;
   }
 
   return (
@@ -103,7 +103,7 @@ useEffect(() => {
           </div>
 
           <div className="lg:w-3/4 lg:ml-24">
-            <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
+            <h1 className="text-black font-bold lg:text-3xl text-3xl py-4">
               {profile.first_name}'s Listings
             </h1>
 
@@ -121,9 +121,9 @@ useEffect(() => {
                       />
                     </div>
                     <div className="w-full lg:mt-0 mt-2">
-                      <h1 className="text-2xl text-black font-bold items-center w-full flex justify-between break-words leading-snug overflow-hidden">
+                      <h1 className="text-xl text-black font-bold items-center w-full flex justify-between break-words leading-snug overflow-hidden">
                         {ad.title}
-                        <span className="ml-2 text-gray-600 text-lg font-medium mr-4 shrink-0">
+                        <span className="ml-2 text-gray-600 text-sm font-medium mr-4 shrink-0">
                           {new Date(ad.created_at).toLocaleString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -132,7 +132,7 @@ useEffect(() => {
                         </span>
                       </h1>
 
-                      <p className="text-lg text-gray-900 font-semibold break-words">
+                      <p className="text-md text-gray-900 font-semibold break-words">
                         ${ad.price}
                       </p>
 
@@ -142,7 +142,7 @@ useEffect(() => {
                         {ad.description}
                       </p>
 
-                      <p className="font-medium flex text-gray-700 items-center text-lg mt-3">
+                      <p className="font-medium flex text-gray-700 items-center text-md mt-3">
                         <svg
                           className="mr-1"
                           width="24"

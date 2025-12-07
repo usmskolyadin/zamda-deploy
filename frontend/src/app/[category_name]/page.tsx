@@ -21,12 +21,12 @@ export default async function SubCategoriesPage({ params }: Props) {
       <section className="bg-[#ffffff] min-h-screen pb-16 pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-gray-500 pb-2">
-            <Link href="/">Home</Link> / <Link href="/categories">{category.name}</Link>
+            <Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={category.name.toLocaleLowerCase()}>{category.name}</Link>
           </p>
           <h1 className="text-black font-bold text-4xl py-4">
             {category.name}
           </h1>
-          <div className="grid lg:grid-cols-3 grid-cols-2 gap-4">
+          <div className="grid lg:grid-cols-3 grid-cols-1 gap-4">
             {subcategories
             .sort((a, b) => Number(b.priority) - Number(a.priority))
             .map((subcategory) => (

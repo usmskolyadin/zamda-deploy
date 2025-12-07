@@ -9,6 +9,7 @@ import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { Profile } from "@/src/app/profile/[id]/page";
 import { useParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/src/shared/api/base";
+import { Star } from "lucide-react";
 
 
 export default function AddReview() {
@@ -44,7 +45,6 @@ export default function AddReview() {
     fetchProfile();
   }, [profileId]);
 
-  // Загружаем объявления пользователя
   useEffect(() => {
     if (!profile?.username) return;
 
@@ -115,20 +115,25 @@ export default function AddReview() {
     <div className="w-full">
       <section className="bg-white pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
-          {/* Левая часть — профиль */}
-          <div className="lg:w-1/4 text-center">
+          <div className="lg:w-1/4 ">
             <img
               src={profile.avatar || "/default-avatar.png"}
               alt="Avatar"
-              className="mx-auto w-40 h-40 rounded-full object-cover border border-gray-400"
+              className=" w-24 h-24 rounded-full object-cover border border-gray-400"
             />
             <h2 className="text-black font-bold text-2xl mt-3">
               {profile.first_name} {profile.last_name}
             </h2>
-            <p className="text-gray-700 mt-1">@{profile.username}</p>
-            <p className="text-gray-500">{profile.city}</p>
-
-            <div className="flex justify-center items-center mt-2">
+            <p className=" flex text-gray-700 font-medium items-center text-lg py-2">            
+              <svg className="mr-1" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g opacity="0.5">
+                      <path d="M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z" stroke="black" strokeWidth="2"/>
+                      <path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="black" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </g>
+              </svg>
+              {profile.city} 
+            </p>
+            <div className="flex  items-center mt-2">
               <span className="font-bold text-lg text-black mr-1">
                 {profile.rating ?? "—"}
               </span>
@@ -141,12 +146,11 @@ export default function AddReview() {
                 ))}
               </div>
               <span className="text-[#2AAEF7] ml-2 text-sm">
-                {profile.reviews_count ?? 0} отзывов
+                {profile.reviews_count ?? 0} reviews
               </span>
             </div>
           </div>
 
-          {/* Правая часть — добавление отзыва */}
           <div className="lg:w-3/4 lg:ml-16">
             <div className="rounded-3xl w-full bg-[#F2F1F0] h-[180px] flex justify-center items-center mb-6">
               <h2 className="text-[#333333] text-2xl font-bold opacity-40">
@@ -155,28 +159,38 @@ export default function AddReview() {
             </div>
 
             <h1 className="text-black font-bold text-3xl mb-4">
-              Добавить отзыв
+              Add review
             </h1>
 
-            <div className="bg-white shadow-md rounded-2xl p-4 space-y-3">
+            <div className="bg-white rounded-2xl space-y-4">
+
               <div>
-                <label className="text-black font-medium">Оценка:</label>
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(Number(e.target.value))}
-                  className="ml-2 text-black border rounded-full px-2 py-1"
-                >
-                  {[5, 4, 3, 2, 1].map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
+                <label className="text-black font-medium block mb-1">Rating:</label>
+
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      className="transition cursor-pointer"
+                    >
+                      <Star
+                        size={28}
+                        className={
+                          star <= rating
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }
+                      />
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               <textarea
-                placeholder="Ваш комментарий..."
-                className="text-black w-full border rounded-2xl p-2 min-h-[100px]"
+                placeholder="Your comment..."
+                className="text-black w-full border rounded-3xl p-3 min-h-[100px]"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               />
@@ -186,7 +200,7 @@ export default function AddReview() {
                 disabled={loading}
                 className="bg-[#2AAEF7] hover:bg-[#1897dc] rounded-3xl h-[40px] w-[200px] text-white font-medium flex items-center justify-center transition"
               >
-                {loading ? "Отправка..." : "Отправить отзыв"}
+                {loading ? "Sending..." : "Submit Review"}
               </button>
             </div>
           </div>

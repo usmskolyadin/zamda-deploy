@@ -113,7 +113,7 @@ export default function Chat() {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-white">
         <p className="text-xl text-black">
-          Авторизуйся, чтобы видеть сообщения.
+          Login to view messages
         </p>
       </div>
     );
@@ -122,7 +122,7 @@ export default function Chat() {
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-white">
-        <p className="text-xl text-black">Загрузка…</p>
+        <p className="text-xl text-black">Loading…</p>
       </div>
     );
 }
@@ -221,7 +221,7 @@ export default function Chat() {
                     </div>
                 </div>
                 {loading ? (
-                    <div className="p-4">Загрузка сообщений...</div>
+                    <div className="p-4">Loading messages...</div>
                     ) : (
                 <div className="p-4 h-[60vh] overflow-y-auto">
                 {messages.map((m, index) => {
