@@ -12,7 +12,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = 'django-insecure-g6=4tsza_e1h&_bztpn6e4df!^1y=6y2z#bhmi%ahi*wxe#ob0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "zamda.com",

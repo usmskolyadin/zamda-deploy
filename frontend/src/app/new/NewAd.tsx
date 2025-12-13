@@ -62,6 +62,29 @@ export default function NewAd() {
   const [locationInput, setLocationInput] = useState<string>('');
   const [suggestions, setSuggestions] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+const maptilerStyles = {
+  openstreetmap: "openstreetmap",
+  streets: "streets",
+  basic: "basic",
+  bright: "bright",
+  pastel: "pastel",
+  topo: "topo",
+  satellite: "satellite",
+  hybrid: "hybrid",
+  dark: "darkmatter",
+  light: "dataviz",
+  winter: "winter",
+};
+
+const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
+
+const [mapStyle, setMapStyle] = useState("openstreetmap");
 
 useEffect(() => {
   (async () => {
@@ -134,21 +157,20 @@ const handleMapClick = async (lat: number, lng: number) => {
 
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
-      { headers: { 'User-Agent': 'my-nextjs-app' } }
+      `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${MAPTILER_KEY}`
     );
-    if (!res.ok) return;
+    const data = await res.json();
 
-    const data: any = await res.json();
-    if (data.address) {
-      const { city, town, village, road, house_number } = data.address;
-      const formatted = [city || town || village, road, house_number].filter(Boolean).join(', ');
+    if (data?.features?.length) {
+      const place = data.features[0];
+      const formatted = place.place_name || place.text;
+
       setLocation(formatted);
-      setLocationInput(formatted); // синхронизируем input с картой
-      setSuggestions([]); // очищаем подсказки
+      setLocationInput(formatted);
+      setSuggestions([]);
     }
   } catch (err) {
-    console.error('Geocoding error:', err);
+    console.error("MapTiler reverse geocoding error:", err);
   }
 };
 
@@ -163,15 +185,17 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&addressdetails=1&limit=5`,
-      { headers: { 'User-Agent': 'my-nextjs-app' } }
+      `https://api.maptiler.com/geocoding/${encodeURIComponent(
+        value
+      )}.json?key=${MAPTILER_KEY}`
     );
-    if (!res.ok) return;
+    const data = await res.json();
 
-    const data: any[] = await res.json();
-    setSuggestions(data);
+    if (data?.features) {
+      setSuggestions(data.features);
+    }
   } catch (err) {
-    console.error('Geocoding error:', err);
+    console.error("MapTiler forward geocoding error:", err);
   }
 };
 
@@ -182,6 +206,23 @@ const handleSuggestionClick = (suggestion: any) => {
   setLocationInput(display_name);
   setSuggestions([]);
 };
+function formatBackendErrors(err: any): string {
+  if (!err) return "Неизвестная ошибка";
+  if (typeof err === "string") return err;
+
+  if (typeof err === "object") {
+    // DRF форматируется здесь
+    return Object.entries(err)
+      .map(([field, msg]) => Array.isArray(msg)
+        ? `${field}: ${msg.join(", ")}`
+        : `${field}: ${msg}`
+      )
+      .join("\n");
+  }
+
+  return String(err);
+}
+
 
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
@@ -209,13 +250,6 @@ const handleSubmit = async (e: FormEvent) => {
   formData.append('is_active', String(isActive));
   formData.append('extra', JSON.stringify(extraValues));
 
-  // Добавляем координаты отдельно, если бэк ожидает lat/lng
-  if (Array.isArray(latLng) && latLng.length >= 2) {
-    formData.append('lat', String((latLng as number[])[0]));
-    formData.append('lon', String((latLng as number[])[1]));
-  }
-
-  // Поле location: используем input, fallback на геокод
   formData.append('location', locationInput || location);
 
   console.log('Before append images, images state:', images);
@@ -238,33 +272,34 @@ const handleSubmit = async (e: FormEvent) => {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        // НЕ ставьте 'Content-Type' — браузер выставит multipart boundary автоматически
       },
       body: formData,
     });
 
     console.log('Response status:', res.status);
 
-    if (res.ok) {
-      // можно прочитать тело, если нужно
-      const data = await res.json().catch(() => null);
-      console.log('Created ad response:', data);
-      router.push('/listings');
-      return;
-    } else {
-      let errBody;
+      const raw = await res.text(); // читаем ОДИН раз
+
+      let data: any = null;
       try {
-        errBody = await res.json();
-      } catch {
-        errBody = await res.text();
+        data = JSON.parse(raw);
+      } catch (_) {
+        data = raw; // если бек вернул HTML или строку
       }
-      console.error('Create ad failed:', res.status, errBody);
-      alert('Ошибка при создании объявления: ' + (errBody?.detail || JSON.stringify(errBody)));
+
+      if (!res.ok) {
+        console.error("Server error:", res.status, data);
+        alert("Ошибка при создании объявления:\n" + formatBackendErrors(data));
+        return;
+      }
+
+      // Успех
+      router.push("/listings");
+      
+    } catch (networkError) {
+      console.error("Network error:", networkError);
+      alert("Сетевая ошибка. Проверь соединение.");
     }
-  } catch (error) {
-    console.error('Network or unexpected error:', error);
-    alert('Сетевая ошибка при создании объявления. Проверьте CORS и сервер.');
-  }
 };
 
 
@@ -375,7 +410,11 @@ const handleSubmit = async (e: FormEvent) => {
 
 
               <ImageUploader images={images} setImages={setImages} />
+
             <div>
+              
+            </div>
+                        <div>
               <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 relative">
                 <p className="font-semibold text-black text-xl">Location</p>
                 <p className="text-gray-700 text-sm font-medium">Your full location for delivery etc.</p>
@@ -404,20 +443,36 @@ const handleSubmit = async (e: FormEvent) => {
                   </ul>
                 )}
               </label>
-
+              <label className="block font-semibold mt-2 text-black">
+                Map Style
+                <select
+                  value={mapStyle}
+                  onChange={(e) => setMapStyle(e.target.value)}
+                  className="ml-2 mt-1 border border-black rounded-2xl p-2 text-gray-900"
+                >
+                  {Object.keys(maptilerStyles).map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
               <div className="w-full max-w-md z-20 h-60 border border-black rounded-3xl overflow-hidden mt-2">
+
+              {isClient && defaultIcon && (
                 <MapContainer center={latLng} zoom={13} style={{ height: "100%", width: "100%" }}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer
+                  url={`https://api.maptiler.com/maps/${maptilerStyles[mapStyle]}/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`}
+                  attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                />
                   {defaultIcon && (
                     <Marker position={latLng} icon={defaultIcon}>
                       <Popup>Selected location</Popup>
                     </Marker>
                   )}
+
                   <MapClickHandler onClick={handleMapClick} />
                 </MapContainer>
+              )}
               </div>
-            </div>
-            <div>
             </div>
             <Link href={'/listings'}>
               <button

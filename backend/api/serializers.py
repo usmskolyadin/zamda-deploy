@@ -1,4 +1,5 @@
 import json
+import uuid
 from rest_framework import serializers
 from .models import (
     AdvertisementImage, Category, Chat, Notification, Review, SubCategory,
@@ -242,20 +243,32 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return prepared
 
     def create(self, validated_data):
-        import json
-
+        # 1. Обработка поля extra
         extra_dict = validated_data.pop('extra', None)
         if isinstance(extra_dict, str):
-            extra_dict = json.loads(extra_dict)
+            try:
+                extra_dict = json.loads(extra_dict)
+            except json.JSONDecodeError:
+                extra_dict = {}
 
+        # 2. Устанавливаем владельца объявления
         request = self.context.get('request')
         validated_data['owner'] = request.user
+        from django.utils.text import slugify
 
-        files = request.FILES.getlist('images')
+        # 3. Генерация уникального slug
+        if not getattr(validated_data, 'slug', None):
+            base_slug = slugify(validated_data.get('title', 'ad'))
+            unique_slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+            validated_data['slug'] = unique_slug
 
-        # здесь subcategory уже объект, не нужно делать SubCategory.objects.get()
+        # 4. Получаем файлы из request
+        files = request.FILES.getlist('images') if request else []
+
+        # 5. Создаём основное объявление
         ad = super().create(validated_data)
 
+        # 6. Обработка дополнительных полей
         prepared = self._validate_and_prepare_extra(ad.subcategory, extra_dict or {})
         for definition, casted_str in prepared:
             AdvertisementExtraField.objects.create(
@@ -264,6 +277,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 value=str(casted_str)
             )
 
+        # 7. Сохранение изображений
         for f in files:
             filename = media_storage.save(f"advertisements/{f.name}", f)
             AdvertisementImage.objects.create(ad=ad, image=filename)

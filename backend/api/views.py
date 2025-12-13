@@ -120,7 +120,16 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+    import logging
+    logger = logging.getLogger(__name__)
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            logger.exception("Ошибка при создании объявления")
+            return Response({"detail": str(e)}, status=500)
+        
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def like(self, request, slug=None):
         ad = self.get_object()
@@ -194,7 +203,8 @@ class UserAdvertisementViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Advertisement.objects.filter(owner=self.request.user)
-    
+
+
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -227,8 +237,6 @@ class CurrentUserView(APIView):
             profile.save()
 
         return Response({"detail": "Profile updated successfully."}, status=status.HTTP_200_OK)
-    
-
 
 class ChatViewSet(viewsets.ModelViewSet):
     queryset = Chat.objects.all() 
