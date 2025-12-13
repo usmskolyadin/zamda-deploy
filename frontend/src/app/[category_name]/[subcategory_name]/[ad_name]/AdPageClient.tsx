@@ -9,6 +9,11 @@ import { useEffect, useState } from "react";
 import { useViewAd } from "@/src/features/hooks/use-view-ad";
 import { useAuth } from "@/src/features/context/auth-context";
 import { useLikeAd } from "@/src/features/hooks/use-like-ad";
+import dynamic from "next/dynamic";
+
+const AdMap = dynamic(() => import("@/src/widgets/ad-map/ad-map"), {
+  ssr: false,
+});
 
 export default function AdPageClient({ ad }: { ad: Advertisement }) {
   const [ads, setAds] = useState<Advertisement[]>([]);
@@ -42,7 +47,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       <section className="bg-[#ffffff] pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-gray-500 pb-2">
@@ -66,15 +71,23 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
           <div className="lg:w-2/3">
             <AdSlider ad={ad} />
             <div className="mt-8">
-              <h1 className="text-xl font-semibold text-black mt-2 mb-2">
-                Location
-              </h1>
-              <p className="text-black lg:w-2/3">{ad.location}</p>
+
 
               <h1 className="text-xl font-semibold text-black mt-2 mb-2">
                 Description
               </h1>
               <p className="text-black lg:w-2/3 break-words overflow-hidden">{ad.description}</p>
+              <h1 className="text-xl font-semibold text-black mt-2 mb-1">
+                Location
+              </h1>
+              <p className="text-black lg:w-2/3 mb-2">{ad.location}</p>
+              <div className="lg:w-2/3 w-full mb-4">
+                <AdMap
+                  lat={ad.latitude}
+                  lng={ad.longitude}
+                  address={ad.location}
+                />
+              </div>
               <div className="lg:hidden">
                 <AdActions ad={ad} />
               </div>

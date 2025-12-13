@@ -40,30 +40,53 @@ export default function AdActions({ ad }: AdPageProps) {
       console.error("Ошибка при отправке быстрого вопроса:", error);
     }
   };
+  
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this ad?")) return;
+
+    try {
+      await apiFetchAuth(`/api/ads/${ad.slug}/`, {
+        method: "DELETE",
+      });
+
+      router.push("/listings");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete advertisement");
+    }
+  };
 
   return (
     <div className="flex flex-col mb-6 lg:mt-0 mt-6">
       {isOwner ? (
-        <>
-          <Link
-            href={`/edit/${ad.slug}`}
-            className="w-full p-4 mb-2 bg-[#36B731] hover:bg-green-500 transition text-white rounded-2xl text-center"
-          >
-            Edit
-          </Link>
-          <button className="w-full p-4 bg-[#2AAEF7] hover:bg-blue-500 transition rounded-2xl cursor-pointer ">
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-1">
+            <Link
+              href={`/edit/${ad.slug}`}
+              className=" p-3.5 mb-2 bg-[#36B731] hover:bg-green-500 transition text-white rounded-3xl text-center"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="p-3.5 mb-2 cursor-pointer bg-red-400 hover:bg-red-500 transition text-white rounded-3xl text-center"
+            >
+              Delete
+            </button>
+          </div>
+          <button className="w-full p-3.5 bg-[#2AAEF7] hover:bg-blue-500 transition rounded-3xl cursor-pointer ">
             Increase views (Soon)
           </button>
-        </>
+        </div>
       ) : (
         <>
           {accessToken ? (
-            <button className="w-full p-4 bg-[#36B731] rounded-2xl cursor-pointer hover:bg-green-500 transition ">
+            <button className="w-full p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">
               Show phone
             </button>
           ) : (
             <Link href={"/login"}>
-              <button className="w-full p-4 bg-[#36B731] rounded-2xl cursor-pointer hover:bg-green-500 transition ">
+              <button className="w-full p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">
                 Login for show phone
               </button>
             </Link>
@@ -73,7 +96,7 @@ export default function AdActions({ ad }: AdPageProps) {
             <StartChatButton adId={ad.id} />
           ) : (
             <Link href={"/login"}>
-              <button className="cursor-pointer w-full p-4 bg-[#2AAEF7] hover:bg-blue-500 transition mt-2 rounded-2xl">
+              <button className="cursor-pointer w-full p-3.5 bg-[#2AAEF7] hover:bg-blue-500 transition mt-2 rounded-3xl">
                 Login for messages
               </button>
             </Link>

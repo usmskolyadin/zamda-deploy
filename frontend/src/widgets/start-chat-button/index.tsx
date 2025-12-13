@@ -63,7 +63,7 @@ function StartChatButton({ adId }: { adId: number }) {
   return (
     <button
       onClick={startChat}
-      className="w-full p-4 hover:bg-blue-500 cursor-pointer transition bg-[#2AAEF7] mt-2 rounded-2xl"
+      className="w-full p-4 hover:bg-blue-500 cursor-pointer transition bg-[#2AAEF7] mt-2 rounded-3xl"
     >
       Write message
     </button>

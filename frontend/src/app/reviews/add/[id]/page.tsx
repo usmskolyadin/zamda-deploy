@@ -131,7 +131,7 @@ export default function AddReview() {
                       <path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="black" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </g>
               </svg>
-              {profile.city} 
+              {profile.city ? profile.city : "No city selected"}
             </p>
             <div className="flex  items-center mt-2">
               <span className="font-bold text-lg text-black mr-1">
@@ -145,7 +145,7 @@ export default function AddReview() {
                   />
                 ))}
               </div>
-              <span className="text-[#2AAEF7] ml-2 text-sm">
+              <span className="text-[#2AAEF7] ml-2 text-lg">
                 {profile.reviews_count ?? 0} reviews
               </span>
             </div>
@@ -165,7 +165,7 @@ export default function AddReview() {
             <div className="bg-white rounded-2xl space-y-4">
 
               <div>
-                <label className="text-black font-medium block mb-1">Rating:</label>
+                <label className="text-black/80 font-semibold text-lg block mb-1">Rating</label>
 
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -187,6 +187,7 @@ export default function AddReview() {
                   ))}
                 </div>
               </div>
+              <label className="text-black/80 font-semibold text-lg block mb-1">Comment</label>
 
               <textarea
                 placeholder="Your comment..."
@@ -198,7 +199,7 @@ export default function AddReview() {
               <button
                 onClick={submit}
                 disabled={loading}
-                className="bg-[#2AAEF7] hover:bg-[#1897dc] rounded-3xl h-[40px] w-[200px] text-white font-medium flex items-center justify-center transition"
+                className="bg-[#2AAEF7] hover:bg-[#1897dc] cursor-pointer rounded-3xl h-[40px] w-[200px] text-white font-medium flex items-center justify-center transition"
               >
                 {loading ? "Sending..." : "Submit Review"}
               </button>

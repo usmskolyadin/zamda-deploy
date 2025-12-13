@@ -41,7 +41,7 @@ export default function AdSlider({ ad }: AdSliderProps) {
         <img
           src={images[activeIndex].image}
           alt={ad.title}
-          className="rounded-2xl w-full object-cover min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
+          className="rounded-3xl w-full object-cover min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
           onClick={() => setIsFullscreen(true)}
         />
 
@@ -131,7 +131,7 @@ export default function AdSlider({ ad }: AdSliderProps) {
       </div>
 
       {images.length > 1 && (
-        <div className="grid lg:grid-cols-6 grid-cols-4 gap-2 mt-2">
+        <div className="grid lg:grid-cols-5 grid-cols-3 gap-2 mt-2">
           {images.map((img, idx) => (
             <img
               key={img.id}

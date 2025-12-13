@@ -41,7 +41,8 @@ export async function apiFetchAuth<T>(endpoint: string, options: RequestInit = {
   let { access, refresh } = getTokens();
 
   if (!access) throw new Error("No access token, user must login");
-
+  
+  
   let res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -50,6 +51,9 @@ export async function apiFetchAuth<T>(endpoint: string, options: RequestInit = {
       ...(options.headers || {}),
     },
   });
+  if (res.status === 204) {
+      return null;
+    }
 
   if (res.status === 401 && refresh) {
     try {
