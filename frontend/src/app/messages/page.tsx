@@ -54,9 +54,7 @@ export default function Chats() {
 if (!accessToken) {
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-white">
-      <p className="text-xl text-black">
-        Авторизуйся, чтобы видеть сообщения.
-      </p>
+      <p className="text-xl text-black">Login to messages</p>
     </div>
   );
 }
@@ -64,7 +62,7 @@ if (!accessToken) {
 if (loading) {
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-white">
-      <p className="text-xl text-black">Загрузка…</p>
+      <p className="text-xl text-black">Loading…</p>
     </div>
   );
 }
@@ -73,7 +71,7 @@ if (loading) {
     <div className=" w-full">
       <section className="bg-[#ffffff]  pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <div className="lg:w-1/4">
+          <div className="lg:w-1/4 hidden lg:block">
             <div className="max-w-[712px]">
                   <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
                     <img
@@ -134,7 +132,7 @@ if (loading) {
             </div>
           </div>
           <div className=" lg:w-3/4 lg:ml-24">
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px]  flex justify-center items-center">
+            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px]  flex justify-center items-center hidden lg:flex">
               <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
             </div>
             <div className="lg:flex">
@@ -143,7 +141,7 @@ if (loading) {
 
                 <div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col h-screen">
             {items.map((c) => (
             <Link key={c.id} href={`/messages/${c.id}`} className="block mt-3">
               <div className={`flex items-center justify-between rounded-2xl p-4 transition ${
