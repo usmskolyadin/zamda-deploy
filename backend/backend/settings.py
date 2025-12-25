@@ -76,7 +76,9 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / "templates"
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,19 +96,30 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE'),
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {
-            'sslmode': os.getenv('DB_SSLMODE', 'require'),
-        },
+USE_SQLITE = os.getenv("USE_SQLITE", "false").lower() == "true"
+
+if USE_SQLITE:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.getenv("DB_ENGINE"),
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
+            "OPTIONS": {
+                "sslmode": os.getenv("DB_SSLMODE", "require"),
+            },
+            "CONN_MAX_AGE": 60,
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -144,22 +157,37 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-AWS_ACCESS_KEY_ID = os.getenv("SPACES_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("SPACES_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.getenv("SPACES_BUCKET")
-AWS_S3_REGION_NAME = os.getenv("SPACES_REGION")
-AWS_S3_ENDPOINT_URL = os.getenv("SPACES_ENDPOINT")
-AWS_S3_CUSTOM_DOMAIN = os.getenv("SPACES_CDN_ENDPOINT").replace("https://", "")
 
-AWS_DEFAULT_ACL = "public-read"
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_SIGNATURE_VERSION = "s3v4"
+USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 
-STATICFILES_STORAGE = "backend.storages.StaticStorage"
-DEFAULT_FILE_STORAGE = "backend.storages.MediaStorage"
 
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+if USE_S3:
+    AWS_ACCESS_KEY_ID = os.getenv("SPACES_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("SPACES_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("SPACES_BUCKET")
+    AWS_S3_REGION_NAME = os.getenv("SPACES_REGION")
+    AWS_S3_ENDPOINT_URL = os.getenv("SPACES_ENDPOINT")
+    AWS_S3_CUSTOM_DOMAIN = os.getenv("SPACES_CDN_ENDPOINT").replace("https://", "")
+
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
+
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+    STATICFILES_STORAGE = "backend.storages.StaticStorage"
+    DEFAULT_FILE_STORAGE = "backend.storages.MediaStorage"
+
+else:
+    STATIC_URL = "/static/"
+    MEDIA_URL = "/media/"
+
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    MEDIA_ROOT = BASE_DIR / "media"
+
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 # STATIC_ROOT нужно убрать, чтобы Django не писал локально
 # STATIC_ROOT = BASE_DIR / "staticfiles"  # ❌ закомментировать

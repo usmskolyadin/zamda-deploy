@@ -98,9 +98,8 @@ export default function AddReview() {
     }
   };
 
-  // Отображение состояния загрузки или ошибки
   if (loading && !profile)
-    return <p className="text-center mt-10 text-gray-500">Загрузка профиля...</p>;
+    return <p className="text-center mt-10 text-gray-500 h-screen bg-white flex items-center justify-center">Загрузка профиля...</p>;
 
   if (error)
     return (

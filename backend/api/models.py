@@ -49,25 +49,23 @@ class SubCategory(models.Model):
 
 
 class ExtraFieldDefinition(models.Model):
-    FIELD_TYPES = [
-        ('char', 'Текст'),
-        ('int', 'Число'),
-        ('float', 'Дробное число'),
-        ('bool', 'Да/Нет'),
-        ('date', 'Дата'),
-    ]
-
-    subcategory = models.ForeignKey(
-        SubCategory,
-        related_name="extra_fields",
-        on_delete=models.CASCADE
+    FIELD_TYPES = (
+        ("char", "String"),
+        ("int", "Integer"),
+        ("float", "Float"),
+        ("bool", "Boolean"),
+        ("date", "Date"),
     )
-    name = models.CharField(max_length=100)
+
+    subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name="extra_fields")
+    name = models.CharField(max_length=255)
     key = models.SlugField()
     field_type = models.CharField(max_length=10, choices=FIELD_TYPES)
+    required = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.subcategory}: {self.name}"
+    class Meta:
+        unique_together = ("subcategory", "key")
+
 
 class AdvertisementView(models.Model):
     ad = models.ForeignKey("Advertisement", related_name="views", on_delete=models.CASCADE)
@@ -103,7 +101,17 @@ class Advertisement(models.Model):
         through="AdvertisementLike",
         blank=True
     )
-    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Advertisement.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def check_expiration(self):
         if self.created_at < timezone.now() - timedelta(days=30):
             if self.is_active:
@@ -160,7 +168,6 @@ class UserProfile(models.Model):
         return f"{self.user.username} Profile"
     
 class Notification(models.Model):
-    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="notifications")
     title = models.CharField(max_length=255)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
@@ -170,7 +177,7 @@ class Notification(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.title} → {self.profile.user.username}"
+        return f"{self.title}"
 
 class Chat(models.Model):
     ad = models.ForeignKey(

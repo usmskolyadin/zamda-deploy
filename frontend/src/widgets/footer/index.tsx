@@ -20,11 +20,10 @@ export default function Footer() {
                 </Link>
               </div>
               <div className="mt-2 lg:mt-0">
-                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="">For business</Link>
-                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="">Help</Link>
-                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="">Career</Link>
-                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="">Privacy Policy </Link>
-                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href=""> Terms of Use</Link>
+                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/about">About Zamda</Link>
+                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/help">Help</Link>
+                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/policy">Privacy Policy </Link>
+                <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/terms"> Terms of Use</Link>
               </div>
               {user ? (
                 <div className="flex lg:mt-0 mt-4">

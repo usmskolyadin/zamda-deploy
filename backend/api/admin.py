@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdvertisementImage, Category, Notification, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import AdvertisementImage, Category, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -46,7 +46,7 @@ class AdvertisementAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ("title", "profile", "is_read", "created_at")
+    list_display = ("title", "is_read", "created_at")
     list_filter = ("is_read", "created_at")
     search_fields = ("title", "message")
 
@@ -65,3 +65,5 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+admin.site.register(Report)
+admin.site.register(Review)

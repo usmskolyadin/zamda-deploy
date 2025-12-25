@@ -41,6 +41,14 @@ const MapClickHandler = dynamic(
 interface Category { id: number; name: string; slug: string }
 interface SubCategory { id: number; name: string; slug: string }
 interface ExtraField { id: number; name: string; key: string; field_type: string; }
+export type ExtraFieldDefinition = {
+  id: number;                 // ID поля в БД
+  name: string;               // Название поля, например "Пробег"
+  key: string;                // Ключ для передачи в extra, например "mileage"
+  field_type: "char" | "int" | "float" | "bool" | "date"; // Тип поля
+  required: boolean;          // Обязательное ли поле
+  choices?: string[];         // Для select-полей (если используешь), опционально
+};
 
 export default function NewAd() {
   const { accessToken } = useAuth();
@@ -48,7 +56,7 @@ export default function NewAd() {
   const [defaultIcon, setDefaultIcon] = useState<any>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
-  const [extraFields, setExtraFields] = useState<ExtraField[]>([]);
+  const [extraFields, setExtraFields] = useState<ExtraFieldDefinition[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [title, setTitle] = useState<string>('');
@@ -58,7 +66,7 @@ export default function NewAd() {
   const [latLng, setLatLng] = useState<LatLngExpression>([38.5816, -121.4944]);
   const [isActive, setIsActive] = useState<boolean>(true);
   const [images, setImages] = useState<File[]>([]);
-  const [extraValues, setExtraValues] = useState<{ [key: string]: string }>({});
+  const [extraValues, setExtraValues] = useState<Record<string, any>>({});
   const [locationInput, setLocationInput] = useState<string>('');
   const [suggestions, setSuggestions] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true);
@@ -81,6 +89,11 @@ const maptilerStyles = {
   light: "dataviz",
   winter: "winter",
 };
+type ExistingImage = { id: number; url: string };
+
+const [errorMessage, setErrorMessage] = useState<string | null>(null); // <-- сюда ошибки
+const [existingImages, setExistingImages] = useState<ExistingImage[]>([]); 
+const [newImages, setNewImages] = useState<File[]>([]);
 
 const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
 
@@ -131,33 +144,53 @@ useEffect(() => {
 }, [accessToken, router]);
 
 useEffect(() => {
-  if (typeof window === "undefined") return;
-  const token = accessToken || localStorage.getItem('access_token');
-  if (!token || !selectedCategory) return;
+  if (!selectedCategory) {
+    setSelectedSubcategory("");  // очищаем выбранную подкатегорию
+    setExtraFields([]);          // очищаем дополнительные поля
+    return;
+  }
 
-  apiFetchAuth(`/api/subcategories/?category=${selectedCategory}`, 
-  )
-    .then((data) => {
-      if (Array.isArray(data)) setSubcategories(data);
-      else if (Array.isArray((data as any).results)) setSubcategories((data as any).results);
-      else setSubcategories([]);
-    })
-    .catch((err) => {
+  apiFetchAuth(`/api/subcategories/?category=${selectedCategory}`)
+    .then(data => setSubcategories(normalizeList(data)))
+    .catch(err => {
       console.error(err);
-      router.push('/login');
+      setSubcategories([]);
     });
-}, [accessToken, selectedCategory, router]);
+}, [selectedCategory]);
 
-//   const handleExtraChange = (key: string, value: string) => {
-//     setExtraValues((prev) => ({ ...prev, [key]: value }));
-//   };
+
+const normalizeList = (data: any) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.results)) return data.results;
+  return [];
+};
+
+useEffect(() => {
+  if (!selectedSubcategory) {
+    setExtraFields([]);
+    return;
+  }
+
+  const fetchExtraFields = async () => {
+    try {
+      const data = await apiFetchAuth(`/api/field-definitions/?subcategory__slug=${selectedSubcategory}`);
+      setExtraFields(normalizeList(data));
+    } catch (err) {
+      console.error(err);
+      setExtraFields([]);
+    }
+  }
+
+  fetchExtraFields();
+}, [selectedSubcategory]);
+
 
 const handleMapClick = async (lat: number, lng: number) => {
   setLatLng([lat, lng]);
 
   try {
     const res = await fetch(
-      `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${MAPTILER_KEY}`
+      `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${MAPTILER_KEY}&language=en`
     );
     const data = await res.json();
 
@@ -187,7 +220,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const res = await fetch(
       `https://api.maptiler.com/geocoding/${encodeURIComponent(
         value
-      )}.json?key=${MAPTILER_KEY}`
+      )}.json?key=${MAPTILER_KEY}&language=en`
     );
     const data = await res.json();
 
@@ -206,12 +239,12 @@ const handleSuggestionClick = (suggestion: any) => {
   setLocationInput(display_name);
   setSuggestions([]);
 };
+
 function formatBackendErrors(err: any): string {
   if (!err) return "Неизвестная ошибка";
   if (typeof err === "string") return err;
 
   if (typeof err === "object") {
-    // DRF форматируется здесь
     return Object.entries(err)
       .map(([field, msg]) => Array.isArray(msg)
         ? `${field}: ${msg.join(", ")}`
@@ -226,18 +259,21 @@ function formatBackendErrors(err: any): string {
 
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
+  setErrorMessage(null);
 
-  // Надёжный токен: сначала из контекста, затем localStorage
-  const token = accessToken || localStorage.getItem('access_token');
+  const token = localStorage.getItem('access_token');
   if (!token) {
-    console.warn('No token found, redirecting to login');
     router.push('/login');
     return;
   }
 
-  // Basic validation (можно расширить)
   if (!selectedSubcategory) {
-    alert('Выберите подкатегорию');
+    setErrorMessage('Выберите подкатегорию');
+    return;
+  }
+
+  if ((existingImages?.length ?? 0) + (newImages?.length ?? 0) < 1) {
+    alert("Minimum 1 image!");
     return;
   }
 
@@ -245,27 +281,15 @@ const handleSubmit = async (e: FormEvent) => {
   formData.append('title', title);
   formData.append('price', price);
   formData.append('description', description);
-  // Если бэк ожидает slug — ок, иначе меняем на id
   formData.append('subcategory_slug', selectedSubcategory);
   formData.append('is_active', String(isActive));
   formData.append('extra', JSON.stringify(extraValues));
+  formData.append('location', locationInput);
 
-  formData.append('location', locationInput || location);
-
-  console.log('Before append images, images state:', images);
-  if (images && images.length > 0) {
-    images.forEach((file, idx) => {
-      // можно использовать 'images' или 'images[]' в зависимости от бэка
-      formData.append('images', file, file.name);
-    });
-  } else {
-    console.log('No images attached');
-  }
-
-  // Детальный лог FormData (для отладки — потому что нельзя просто console.log(formData))
-  for (const pair of (formData as any).entries()) {
-    console.log('FormData entry:', pair[0], pair[1]);
-  }
+  // Только новые изображения для POST
+  newImages.forEach((file) => {
+    formData.append('images', file, file.name);
+  });
 
   try {
     const res = await fetch(`${API_URL}/api/ads/`, {
@@ -276,31 +300,20 @@ const handleSubmit = async (e: FormEvent) => {
       body: formData,
     });
 
-    console.log('Response status:', res.status);
-
-      const raw = await res.text(); // читаем ОДИН раз
-
-      let data: any = null;
-      try {
-        data = JSON.parse(raw);
-      } catch (_) {
-        data = raw; // если бек вернул HTML или строку
-      }
-
-      if (!res.ok) {
-        console.error("Server error:", res.status, data);
-        alert("Ошибка при создании объявления:\n" + formatBackendErrors(data));
-        return;
-      }
-
-      // Успех
-      router.push("/listings");
-      
-    } catch (networkError) {
-      console.error("Network error:", networkError);
-      alert("Сетевая ошибка. Проверь соединение.");
+    if (!res.ok) {
+      const data = await res.json();
+      console.error(data);
+      alert('Ошибка при создании объявления');
+      return;
     }
+
+    router.push('/listings');
+  } catch (networkError) {
+    setErrorMessage('Сетевая ошибка. Проверь соединение.');
+    console.error(networkError);
+  }
 };
+
 
 
   return (
@@ -407,12 +420,89 @@ const handleSubmit = async (e: FormEvent) => {
                 maxLength={1500}
               />
             </label>
+              <div>
+              <ImageUploader
+                existingImages={existingImages}
+                setExistingImages={setExistingImages}
+                newImages={newImages}
+                setNewImages={setNewImages} 
+              />
+                    {errorMessage && (
+                  <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+                )}
 
+              </div>
+              {extraFields.map(field => (
+                <label key={field.key} className="w-full max-w-md flex-col flex font-semibold text-gray-800">
+                  <p className="font-semibold text-black text-xl">{field.name}{field.required ? ' *' : ''}</p>
+                  
+                  {field.field_type === "int" && (
+                    <input
+                      type="number"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: Number(e.target.value) }))
+                      }
+                      required={field.required}
+                    />
+                  )}
 
-              <ImageUploader images={images} setImages={setImages} />
+                  {field.field_type === "char" && (
+                    <input
+                      type="text"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      required={field.required}
+                    />
+                  )}
 
+                  {field.field_type === "bool" && (
+                    <select
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value === "true" }))
+                      }
+                      required={field.required}
+                    >
+                      <option value="">Select</option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  )}
+
+                  {field.field_type === "date" && (
+                    <input
+                      type="date"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      required={field.required}
+                    />
+                  )}
+
+                  {field.field_type === "select" && field.choices && (
+                    <select
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      required={field.required}
+                    >
+                      <option value="">Select</option>
+                      {field.choices.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+              ))}
             <div>
-              
             </div>
                         <div>
               <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 relative">
@@ -443,24 +533,12 @@ const handleSubmit = async (e: FormEvent) => {
                   </ul>
                 )}
               </label>
-              <label className="block font-semibold mt-2 text-black">
-                Map Style
-                <select
-                  value={mapStyle}
-                  onChange={(e) => setMapStyle(e.target.value)}
-                  className="ml-2 mt-1 border border-black rounded-2xl p-2 text-gray-900"
-                >
-                  {Object.keys(maptilerStyles).map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </label>
               <div className="w-full max-w-md z-20 h-60 border border-black rounded-3xl overflow-hidden mt-2">
 
               {isClient && defaultIcon && (
                 <MapContainer center={latLng} zoom={13} style={{ height: "100%", width: "100%" }}>
                 <TileLayer
-                  url={`https://api.maptiler.com/maps/${maptilerStyles[mapStyle]}/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`}
+                  url={`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`}
                   attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
                 />
                   {defaultIcon && (
@@ -468,12 +546,13 @@ const handleSubmit = async (e: FormEvent) => {
                       <Popup>Selected location</Popup>
                     </Marker>
                   )}
-
                   <MapClickHandler onClick={handleMapClick} />
                 </MapContainer>
               )}
               </div>
+              
             </div>
+            
             <Link href={'/listings'}>
               <button
                 type="submit"

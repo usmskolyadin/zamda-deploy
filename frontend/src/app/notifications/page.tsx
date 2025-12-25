@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FaArrowRight, FaStar } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/src/features/context/auth-context";
+import { apiFetchAuth } from "@/src/shared/api/auth";
 
 interface Notification {
   id: number;
@@ -19,35 +20,19 @@ export default function Notifications() {
   const [activeTab, setActiveTab] = useState("active");
   const { user } = useAuth();
   const [adsCount, setAdsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
     
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/notifications/", {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const results = Array.isArray(data) ? data : data.results || [];
-      setNotifications(results);
-      setUnread(results.filter((n: Notification) => !n.is_read).length);
-    });
-}, []);
-
-
-  const markAsRead = async (id: number) => {
-    await fetch(`http://127.0.0.1:8000/api/notifications/${id}/mark_as_read/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
-    setUnread((prev) => prev - 1);
-  };
+    (async () => {
+      try {
+        const data = await apiFetchAuth("/api/notifications/");
+        setNotifications(data.results);;
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   return (
     <div className=" w-full">
@@ -127,14 +112,14 @@ export default function Notifications() {
                     <div
                       className="flex items-center mt-4 min-w-full bg-gray-100 rounded-2xl p-4"
                       key={n.id}
-                      onClick={() => markAsRead(n.id)}>
-                        <div>
-                            <div className="flex items-center justify-between">
-                                <h1 className="text-xl text-black font-bold">{n.title}</h1>
-                                <h1 className="text-sm text-gray-500">{new Date(n.created_at).toLocaleString()}</h1>
+                      >
+                        <div className="w-full">
+                            <div className="w-full flex items-center justify-between ">
+                                <h1 className="text-xl text-black font-bold pr-5">{n.title}</h1>
+                                <h1 className="text-sm  text-gray-500">{new Date(n.created_at).toLocaleString()}</h1>
                             </div>
                             <div className="flex">
-                                <p className="text-md text-gray-600 mr-2">{n.message}</p>
+                                <p className="text-md font-medium text-gray-800 mr-2">{n.message}</p>
                             </div>
                         </div>
                     </div>

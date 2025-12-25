@@ -104,7 +104,7 @@ export default function Header() {
                 <Link href={"/listings"}>
                   <div className="flex items-center">
                     <h2 className="mr-2 font-semibold text-white ml-2 w-36 text-right">{user?.first_name} </h2>
-                    <img className="rounded-full border border-gray-200 max-w-10 max-h-10 min-w-10 min-h-10 bg-white"  src={user.profile?.avatar} width={40} height={40} alt={""} />
+                    <img className="rounded-full max-w-10 max-h-10 min-w-10 min-h-10 "  src={user.profile?.avatar} width={40} height={40} alt={""} />
                   </div>
                 </Link>
                 ) : (
@@ -114,16 +114,17 @@ export default function Header() {
               </div>
             </div>
           </header>
-          <nav className="flex lg:h-[80px] h-[140px] bg-white items-center shadow-xs p-4 ">
+          <nav className="flex lg:h-[80px] h-[140px] bg-white items-center shadow-lg p-4 ">
             <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between">
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <Link href={"/"}>
                 <div className="flex items-center">
                   <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
                   <h1 className=" mr-12 font-bold text-4xl text-black">Zamda</h1>
                 </div>
                 </Link>
-                <CategoryDropdown />
+                  <CategoryDropdown />
+
               </div>
 
               <SearchBar />

@@ -104,7 +104,6 @@ export default function AdActions({ ad }: AdPageProps) {
         </>
       )}
 
-      {/* 💬 Блок продавца */}
       <div className="flex items-center justify-between py-4">
         <Link href={`/profile/${ad.owner.profile.id}`}>
           <div>
@@ -114,10 +113,12 @@ export default function AdActions({ ad }: AdPageProps) {
             <div className="flex items-center text-sm text-gray-700">
               <span className="mr-1">{ad.owner.profile?.rating}</span>
               <div className="flex text-yellow-400 mr-1">
-                {[...Array(4)].map((_, i) => (
-                  <FaStar key={i} />
-                ))}
-                <FaStar className="opacity-50" />
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className={i < ad.owner.profile.rating ? "w-4" : "w-4 opacity-30"}
+                    />
+                  ))}
               </div>
               {ad.owner.profile?.reviews_count} reviews
             </div>
@@ -131,8 +132,7 @@ export default function AdActions({ ad }: AdPageProps) {
           className="w-12 h-12 rounded-full object-cover"
         />
       </div>
-
-      {/* 💬 Быстрые вопросы */}
+ 
       {!isOwner && (
         <div>
           <h1 className="text-black font-bold text-3xl mt-4">Ask the Seller</h1>
@@ -149,11 +149,10 @@ export default function AdActions({ ad }: AdPageProps) {
             {[
               "Is it still available?",
               "Is the price negotiable?",
-              "When and where can I see the vehicle?",
             ].map((text, idx) => (
               <button
                 key={idx}
-                onClick={() => handleQuickMessage(text)} // ⚡ при клике отправляем и переходим
+                onClick={() => handleQuickMessage(text)} 
                 className="bg-black text-white cursor-pointer rounded-full text-sm px-4 py-3 text-left hover:bg-gray-800 transition"
               >
                 {text}

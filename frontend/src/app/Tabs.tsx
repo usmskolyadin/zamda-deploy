@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import { apiFetch } from "@/src/shared/api/base";
-import { Advertisement } from "../entities/advertisment/model/types";
+import { Advertisement, PaginatedResponse } from "../entities/advertisment/model/types";
 import { apiFetchAuth } from "../shared/api/auth.client";
 import { useAuth } from "../features/context/auth-context";
 
@@ -15,6 +15,9 @@ const tabs = [
 
 export default function TabsExample() {
   const { user } = useAuth();
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const PAGE_SIZE = 10;
 
   const [activeTab, setActiveTab] = useState("recommendations");
   const [ads, setAds] = useState<Advertisement[]>([]);
@@ -38,36 +41,55 @@ export default function TabsExample() {
     fetchLikedAds();
   }, [user]);
 
-  // Универсальный загрузчик по табам
-  const fetchAdsByTab = async (tabId: string) => {
+  const fetchAdsByTab = async (tabId: string, pageNum = 1) => {
     setLoading(true);
 
     try {
-      // Для Favorites не делаем запрос — берём уже загруженные лайки
       if (tabId === "favorites") {
         setAds(likedAds);
+        setHasNext(false);
         return;
       }
 
-      // Для Recommendations и Recent — делаем запрос
-      let url = "/api/ads/";
-      if (tabId === "recommendations") url = "/api/ads/?filter=recommendations";
-      if (tabId === "recent") url = "/api/ads/?filter=recent";
+      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}`;
 
-      const data = await apiFetch<any>(url);
-      setAds(data.results || data);
+      if (tabId === "recommendations") {
+        url += "&filter=recommendations";
+      }
+
+      if (tabId === "recent") {
+        url += "&filter=recent";
+      }
+
+      const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
+
+      // Если первая страница — заменяем
+      // если следующая — дописываем
+      setAds(prev =>
+        pageNum === 1 ? data.results : [...prev, ...data.results]
+      );
+
+      setHasNext(Boolean(data.next));
     } catch (e) {
       console.error("API error:", e);
       setAds([]);
+      setHasNext(false);
     } finally {
       setLoading(false);
     }
   };
 
-  // Загружаем объявления при смене таба
+
   useEffect(() => {
-    fetchAdsByTab(activeTab);
+    setPage(1);
+    fetchAdsByTab(activeTab, 1);
   }, [activeTab, likedAds]);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchAdsByTab(activeTab, nextPage);
+  };
 
   if (!user) {
     return (
@@ -110,6 +132,16 @@ export default function TabsExample() {
           </div>
         ) : (
           <p className="text-center text-gray-500 mt-6">No ads found.</p>
+        )}
+        {!loading && hasNext && activeTab !== "favorites" && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={loadMore}
+              className="cursor-pointer px-6 py-3 rounded-3xl bg-[#2AAEF7] text-white font-semibold hover:bg-blue-500 transition"
+            >
+              Load more
+            </button>
+          </div>
         )}
       </div>
     </div>

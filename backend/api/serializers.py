@@ -16,8 +16,14 @@ media_storage = MediaStorage()
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["id", "reporter", "reported_user", "chat", "reason", "description", "created_at"]
-        read_only_fields = ["reporter", "created_at"]
+        fields = [
+            "id",
+            "reason",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author_lastname = serializers.CharField(source='author.last_name', read_only=True)
@@ -52,7 +58,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 class ExtraFieldDefinitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtraFieldDefinition
-        fields = ('id','subcategory','name','key','field_type')
+        fields = ('id','subcategory','name','key','field_type', 'required')
 
 
 class AdvertisementImageSerializer(serializers.ModelSerializer):
@@ -190,11 +196,10 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return int(time_left.total_seconds()) 
     
     def get_extra_values(self, obj):
-        result = {}
-        for v in obj.extra_values.select_related('field_definition').all():
-            key = v.field_definition.key
-            result[key] = v.value
-        return result
+        return AdvertisementExtraFieldSerializer(
+            obj.extra_values.select_related("field_definition"),
+            many=True
+        ).data
 
     def get_likes_count(self, obj):
         return obj.likes.count()
@@ -214,12 +219,14 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Extra must be an object/dict of key->value.')
 
         return value
+    
 
     def _validate_and_prepare_extra(self, subcategory, extra_dict):
         """
         Проверяет extra_dict по definitions для данной подкатегории.
         Возвращает список кортежей (field_definition, casted_value).
         """
+        
         prepared = []
         if not extra_dict:
             return prepared
@@ -243,7 +250,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return prepared
 
     def create(self, validated_data):
-        # 1. Обработка поля extra
         extra_dict = validated_data.pop('extra', None)
         if isinstance(extra_dict, str):
             try:
@@ -251,25 +257,22 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             except json.JSONDecodeError:
                 extra_dict = {}
 
-        # 2. Устанавливаем владельца объявления
-        request = self.context.get('request')
-        validated_data['owner'] = request.user
-        from django.utils.text import slugify
-
-        # 3. Генерация уникального slug
-        if not getattr(validated_data, 'slug', None):
-            base_slug = slugify(validated_data.get('title', 'ad'))
-            unique_slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
-            validated_data['slug'] = unique_slug
-
-        # 4. Получаем файлы из request
-        files = request.FILES.getlist('images') if request else []
-
-        # 5. Создаём основное объявление
+        # Убедимся, что subcategory — это объект, а не slug или строка
+        subcategory_obj = validated_data.get('subcategory')
+        if isinstance(subcategory_obj, str):
+            subcategory_obj = SubCategory.objects.get(slug=subcategory_obj)
+            validated_data['subcategory'] = subcategory_obj
+        
+        files = self.context['request'].FILES.getlist('images') if self.context.get('request') else []
+        if not files:
+            raise serializers.ValidationError({"images": "At least one image is required."})
+        
+        # Создаем объявление
+        validated_data['owner'] = self.context['request'].user
         ad = super().create(validated_data)
 
-        # 6. Обработка дополнительных полей
-        prepared = self._validate_and_prepare_extra(ad.subcategory, extra_dict or {})
+        # Проверяем extra поля
+        prepared = self._validate_and_prepare_extra(subcategory_obj, extra_dict or {})
         for definition, casted_str in prepared:
             AdvertisementExtraField.objects.create(
                 ad=ad,
@@ -277,34 +280,26 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 value=str(casted_str)
             )
 
-        # 7. Сохранение изображений
+        # Сохраняем изображения
+        files = self.context['request'].FILES.getlist('images') if self.context.get('request') else []
         for f in files:
             filename = media_storage.save(f"advertisements/{f.name}", f)
             AdvertisementImage.objects.create(ad=ad, image=filename)
 
         return ad
 
-
-
     def update(self, instance, validated_data):
-        # import json
-
-        # # Обновляем subcategory если есть
-        # subcategory_data = validated_data.pop('subcategory', None)
-        # if subcategory_data:
-        #     if isinstance(subcategory_data, str):
-        #         subcategory_data = json.loads(subcategory_data)
-        #     subcategory_id = subcategory_data.get('id') if isinstance(subcategory_data, dict) else subcategory_data
-        #     validated_data['subcategory'] = SubCategory.objects.get(id=int(subcategory_id))
-
-        # # Обновляем объявление
-        # ad = super().update(instance, validated_data)
-
-        # Обновляем extra поля
+        # Обрабатываем extra
         extra_dict = validated_data.pop('extra', None)
 
+        # Извлекаем новые изображения
+        request = self.context.get('request')
+        new_images = request.FILES.getlist('images') if request else []
+
+        # Обновляем обычные поля
         ad = super().update(instance, validated_data)
 
+        # Обновляем extra поля
         if extra_dict is not None:
             ad.extra_values.all().delete()
             if isinstance(extra_dict, str):
@@ -317,7 +312,20 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                     value=str(casted_str)
                 )
 
+        # Удаляем старые изображения, которых нет в existing_ids
+        existing_ids = request.data.get('existing_ids')
+        if existing_ids:
+            if isinstance(existing_ids, str):
+                existing_ids = json.loads(existing_ids)
+            ad.images.exclude(id__in=existing_ids).delete()
+
+        # Добавляем новые изображения
+        for image in new_images:
+            AdvertisementImage.objects.create(ad=ad, image=image)
+
         return ad
+
+
 
 class MessageSerializer(serializers.ModelSerializer):
     chat = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all())

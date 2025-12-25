@@ -33,6 +33,7 @@ interface Ad {
   lat?: number;
   lng?: number;
 }
+type ExistingImage = { id: number; url: string };
 
 export default function EditAd() {
   const { accessToken } = useAuth();
@@ -52,11 +53,37 @@ export default function EditAd() {
   const [latLng, setLatLng] = useState<LatLngExpression>([38.5816, -121.4944]);
   const [isActive, setIsActive] = useState<boolean>(true);
   const [images, setImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<{ id: number; image: string }[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const [locationInput, setLocationInput] = useState<string>('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+  const [extraFields, setExtraFields] = useState<any[]>([]);
+  const [extraValues, setExtraValues] = useState<{ [key: string]: any }>({});
+  const [newImages, setNewImages] = useState<File[]>([]); // только что выбранные файлы
 
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+const maptilerStyles = {
+  openstreetmap: "openstreetmap",
+  streets: "streets",
+  basic: "basic",
+  bright: "bright",
+  pastel: "pastel",
+  topo: "topo",
+  satellite: "satellite",
+  hybrid: "hybrid",
+  dark: "darkmatter",
+  light: "dataviz",
+  winter: "winter",
+};
+
+const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
+
+const [mapStyle, setMapStyle] = useState("openstreetmap");
   useEffect(() => {
     (async () => {
       const L = await import('leaflet');
@@ -74,7 +101,6 @@ export default function EditAd() {
     })();
   }, []);
 
-  // Загружаем категории
   useEffect(() => {
     apiFetchAuth('/api/categories/', {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -84,75 +110,104 @@ export default function EditAd() {
   }, [accessToken]);
 
   useEffect(() => {
-    if (!adId || !accessToken) return;
-    (async () => {
-      try {
-        const ad: Advertisement = await apiFetch<Advertisement>(
-          `/api/ads/${params.ad_name}/`
-        );
-        setTitle(ad.title);
-        setPrice(ad.price);
-        setDescription(ad.description);
-        setLocation(ad.location);
-        setLocationInput(ad.location);
-        setSelectedSubcategory(String(ad.subcategory.id));
-        setSelectedCategory(ad.subcategory.category.slug);
-        if (ad.images) setExistingImages(ad.images);
-        if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [adId, accessToken, router]);
-
-  // Загружаем подкатегории при смене категории
-  useEffect(() => {
     if (!selectedCategory) return;
     apiFetchAuth(`/api/subcategories/?category=${selectedCategory}`)
       .then((data) => setSubcategories(Array.isArray(data) ? data : (data.results || [])))
       .catch(console.error);
   }, [selectedCategory]);
 
-  const handleMapClick = async (lat: number, lng: number) => {
-    setLatLng([lat, lng]);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
-        { headers: { 'User-Agent': 'my-nextjs-app' } }
-      );
-      const data: any = await res.json();
-      if (data.address) {
-        const { city, town, village, road, house_number } = data.address;
-        const formatted = [city || town || village, road, house_number].filter(Boolean).join(', ');
-        setLocation(formatted);
-        setLocationInput(formatted);
-      }
-    } catch (err) {
-      console.error('Geocoding error:', err);
-    }
-  };
+useEffect(() => {
+  if (!adId || !accessToken) return;
 
-  const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLocationInput(value);
-    if (value.length < 3) {
+  setLoading(true);
+
+  (async () => {
+    try {
+      const ad: Advertisement = await apiFetch<Advertisement>(`/api/ads/${params.ad_name}/`);
+      
+      setTitle(ad.title);
+      setPrice(ad.price);
+      setDescription(ad.description);
+      setLocation(ad.location);
+      setLocationInput(ad.location);
+      setSelectedCategory(ad.category_slug);
+      setSelectedSubcategory(ad.subcategory);
+
+      // extraValues из ad.extra_values
+      const extras: { [key: string]: any } = {};
+      ad.extra_values?.forEach((ef) => {
+        extras[ef.field_key] = ef.value;
+      });
+      setExtraValues(extras);
+
+      setExistingImages(ad.images.map(img => ({ id: img.id, url: img.image })));
+      if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  })();
+}, [adId, accessToken, router]);
+
+useEffect(() => {
+  if (!selectedSubcategory) return;
+
+  fetch(`${API_URL}/api/field-definitions/?subcategory__slug=${selectedSubcategory}`)
+    .then((r) => r.json())
+    .then((fieldsData) =>
+      setExtraFields(Array.isArray(fieldsData) ? fieldsData : fieldsData.results || [])
+    )
+    .catch(console.error);
+}, [selectedSubcategory]);
+
+const handleMapClick = async (lat: number, lng: number) => {
+  setLatLng([lat, lng]);
+
+  try {
+    const res = await fetch(
+      `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${MAPTILER_KEY}&language=en`
+    );
+    const data = await res.json();
+
+    if (data?.features?.length) {
+      const place = data.features[0];
+      const formatted = place.place_name || place.text;
+
+      setLocation(formatted);
+      setLocationInput(formatted);
       setSuggestions([]);
-      return;
     }
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&addressdetails=1&limit=5`,
-        { headers: { 'User-Agent': 'my-nextjs-app' } }
-      );
-      const data: any[] = await res.json();
-      setSuggestions(data);
-    } catch (err) {
-      console.error('Geocoding error:', err);
-    }
-  };
+  } catch (err) {
+    console.error("MapTiler reverse geocoding error:", err);
+  }
+};
 
+const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+  setLocationInput(value);
+
+  if (value.length < 3) {
+    setSuggestions([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.maptiler.com/geocoding/${encodeURIComponent(
+        value
+      )}.json?key=${MAPTILER_KEY}&language=en`
+    );
+    const data = await res.json();
+
+    if (data?.features) {
+      setSuggestions(data.features);
+    }
+  } catch (err) {
+    console.error("MapTiler forward geocoding error:", err);
+  }
+};
   const handleSuggestionClick = (suggestion: any) => {
     const { lat, lon, display_name } = suggestion;
     setLatLng([parseFloat(lat), parseFloat(lon)]);
@@ -169,10 +224,15 @@ export default function EditAd() {
     formData.append('title', title);
     formData.append('price', price);
     formData.append('description', description);
-    formData.append('subcategory_id', selectedSubcategory);
     formData.append('is_active', String(isActive));
     formData.append('location', locationInput || location);
-    if (images) Array.from(images).forEach(file => formData.append('images', file));
+    formData.append('extra', JSON.stringify(extraValues));
+
+    // Добавляем новые изображения
+    newImages.forEach(file => formData.append('images', file));
+
+    // Отправляем оставшиеся существующие id
+    formData.append('existing_ids', JSON.stringify(existingImages.map(img => img.id)));
 
     const res = await fetch(`${API_URL}/api/ads/${adId}/`, {
       method: 'PATCH',
@@ -189,7 +249,8 @@ export default function EditAd() {
     }
   };
 
-  if (loading) return <div className="text-center p-10 text-gray-600">Loading...</div>;
+
+  if (loading) return <div className="text-center p-10 text-gray-900 h-screen bg-white flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="w-full">
@@ -201,77 +262,114 @@ export default function EditAd() {
 
       <section className="bg-white min-h-screen flex justify-center px-4">
         <div className="text-black w-full max-w-screen-xl">
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 w-full max-w-3xl mx-auto">
-
-            {/* Категории */}
-            <label className="w-full max-w-md relative flex-col flex font-semibold text-gray-800">
-              <p className="font-semibold text-black text-xl">Category</p>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="p-4 pr-10 border border-black rounded-3xl h-[55px] mt-1 text-gray-900 appearance-none w-full"
-                required
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.slug}>{cat.name}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 mt-1 w-5 pointer-events-none text-gray-900" />
-            </label>
-
-            {/* Подкатегории */}
-            <label className="w-full max-w-md relative flex-col flex font-semibold text-gray-800">
-              <p className="font-semibold text-black text-xl">Subcategory</p>
-              <select
-                value={selectedSubcategory}
-                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                className="p-4 pr-10 border border-black rounded-3xl h-[55px] mt-1 text-gray-900 appearance-none w-full"
-                required
-              >
-                <option value="">Select subcategory</option>
-                {subcategories.map((sub) => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 mt-1 w-5 pointer-events-none text-gray-900" />
-            </label>
-
-            {/* Остальные поля */}
-            <label className="w-full max-w-md flex-col flex font-semibold text-gray-800">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 w-full max-w-3xl mx-auto">
+            <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Title</p>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
                      className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
             </label>
 
-            <label className="w-full max-w-md flex-col flex font-semibold text-gray-800">
+            <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Price ($)</p>
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)}
                      className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
             </label>
 
-            <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 col-span-2">
+            <label className="w-full flex-col flex font-semibold text-gray-800 col-span-2">
               <p className="font-semibold text-black text-xl">Description</p>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)}
                         className="p-4 border border-black rounded-3xl mt-1 text-gray-900" rows={5} required />
             </label>
 
-            {/* Изображения */}
             <div className="col-span-2">
-              <p className="text-black font-semibold text-xl mb-2">Images</p>
-              {existingImages.length > 0 && (
-                <div className="flex gap-2 mb-3 flex-wrap">
-                  {existingImages.map((img) => (
-                    <img key={img.id} src={img.image} alt="Ad image"
-                         className="w-28 h-28 object-cover rounded-xl border border-gray-300" />
-                  ))}
-                </div>
-              )}
-              <ImageUploader images={images} setImages={setImages} />
+              <ImageUploader
+                existingImages={existingImages}
+                setExistingImages={setExistingImages}
+                newImages={newImages}
+                setNewImages={setNewImages}
+              />
             </div>
+             {extraFields.length > 0 && (
+              <div className="grid lg:grid-cols-2 sm:grid-cols-2 gap-4 col-span-2">
+                          {extraFields.map(field => (
+                <label key={field.key} className="w-full max-w-md flex-col flex font-semibold text-gray-800">
+                  <p className="font-semibold text-black text-xl">{field.name}{field.required ? ' *' : ''}</p>
+                  
+                  {field.field_type === "int" && (
+                    <input
+                      type="number"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: Number(e.target.value) }))
+                      }
+                      value={extraValues[field.key] || ""}
+                      required={field.required}
+                    />
+                  )}
 
-            {/* Локация */}
-            <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 relative col-span-2">
+                  {field.field_type === "char" && (
+                    <input
+                      type="text"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      value={extraValues[field.key] || ""}
+                      required={field.required}
+                    />
+                  )}
+
+                  {field.field_type === "bool" && (
+                    <select
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value === "true" }))
+                      }
+                      value={extraValues[field.key] || ""}
+                      required={field.required}
+                    >
+                      <option value="">Select</option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  )}
+
+                  {field.field_type === "date" && (
+                    <input
+                      type="date"
+                      placeholder={field.name}
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      value={extraValues[field.key] || ""}
+                      required={field.required}
+                    />
+                  )}
+
+                  {field.field_type === "select" && field.choices && (
+                    <select
+                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      onChange={e =>
+                        setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
+                      }
+                      required={field.required}
+                      value={extraValues[field.key] || ""}
+                    >
+                      <option value="">Select</option>
+                      {field.choices.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+              ))}
+              </div>
+            )}
+
+            <label className="w-full  flex-col flex font-semibold text-gray-800 relative col-span-2">
               <p className="font-semibold text-black text-xl">Location</p>
               <input
                 type="text"
@@ -294,15 +392,21 @@ export default function EditAd() {
             </label>
 
             <div className="w-full col-span-2 z-20 h-60 border border-black rounded-3xl overflow-hidden mt-2">
-              <MapContainer center={latLng} zoom={13} style={{ height: "100%", width: "100%" }}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                {defaultIcon && (
-                  <Marker position={latLng} icon={defaultIcon}>
-                    <Popup>Selected location</Popup>
-                  </Marker>
-                )}
-                <MapClickHandler onClick={handleMapClick} />
-              </MapContainer>
+              {isClient && defaultIcon && (
+                <MapContainer center={latLng} zoom={13} style={{ height: "100%", width: "100%" }}>
+                <TileLayer
+                  url={`https://api.maptiler.com/maps/${maptilerStyles[mapStyle]}/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`}
+                  attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                />
+                  {defaultIcon && (
+                    <Marker position={latLng} icon={defaultIcon}>
+                      <Popup>Selected location</Popup>
+                    </Marker>
+                  )}
+
+                  <MapClickHandler onClick={handleMapClick} />
+                </MapContainer>
+              )}
             </div>
 
             <div className="col-span-2 flex justify-between mt-6 mb-6">

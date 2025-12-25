@@ -96,7 +96,7 @@ useEffect(() => {
                   ))}
                 </div>
                 <span className="text-[#2AAEF7] text-lg ml-1">
-                  {profile.reviews_count} <Link href={`/reviews/add/${profile.id}`}>Add review</Link>
+                  <Link href={`/reviews/${profile.id}`}>All reviews</Link>
                 </span>
               </div>
             </div>

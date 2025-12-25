@@ -1,7 +1,9 @@
+import os
 from django.forms import ValidationError
 from django.shortcuts import render
 from django.db import IntegrityError
 
+from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import AdvertisementLike, AdvertisementView, Category, Chat, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
@@ -61,14 +63,23 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     lookup_value_regex = "[^/]+"
     filterset_class = SubCategoryFilter
 
+    @action(detail=True, methods=["get"])
+    def fields(self, request, slug=None):
+        subcategory = self.get_object()
+        fields = subcategory.extra_fields.all()
+        serializer = ExtraFieldDefinitionSerializer(fields, many=True)
+        return Response(serializer.data)
+    
 
 class ExtraFieldDefinitionViewSet(viewsets.ModelViewSet):
-    queryset = ExtraFieldDefinition.objects.select_related('subcategory').all()
+    queryset = ExtraFieldDefinition.objects.select_related('subcategory')
     serializer_class = ExtraFieldDefinitionSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['subcategory']
-    search_fields = ['name','key']
+    filterset_fields = {
+        'subcategory__slug': ['exact'],
+    }
+    search_fields = ['name', 'key']
 
 
 class AdvertisementFilter(FilterSet):
@@ -79,35 +90,76 @@ class AdvertisementFilter(FilterSet):
     created_after = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
     owner_username = django_filters.CharFilter(field_name="owner__username", lookup_expr="iexact")
     owner_email = django_filters.CharFilter(field_name="owner__email", lookup_expr="iexact")
+    extra = django_filters.CharFilter(method="filter_extra")
+
+    def filter_extra(self, queryset, name, value):
+        """
+        ?extra=memory:128,color:black
+        """
+        pairs = value.split(",")
+
+        for pair in pairs:
+            key, raw_value = pair.split(":", 1)
+
+            queryset = queryset.filter(
+                extra_values__field_definition__key=key,
+                extra_values__value=raw_value
+            )
+
+        return queryset
 
     class Meta:
         model = Advertisement
         fields = ["subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email']
         
 class AdvertisementViewSet(viewsets.ModelViewSet):
-    queryset = Advertisement.objects.select_related("owner", "subcategory__category") \
-                                    .prefetch_related("extra_values__field_definition", "likes")
+    queryset = (
+        Advertisement.objects
+        .select_related("owner", "subcategory__category")
+        .prefetch_related("extra_values__field_definition", "likes", "images")
+    )
     serializer_class = AdvertisementSerializer
     permission_classes = [IsOwnerOrReadOnly]
+    pagination_class = AdvertisementPagination  
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    ]
     filterset_class = AdvertisementFilter
-    filterset_fields = ["subcategory", "subcategory__category", "owner__username", "owner__profile__city"]
-    search_fields = ["title", "description", "owner__username", "owner__email"]
+    filterset_fields = [
+        "subcategory",
+        "subcategory__category",
+        "owner__username",
+        "owner__profile__city"
+    ]
+    search_fields = [
+        "title",
+        "description",
+        "owner__username",
+        "owner__email"
+    ]
     ordering_fields = ["created_at", "price"]
     ordering = ["-created_at"]
-    
-    lookup_field = "slug" 
+
+    lookup_field = "slug"
     lookup_value_regex = "[^/]+"
+
+    def filter_extra(self, queryset, name, value):
+        for key, val in value.items():
+            queryset = queryset.filter(extra_values__field_definition__key=key, extra_values__value=val)
+        return queryset
     
     def get_queryset(self):
-        qs = super().get_queryset()
+        return (
+            Advertisement.objects
+            .select_related("owner", "subcategory__category")
+            .prefetch_related("extra_values__field_definition", "likes", "images")
+            .filter(is_active=True)
+            .order_by("-created_at")
+        )
 
-        for ad in qs:
-            ad.check_expiration()
-
-        return qs.filter(is_active=True)
-    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
@@ -127,7 +179,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         try:
             return super().create(request, *args, **kwargs)
         except Exception as e:
-            logger.exception("Ошибка при создании объявления")
+            logger.exception("Error")
             return Response({"detail": str(e)}, status=500)
         
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
@@ -203,8 +255,6 @@ class UserAdvertisementViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Advertisement.objects.filter(owner=self.request.user)
-
-
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -293,28 +343,32 @@ class ChatViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="report")
     def report_user(self, request, pk=None):
         chat = self.get_object()
+
         reported_user = chat.buyer if chat.seller == request.user else chat.seller
+
+        print("RAW BODY:", request.body)
+        print("PARSED DATA:", request.data)
+
         serializer = ReportSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(reporter=request.user, reported_user=reported_user, chat=chat)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        if not serializer.is_valid():
+            print("SERIALIZER ERRORS:", serializer.errors)
+            return Response(serializer.errors, status=400)
+
+        serializer.save(
+            reporter=request.user,
+            reported_user=reported_user,
+            chat=chat,
+        )
+
+        return Response({"ok": True}, status=201)
+
     
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.filter(profile=self.request.user.profile)
-
-    @action(detail=True, methods=["post"])
-    def mark_as_read(self, request, pk=None):
-        notification = self.get_object()
-        notification.is_read = True
-        notification.save()
-        return Response({"status": "marked as read"})
-
+        return Notification.objects.all()
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
@@ -376,6 +430,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import EmailVerification
 from .serializers import RegisterRequestSerializer, VerifyCodeSerializer
 from rest_framework.permissions import AllowAny
+from django.contrib.auth.hashers import make_password
+from django.template.loader import render_to_string
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+from .models import EmailVerification
+from .serializers import RegisterRequestSerializer
 
 class RegisterRequestView(generics.GenericAPIView):
     serializer_class = RegisterRequestSerializer
@@ -383,15 +448,15 @@ class RegisterRequestView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         logger.error("RegisterRequestView started with data: %s", request.data)
+
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            logger.error("Serializer is valid")
-            
-            code = str(random.randint(100000, 999999))
+
             data = serializer.validated_data
-            
-            logger.error("Generated code: %s for email: %s", code, data["email"])
+            code = str(random.randint(100000, 999999))
+
+            logger.error("Generated code %s for %s", code, data["email"])
 
             EmailVerification.objects.update_or_create(
                 email=data["email"],
@@ -402,30 +467,38 @@ class RegisterRequestView(generics.GenericAPIView):
                     "password": make_password(data["password"]),
                 },
             )
-            logger.error("EmailVerification updated")
 
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
-            import os
+            html_content = render_to_string(
+                "emails/verify_email.html",
+                {
+                    "first_name": data["first_name"],
+                    "last_name": data["last_name"],
+                    "code": code,
+                },
+            )
 
             message = Mail(
                 from_email="support@zamda.net",
                 to_emails=data["email"],
-                subject="ZAMDA - Confirm your registration",
-                html_content=f"Your verification code: {code}"
+                subject="ZAMDA — Confirm your registration",
+                html_content=html_content,
             )
 
-            sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
-            logger.error("Sending email via SendGrid…")
+            sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
             response = sg.send(message)
+
             logger.error("SendGrid response: %s", response.status_code)
 
-            return Response({"detail": "Verification code sent to email."}, status=200)
-        
-        except Exception as e:
+            return Response(
+                {"detail": "Verification code sent to email."},
+                status=200,
+            )
+
+        except Exception:
             logger.exception("ERROR IN REGISTER REQUEST")
             return Response({"detail": "Server error"}, status=500)
-
+        
+        
 class VerifyCodeView(generics.GenericAPIView):
     serializer_class = VerifyCodeSerializer
     permission_classes = [AllowAny]

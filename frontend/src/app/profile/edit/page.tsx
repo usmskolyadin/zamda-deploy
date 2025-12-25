@@ -131,11 +131,11 @@ export default function ProfileEdit() {
                                 className="mt-2 w-24 h-24 object-cover rounded-full text-center"
                             />
                         </div>
-                        <h1 className="text-gray-900 text-md font-medium text-center">Avatar preview ↑</h1>
+                        <h1 className="text-gray-900 text-md font-medium text-center">Your avatar will look like this ↑</h1>
                     </>
                 )}
                 <label className="block mb-1 text-black">Avatar</label>
-                <input className="p-4 border text-gray-900 border-black rounded-3xl h-[55px] w-full " type="file" name="avatar" onChange={handleChange} />
+                <input className="cursor-pointer p-4 border text-gray-900 border-black rounded-3xl h-[55px] w-full " type="file" name="avatar" onChange={handleChange} />
               </div>
               <div className="flex">
 

@@ -35,8 +35,10 @@ export default async function AdsBySubcategory({ params }: Props) {
       </section>
       <section className="bg-[#ffffff]  pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <Filters />
-          <div className=" lg:w-2/3">
+          <div className="lg:w-1/3">
+            <Filters initialSubcategory={params.subcategory_name}  />
+          </div>
+          <div className="lg:w-2/3">
             <div>
               <h1 className="text-black font-bold text-3xl py-4">Popular "{subcategory.name}"</h1>
             </div>

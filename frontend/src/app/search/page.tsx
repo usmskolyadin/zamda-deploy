@@ -38,12 +38,14 @@ export default async function SearchPage({ searchParams }: Props) {
           <p className="text-gray-500 pb-2"><Link href="/">Home</Link> / <Link href="/">Search</Link></p>
         </div>
       </section>
-      <section className="bg-[#ffffff]  pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
-          <Filters />
-          <div className=" lg:w-2/3">
+      <section className="bg-[#ffffff]  pb-16  p-4">
+        <div className="max-w-screen-xl  lg:flex mx-auto">
+          <div className="lg:w-1/3">
+            <Filters />
+          </div>
+          <div className="lg:w-2/3">
             <div>
-              <h1 className="text-black font-bold text-3xl py-4">Search results for "{searchParams.query}"</h1>
+              <h1 className="text-black font-bold text-3xl py-4">Search results</h1>
               <div className="grid md:grid-cols-3 grid-cols-2 ">
 
               </div>

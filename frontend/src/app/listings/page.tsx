@@ -8,6 +8,7 @@ import { useAuth } from "@/src/features/context/auth-context";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../profile/[id]/page";
+import Sidebar from "@/src/widgets/sidebar";
 
 export default function Listings() {
   const [activeTab, setActiveTab] = useState("active");
@@ -15,7 +16,6 @@ export default function Listings() {
   const [adsCount, setAdsCount] = useState(0);
   const [ads, setAds] = useState<Advertisement[]>([]);  
   const profileId = user?.profile.id
-  console.log(`dsaksdakaos ${profileId}`)
   const [profile, setProfile] = useState()
   
   useEffect(() => {
@@ -58,67 +58,8 @@ export default function Listings() {
       <section className="bg-[#ffffff]  pb-16 p-4">
         
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <div className="lg:w-1/4">
-            <div className="max-w-[712px]">
-                  <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
-                    <img
-                        src={user?.profile.avatar}
-                        width={200}
-                        height={200}
-                        alt="GT Logo"
-                        className="lg:w-18 w-22 lg:h-18 h-22 rounded-full object-cover border border-gray-500"
-                    />
-                    <div>
-                    <div className="py-2">
-                        <h2 className="text-black font-bold lg:text-2xl text-3xl ">{user?.first_name} {user?.last_name}</h2>
-                        <h2 className="text-gray-800 font-medium  text-md">{user?.username}</h2>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-700">
-                        <span className="mr-1 text-black text-lg font-bold">
-                          {profile?.rating ?? "—"}
-                        </span>
-                        <div className="flex text-yellow-400 mr-1">
-                        {[...Array(4)].map((_, i) => (
-                            <FaStar key={i} />
-                        ))}
-                        <FaStar className="opacity-50" />
-                        </div>
-                        <Link className="hover:underline text-[#2AAEF7] " href={`/reviews/${profile?.id ?? 0}`}>
-                          <span className="text-lg ml-1">
-                            {profile?.reviews_count ?? 0} reviews
-                          </span>
-                        </Link> 
-                    </div>
-                    <div className="lg:hidden block py-4">
-                      <Link href={"/new"}>
-                        <button className="w-full p-4 bg-blue-500 rounded-2xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
-                      </Link>
-                      <Link href={"/profile/edit"}>
-                        <button className="w-full mt-2 p-4 bg-[#36B731] rounded-2xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
-                      </Link>
-                    </div>
-                    </div>
-                </div>
-            </div>
-            <div className="lg:block hidden">
-                <div className="py-3 flex flex-col border-b border-gray-300">
-                    <Link href="/listings"><span className="text-[#2AAEF7] text-md h-12">My Listings</span> </Link>
-                    <Link href="/favorites"><span className="text-[#2AAEF7] text-md h-12">Favorites</span></Link>
-                    <Link href="/messages"><span className="text-[#2AAEF7] text-md h-12">Messages</span></Link>
-                    <Link href={`/reviews/${user?.profile.id}`}><span className="text-[#2AAEF7] text-md h-12">My Reviews</span> </Link>
-                </div>
-                <div className="py-3 flex flex-col border-b border-gray-300">
-                    <Link aria-disabled href=""><span className="text-[#2AAEF7] text-md h-12">Wallet (Soon)</span> </Link>
-                    <Link aria-disabled href=""><span className="text-[#2AAEF7] text-md h-12">Paid services (Soon)</span></Link>
-                </div>
-                <div className="py-3 flex flex-col mb-4">
-                    <Link href="/profile/edit/"><span className="text-[#2AAEF7] text-md h-12">Profile settings</span> </Link>
-                </div>
-            </div>
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[500px] lg:flex hidden  flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
-          </div>
+          <Sidebar/>
+
           <div className=" lg:w-3/4 lg:ml-24">
             <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px]  flex justify-center items-center">
               <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
@@ -186,14 +127,14 @@ export default function Listings() {
                 ads.map((ad) => (
                 <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
                     <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2">
-                        <div className="mr-4 flex-shrink-0">
-                            <img
+                        <div className="lg:mr-4 flex-shrink-0">
+                          <img
                             src={ad.images[0]?.image}
                             alt={ad.title}
                             className="rounded-2xl lg:h-48 lg:w-72 w-full object-cover"
                             width={288}
                             height={192}
-                            />
+                          />
                         </div>
                         <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col">
                             <div className="w-full flex items-center justify-between">
@@ -202,11 +143,8 @@ export default function Listings() {
                             </h1>
                             <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
                                 {new Date(ad.created_at).toLocaleString("en-US", {
-                                year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
                                 })}
                             </span>
                             </div>
@@ -222,7 +160,7 @@ export default function Listings() {
                             <p className="mt-2 text-black font-medium text-md">
                               Times left: {formatTimeLeft(ad.time_left)} 
                               
-                              <span className="cursor-pointer relative group z-50 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
+                              <span className="cursor-pointer relative group z-30 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
                                   ?
                                   <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap 
                                                   px-2.5 py-1.5 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 

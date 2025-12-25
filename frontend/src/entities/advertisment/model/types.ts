@@ -13,6 +13,21 @@ export interface SubCategory {
   category: Category;
 }
 
+export type ExtraValue = {
+  id: number;
+  field_definition: number; 
+  field_key: string;
+  field_name: string;
+  value: string | number | boolean | null;
+};
+
+export type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
 export interface Advertisement {
   id: number;
   title: string;
@@ -42,6 +57,7 @@ export interface Advertisement {
       city: string;
     } | null;
   };
+  extra_values: ExtraValue[];
   subcategory: SubCategory;
   owner_profile_id: number;
   views_count: number;

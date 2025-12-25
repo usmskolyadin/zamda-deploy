@@ -6,11 +6,13 @@ import { FaStar } from "react-icons/fa";
 import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../../profile/[id]/page";
 import Link from "next/link";
+import { useAuth } from "@/src/features/context/auth-context";
 
 export default function ReviewsPage() {
   const params = useParams();
   const profileId = Number(params.id);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!profileId) return;
@@ -25,6 +27,7 @@ export default function ReviewsPage() {
   }, [profileId]);
 
   if (!profile) return <div className="text-black bg-white h-screen justify-center items-center flex">Loading...</div>;
+  const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
 
   return (
     <div className="w-full ">
@@ -98,11 +101,17 @@ export default function ReviewsPage() {
             <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
               Reviews
             </h1>
+            {(profile.username == user?.username) ? (
+              <>
+              </>
+            ) : (
               <Link 
                 className=" px-4 py-3 mb-4 mt-2 bg-[#36B731] hover:bg-green-500 transition text-white rounded-3xl text-center"
                 href={`/reviews/add/${profile.id}`}>
                 Add review
               </Link>
+            )}
+
             <div className="space-y-4 mt-4">
               {profile.reviews && profile.reviews.length > 0 ? (
                 profile.reviews.map((review) => (
