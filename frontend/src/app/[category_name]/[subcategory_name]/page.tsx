@@ -1,7 +1,9 @@
 import { getAdsBySubcategory } from "@/src/entities/advertisment/api/get-ads";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { getSubCategories } from "@/src/entities/sub-category/api/get-subcategories";
+import SortDropdownForCategory, { mapSortToOrdering } from "@/src/widgets/category-sort-dropdown";
 import Filters from "@/src/widgets/filters";
+import SortDropdown from "@/src/widgets/sort-dropdown";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,9 +12,12 @@ import { FaArrowRight, FaStar } from "react-icons/fa";
 
 interface Props {
   params: { category_name: string; subcategory_name: string };
+  searchParams: { [key: string]: string | undefined };
 }
 
-export default async function AdsBySubcategory({ params }: Props) {
+
+
+export default async function AdsBySubcategory({ params, searchParams }: Props) {
   const subcategories = await getSubCategories(params.category_name);
 
   const subcategory = subcategories.find(
@@ -22,8 +27,21 @@ export default async function AdsBySubcategory({ params }: Props) {
   if (!subcategory) {
     notFound();
   }
+  function mapSortToOrdering(sort?: string) {
+    switch (sort) {
+      case "price_asc":
+        return "price";
+      case "price_desc":
+        return "-price";
+      case "date_desc":
+        return "-created_at";
+      default:
+        return undefined;
+    }
+  }
 
-  const ads = await getAdsBySubcategory(subcategory.slug);
+  const sortParam = mapSortToOrdering(searchParams.sort);
+  const ads = await getAdsBySubcategory(subcategory.slug, sortParam);
 
   return (
     <div className=" w-full">
@@ -36,7 +54,7 @@ export default async function AdsBySubcategory({ params }: Props) {
       <section className="bg-[#ffffff]  pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
           <div className="lg:w-1/3">
-            <Filters initialSubcategory={params.subcategory_name}  />
+            <Filters initialSubcategory={params.subcategory_name} categorySlug={params.category_name}  />
           </div>
           <div className="lg:w-2/3">
             <div>
@@ -45,21 +63,7 @@ export default async function AdsBySubcategory({ params }: Props) {
             <div className="rounded-3xl  w-full bg-[#F2F1F0] h-[200px] mt-6 flex justify-center items-center">
               <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
             </div>
-            <div className="mt-4 py-2 flex items-center cursor-pointer">
-                    <svg className="mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g opacity="0.5">
-                            <path d="M14 10H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M10 14H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M6 18H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M18 6H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M19 10V20M19 20L22 17M19 20L16 17" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </g>
-                    </svg>
-                    <p className="text-[#333333] mr-2">Sort by</p>
-                    <svg width="17" height="10" viewBox="0 0 17 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path opacity="0.5" d="M1.45898 0.708984L8.70888 7.95889L15.9588 0.708984" stroke="#333333" strokeWidth="2"/>
-                    </svg>
-                </div>
+              <SortDropdownForCategory />
               <div className="mt-4">
               {ads.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -88,11 +92,7 @@ export default async function AdsBySubcategory({ params }: Props) {
                             height={150}
                             className="rounded-xl object-cover w-full max-h-40"
                           />
-                          <div className="absolute top-2 right-2  bg-black/30 p-2 rounded-full">
-                            <svg width="24" height="24" className="invert" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path fillRule="evenodd" clipRule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
+
                         </div>
                         <div className="flex gap-2 mt-2 mr-2">
                           {ad.images.slice(0, 2).map((img) => (

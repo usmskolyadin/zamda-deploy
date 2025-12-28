@@ -2,7 +2,7 @@ import json
 import uuid
 from rest_framework import serializers
 from .models import (
-    AdvertisementImage, Category, Chat, Notification, Review, SubCategory,
+    AdvertisementImage, Category, Chat, ExtraFieldOption, Notification, Review, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
 )
 from django.contrib.auth.models import User
@@ -55,11 +55,17 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = ('id','category','name','slug','image', 'priority')
 
+class ExtraFieldOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtraFieldOption
+        fields = ('id', 'value')
+        
 class ExtraFieldDefinitionSerializer(serializers.ModelSerializer):
+    options = ExtraFieldOptionSerializer(many=True, read_only=True)  # ← новые варианты
+
     class Meta:
         model = ExtraFieldDefinition
-        fields = ('id','subcategory','name','key','field_type', 'required')
-
+        fields = ('id', 'subcategory', 'name', 'key', 'field_type', 'required', 'options')
 
 class AdvertisementImageSerializer(serializers.ModelSerializer):
     class Meta:

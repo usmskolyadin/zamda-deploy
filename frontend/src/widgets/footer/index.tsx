@@ -13,9 +13,12 @@ export default function Footer() {
           <div className="max-w-screen-xl lg:flex justify-between items-center w-full h-full mx-auto">
             <div className="min-w-48 flex justify-center lg:block">
                 <Link href={"/"}>
-                <div className="flex items-center">
-                  <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
-                  <h1 className=" mr-12 font-bold text-4xl text-white">Zamda</h1>
+                <div className="">
+                  <div className="flex items-center">
+                    <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
+                    <h1 className="mr-12 font-bold text-4xl text-white">Zamda</h1>
+                  </div>
+                  <p className="text-gray-300 ml-2 text-sm">© Copyright ZAMDA 2025</p>
                 </div>
                 </Link>
               </div>
@@ -26,11 +29,7 @@ export default function Footer() {
                 <Link className="lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/terms"> Terms of Use</Link>
               </div>
               {user ? (
-                <div className="flex lg:mt-0 mt-4">
-                    <button onClick={logout} className="cursor-pointer mr-2 text-white border border-white p-2 text-white flex justify-center items-center h-[36px] lg:w-[152px] w-full rounded-3xl">
-                    Log out
-                    </button>
-                </div>
+                <></>
               ) : (
               <div className="flex lg:mt-0 mt-4">
                 <button className="mr-2 text-white border border-white p-2 text-white flex justify-center items-center h-[36px] lg:w-[152px] w-full rounded-3xl">

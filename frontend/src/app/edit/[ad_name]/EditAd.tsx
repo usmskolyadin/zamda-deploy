@@ -133,7 +133,6 @@ useEffect(() => {
       setSelectedCategory(ad.category_slug);
       setSelectedSubcategory(ad.subcategory);
 
-      // extraValues из ad.extra_values
       const extras: { [key: string]: any } = {};
       ad.extra_values?.forEach((ef) => {
         extras[ef.field_key] = ef.value;
@@ -228,10 +227,8 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     formData.append('location', locationInput || location);
     formData.append('extra', JSON.stringify(extraValues));
 
-    // Добавляем новые изображения
     newImages.forEach(file => formData.append('images', file));
 
-    // Отправляем оставшиеся существующие id
     formData.append('existing_ids', JSON.stringify(existingImages.map(img => img.id)));
 
     const res = await fetch(`${API_URL}/api/ads/${adId}/`, {
@@ -245,7 +242,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     } else {
       const data = await res.json();
       console.error(data);
-      alert('Ошибка при обновлении объявления');
+      alert('Error :(');
     }
   };
 
@@ -348,19 +345,20 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       required={field.required}
                     />
                   )}
-
-                  {field.field_type === "select" && field.choices && (
+                  {field.field_type === "select" && field.options && (
                     <select
-                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      className="p-4 border border-black rounded-3xl appearance-none h-[55px] mt-1 text-gray-900 mb-2"
+                      value={extraValues[field.key] ?? ""}
                       onChange={e =>
                         setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
                       }
                       required={field.required}
-                      value={extraValues[field.key] || ""}
                     >
                       <option value="">Select</option>
-                      {field.choices.map(c => (
-                        <option key={c} value={c}>{c}</option>
+                      {field.options.map(opt => (
+                        <option key={opt.id} value={opt.value}>
+                          {opt.value}
+                        </option>
                       ))}
                     </select>
                   )}

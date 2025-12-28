@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
+import BackButton from "../back-button";
 
 interface Advertisement {
   id: number;
@@ -89,17 +90,8 @@ export default function SearchBar() {
           />
         </svg>
       </Link>
-                      <button className="absolute right-0 lg:hidden">
-      <Link href={"/favorites"}>
-                  <svg width="35" height="35" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M29.25 33C30.4926 33 31.5 31.9926 31.5 30.75C31.5 29.5074 30.4926 28.5 29.25 28.5C28.0074 28.5 27 29.5074 27 30.75C27 31.9926 28.0074 33 29.25 33Z" fill="black" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M14.25 33C15.4926 33 16.5 31.9926 16.5 30.75C16.5 29.5074 15.4926 28.5 14.25 28.5C13.0074 28.5 12 29.5074 12 30.75C12 31.9926 13.0074 33 14.25 33Z" fill="black" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M7.5 6H33L30 22.5H10.5L7.5 6ZM7.5 6C7.25 4.99999 6 3 3 3L7.5 6Z" fill="black"/>
-                    <path d="M7.5 6H33L30 22.5H10.5L7.5 6ZM7.5 6C7.25 4.99999 6 3 3 3" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M30 22.5H10.5H7.84615C5.16969 22.5 3.75 23.6718 3.75 25.5C3.75 27.3282 5.16969 28.5 7.84615 28.5H29.25" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-      </Link>
-                </button>
+      <BackButton absolute className="lg:hidden" />
+
       
     </div>
   );

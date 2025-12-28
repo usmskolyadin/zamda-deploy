@@ -7,6 +7,7 @@ import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../../profile/[id]/page";
 import Link from "next/link";
 import { useAuth } from "@/src/features/context/auth-context";
+import BackButton from "@/src/widgets/back-button";
 
 export default function ReviewsPage() {
   const params = useParams();
@@ -97,10 +98,13 @@ export default function ReviewsPage() {
             </div>
           </div>
 
-          <div className="lg:w-3/4 lg:ml-24 h-screen">
-            <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
-              Reviews
-            </h1>
+          <div className="lg:w-3/4 lg:ml-24 h-screen mt-2">
+            <div className="flex">
+              <BackButton className="mr-2 px-2 py-0" />
+              <h1 className="text-black font-bold lg:text-4xl text-3xl py-1">
+                Reviews
+              </h1>
+            </div>
             {(profile.username == user?.username) ? (
               <>
               </>
@@ -142,7 +146,7 @@ export default function ReviewsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-600 italic">No reviews yet</p>
+                <p className="text-gray-600">No reviews yet</p>
               )}
             </div>
           </div>

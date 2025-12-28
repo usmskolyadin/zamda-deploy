@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdvertisementImage, Category, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import AdvertisementImage, Category, ExtraFieldOption, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -15,11 +15,17 @@ class SubCategoryAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     prepopulated_fields = {'slug': ('name',)}
 
+
+class ExtraFieldOptionInline(admin.TabularInline):
+    model = ExtraFieldOption
+    extra = 1
+
 @admin.register(ExtraFieldDefinition)
 class ExtraFieldDefinitionAdmin(admin.ModelAdmin):
     list_display = ('name','key','field_type','subcategory')
     list_filter = ('subcategory__category','subcategory')
     search_fields = ('name','key')
+    inlines = [ExtraFieldOptionInline] 
 
 class AdvertisementExtraFieldInline(admin.TabularInline):
     model = AdvertisementExtraField

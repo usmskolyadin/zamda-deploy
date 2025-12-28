@@ -36,7 +36,7 @@ export default function AddReview() {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch profile:", err);
-        setError("Не удалось загрузить профиль");
+        setError("Failed to fetch profile");
       } finally {
         setLoading(false);
       }

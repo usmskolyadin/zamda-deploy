@@ -19,19 +19,18 @@ export type ExtraFieldDefinition = {
   name: string;
   key: string;
   field_type: "char" | "int" | "float" | "bool" | "date" | "select";
-  choices?: string[];
+  options?: { id: number; value: string }[]; 
   required: boolean;
 };
 
-
 interface FiltersProps {
   initialSubcategory?: string;
+  categorySlug?: string;
 }
 
-
-export default function Filters({ initialSubcategory }: FiltersProps) {
+export default function Filters({ initialSubcategory, categorySlug}: FiltersProps) {
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
-  const [subcategory, setSubcategory] = useState(initialSubcategory || ""); // используем пропс как начальное значение
+  const [subcategory, setSubcategory] = useState(initialSubcategory || "");
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
   const [location, setLocation] = useState("");
@@ -43,11 +42,15 @@ export default function Filters({ initialSubcategory }: FiltersProps) {
   const router = useRouter();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/subcategories/`)
-      .then((r) => r.json())
-      .then((d) => setSubcategories(Array.isArray(d) ? d : d.results || []))
+    const url = categorySlug
+      ? `${API_URL}/api/subcategories/?category=${categorySlug}`
+      : `${API_URL}/api/subcategories/`;
+
+    fetch(url)
+      .then(r => r.json())
+      .then(d => setSubcategories(Array.isArray(d) ? d : d.results || []))
       .catch(() => setSubcategories([]));
-  }, []);
+  }, [categorySlug]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -65,8 +68,6 @@ export default function Filters({ initialSubcategory }: FiltersProps) {
       .catch(() => setExtraFields([]));
   }, [subcategory]);
 
-  
-
   const handleShow = () => {
     const params = new URLSearchParams();
 
@@ -79,11 +80,16 @@ export default function Filters({ initialSubcategory }: FiltersProps) {
       date.setDate(date.getDate() - Number(freshness));
       params.append("created_after", date.toISOString());
     }
+
+    const extraParams: string[] = [];
     Object.entries(extraValues).forEach(([key, value]) => {
       if (value !== "" && value != null) {
-        params.append(`extra__${key}`, String(value));
+        extraParams.push(`${key}:${value}`);
       }
     });
+    if (extraParams.length > 0) {
+      params.append("extra", extraParams.join(","));
+    }
 
     setMobileOpen(false);
     router.push(`/search?${params.toString()}`);
@@ -278,23 +284,23 @@ function FiltersBody({
                 className="px-4 py-2 border-0.5 border text-gray-900 border-black rounded-3xl"
               />
             )}
-
-            {field.field_type === "select" && field.choices && (
-              <select
-                value={extraValues[field.key] || ""}
-                onChange={(e) =>
-                  setExtraValues((v) => ({ ...v, [field.key]: e.target.value }))
-                }
-                className="px-4 py-2 border-0.5 border text-gray-900 border-black rounded-3xl appearance-none"
-              >
-                <option value="">Any</option>
-                {field.choices.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            )}
+          {field.field_type === "select" && field.options && field.options.length > 0 && (
+            <select
+              value={extraValues[field.key] || ""}
+              onChange={(e) =>
+                setExtraValues((v) => ({ ...v, [field.key]: e.target.value }))
+              }
+              className="px-4 py-2 border-0.5 border text-gray-900 border-black rounded-3xl appearance-none"
+              required={field.required}
+            >
+              <option value="">Select</option>
+              {field.options.map((opt) => (
+                <option key={opt.id} value={opt.value}>
+                  {opt.value}
+                </option>
+              ))}
+            </select>
+          )}
           </label>
         ))}
       </div>
@@ -303,7 +309,7 @@ function FiltersBody({
 
   <button
     onClick={handleShow}
-    className="mt-4 w-full h-[44px] rounded-3xl bg-[#2AAEF7] text-white font-semibold hover:bg-blue-400 transition flex items-center justify-center"
+    className="mt-4 w-full h-[44px] cursor-pointer rounded-3xl bg-[#2AAEF7] text-white font-semibold hover:bg-blue-400 transition flex items-center justify-center"
   >
     Show
   </button>

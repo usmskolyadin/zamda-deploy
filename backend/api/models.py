@@ -47,6 +47,13 @@ class SubCategory(models.Model):
         unique_together = ('category', 'slug')
         ordering = ['name']
 
+class ExtraFieldOption(models.Model):
+    field = models.ForeignKey('ExtraFieldDefinition', on_delete=models.CASCADE, related_name='options')
+    value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.value
+
 
 class ExtraFieldDefinition(models.Model):
     FIELD_TYPES = (
@@ -55,6 +62,7 @@ class ExtraFieldDefinition(models.Model):
         ("float", "Float"),
         ("bool", "Boolean"),
         ("date", "Date"),
+        ("select", "Select"),
     )
 
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name="extra_fields")

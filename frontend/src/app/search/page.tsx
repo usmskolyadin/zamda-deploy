@@ -1,33 +1,52 @@
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { API_URL } from "@/src/shared/api/base";
 import Filters from "@/src/widgets/filters";
+import SortDropdown from "@/src/widgets/sort-dropdown";
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
 
+type SortType = "relevance" | "price_asc" | "price_desc" | "date_desc";
+
 interface Props {
-  searchParams: {
-    query?: string;
-    subcategory?: string;
-    price_min?: string;
-    price_max?: string;
-    location?: string;
-    created_after?: string;
-  };
+  searchParams: Record<string, string | string[] | undefined>;
+}
+
+function mapSortToOrdering(sort?: SortType) {
+  switch (sort) {
+    case "price_asc":
+      return "price";
+    case "price_desc":
+      return "-price";
+    case "date_desc":
+      return "-created_at";
+    default:
+      return null;
+  }
 }
 
 export default async function SearchPage({ searchParams }: Props) {
   const params = new URLSearchParams();
 
-  if (searchParams.query) params.append("search", searchParams.query);
-  if (searchParams.subcategory) params.append("subcategory", searchParams.subcategory);
-  if (searchParams.price_min) params.append("price_min", searchParams.price_min);
-  if (searchParams.price_max) params.append("price_max", searchParams.price_max);
-  if (searchParams.location) params.append("location", searchParams.location);
-  if (searchParams.created_after) params.append("created_after", searchParams.created_after);
+  // ✅ прокидываем ВСЕ параметры
+  Object.entries(searchParams).forEach(([key, value]) => {
+    if (!value) return;
+    if (key === "sort") return; // sort обрабатываем отдельно
+
+    if (Array.isArray(value)) {
+      value.forEach(v => params.append(key, v));
+    } else {
+      params.append(key, value);
+    }
+  });
+
+  // ✅ сортировка
+  const ordering = mapSortToOrdering(searchParams.sort as SortType | undefined);
+  if (ordering) params.append("ordering", ordering);
 
   const res = await fetch(`${API_URL}/api/ads/?${params.toString()}`, {
     cache: "no-store",
   });
+
   const data = await res.json();
   const ads: Advertisement[] = data.results || [];
 
@@ -47,24 +66,9 @@ export default async function SearchPage({ searchParams }: Props) {
             <div>
               <h1 className="text-black font-bold text-3xl py-4">Search results</h1>
               <div className="grid md:grid-cols-3 grid-cols-2 ">
-
               </div>
             </div>
-            <div className="mt-4 py-2 flex items-center cursor-pointer">
-                    <svg className="mr-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g opacity="0.5">
-                            <path d="M14 10H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M10 14H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M6 18H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M18 6H2" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M19 10V20M19 20L22 17M19 20L16 17" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </g>
-                    </svg>
-                    <p className="text-[#333333] mr-2">Sort by</p>
-                    <svg width="17" height="10" viewBox="0 0 17 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path opacity="0.5" d="M1.45898 0.708984L8.70888 7.95889L15.9588 0.708984" stroke="#333333" strokeWidth="2"/>
-                    </svg>
-                </div>
+            <SortDropdown />
               <div className="mt-4">
             {ads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
@@ -93,11 +97,6 @@ export default async function SearchPage({ searchParams }: Props) {
                             height={150}
                             className="rounded-xl object-cover w-full max-h-40"
                           />
-                          <div className="absolute top-2 right-2  bg-black/30 p-2 rounded-full">
-                            <svg width="24" height="24" className="invert" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path fillRule="evenodd" clipRule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
                         </div>
                         <div className="flex gap-2 mt-2 mr-2">
                           {ad.images.slice(0, 2).map((img) => (

@@ -20,7 +20,7 @@ export default function Header() {
         const data = await apiFetchAuth<{ unread_count: number }>('/api/chats/unread_count/')
         setUnreadCount(data.unread_count)
       } catch (err) {
-        console.error('Ошибка загрузки непрочитанных сообщений:', err)
+        console.error('Error:', err)
       }
     }
 
@@ -101,12 +101,82 @@ export default function Header() {
                 </button>
                 </Link>
                 {user ? (
-                <Link href={"/listings"}>
-                  <div className="flex items-center">
-                    <h2 className="mr-2 font-semibold text-white ml-2 w-36 text-right">{user?.first_name} </h2>
-                    <img className="rounded-full max-w-10 max-h-10 min-w-10 min-h-10 "  src={user.profile?.avatar} width={40} height={40} alt={""} />
+                  <div className="relative group">
+                    <div className="flex items-center cursor-pointer">
+                      <h2 className="mr-2 font-semibold text-white ml-2 w-36 text-right">
+                        {user?.first_name}
+                      </h2>
+                      <img
+                        className="rounded-full w-10 h-10 object-cover"
+                        src={user?.profile?.avatar}
+                        alt=""
+                      />
+                    </div>
+
+                    <div className="absolute right-0 top-full h-3 w-full"></div>
+
+                    <div
+                      className="
+                        absolute right-0 top-full mt-3 w-48
+                        bg-white rounded-3xl shadow-xl
+                        border border-gray-200
+                        z-50
+
+                        opacity-0 translate-y-2
+                        pointer-events-none
+
+                        transition-all duration-100 ease-out
+                        group-hover:opacity-100
+                        group-hover:translate-y-0
+                        group-hover:pointer-events-auto font-medium
+                      "
+                    >
+                      <div className="py-3 flex flex-col border-b border-gray-200">
+                        <div className="px-6 hover:bg-gray-100 border-b py-2 flex items-center cursor-pointer">
+                          <h2 className="mr-2 font-semibold text-black w-24">
+                            {user?.first_name} <br />
+                            {user?.last_name}
+                          </h2>
+                          <img
+                            className="rounded-full w-10 h-10 object-cover"
+                            src={user?.profile?.avatar}
+                            alt=""
+                          />
+                        </div>
+                        <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/listings">
+                          My Listings
+                        </Link>
+                        <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/favorites">
+                          Favorites
+                        </Link>
+                        <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/messages">
+                          Messages
+                        </Link>
+                        <Link
+                          className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]"
+                          href={`/reviews/${user?.profile?.id}`}
+                        >
+                          My Reviews
+                        </Link>
+                        <Link
+                          className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]"
+                          href="/profile/edit"
+                        >
+                          Profile settings
+                        </Link>
+                      </div>
+
+                      <div className="py-2 flex flex-col">
+                        <button
+                          className="px-6 cursor-pointer rounded-3xl text-left py-2 hover:bg-gray-100 text-red-500"
+                          onClick={logout}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </Link>
+
                 ) : (
                 <p className='ml-8 w-36 text-right text-white'><Link href={"/login"}>Sign in</Link> | <Link href={"/register"}>Sign up</Link></p>
                 )
@@ -118,12 +188,13 @@ export default function Header() {
             <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>
-                <div className="flex items-center">
-                  <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
-                  <h1 className=" mr-12 font-bold text-4xl text-black">Zamda</h1>
-                </div>
+                  <div className="flex items-center">
+                    <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
+                    <h1 className=" mr-12 font-bold text-4xl text-black">Zamda</h1>
+                  </div>
                 </Link>
-                  <CategoryDropdown />
+                
+                <CategoryDropdown />
 
               </div>
 
@@ -132,7 +203,21 @@ export default function Header() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                  <p className="ml-2 text-black">{user?.profile?.city ? (user?.profile.city) : (<Link href={'/login'}>Set your city</Link>) }</p>
+                <p className="ml-2 text-black">
+                  {user ? (
+                    user.profile?.city ? (
+                      user.profile.city
+                    ) : (
+                      <Link href="/profile/edit" className="text-black hover:underline">
+                        Set your city
+                      </Link>
+                    )
+                  ) : (
+                    <Link href="/login" className="text-black hover:underline">
+                      Set your city
+                    </Link>
+                  )}
+                </p>
               </div>
             </div>
           </nav>

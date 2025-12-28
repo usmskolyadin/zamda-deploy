@@ -42,13 +42,14 @@ interface Category { id: number; name: string; slug: string }
 interface SubCategory { id: number; name: string; slug: string }
 interface ExtraField { id: number; name: string; key: string; field_type: string; }
 export type ExtraFieldDefinition = {
-  id: number;                 // ID поля в БД
-  name: string;               // Название поля, например "Пробег"
-  key: string;                // Ключ для передачи в extra, например "mileage"
-  field_type: "char" | "int" | "float" | "bool" | "date"; // Тип поля
-  required: boolean;          // Обязательное ли поле
-  choices?: string[];         // Для select-полей (если используешь), опционально
+  id: number;
+  name: string;
+  key: string;
+  field_type: "char" | "int" | "float" | "bool" | "date" | "select"; 
+  required: boolean;
+  options?: { id: number; value: string }[]; // 
 };
+
 
 export default function NewAd() {
   const { accessToken } = useAuth();
@@ -286,7 +287,6 @@ const handleSubmit = async (e: FormEvent) => {
   formData.append('extra', JSON.stringify(extraValues));
   formData.append('location', locationInput);
 
-  // Только новые изображения для POST
   newImages.forEach((file) => {
     formData.append('images', file, file.name);
   });
@@ -303,13 +303,13 @@ const handleSubmit = async (e: FormEvent) => {
     if (!res.ok) {
       const data = await res.json();
       console.error(data);
-      alert('Ошибка при создании объявления');
+      alert('Error :(');
       return;
     }
 
     router.push('/listings');
   } catch (networkError) {
-    setErrorMessage('Сетевая ошибка. Проверь соединение.');
+    setErrorMessage('Network error. ');
     console.error(networkError);
   }
 };
@@ -486,20 +486,21 @@ const handleSubmit = async (e: FormEvent) => {
                     />
                   )}
 
-                  {field.field_type === "select" && field.choices && (
+                  {field.field_type === "select" && field.options && (
                     <select
-                      className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
+                      className="p-4 border border-black rounded-3xl h-[55px] appearance-none mt-1 text-gray-900 mb-2"
                       onChange={e =>
                         setExtraValues(v => ({ ...v, [field.key]: e.target.value }))
                       }
                       required={field.required}
                     >
                       <option value="">Select</option>
-                      {field.choices.map(c => (
-                        <option key={c} value={c}>{c}</option>
+                      {field.options.map(opt => (
+                        <option key={opt.id} value={opt.value}>{opt.value}</option>
                       ))}
                     </select>
                   )}
+
                 </label>
               ))}
             <div>

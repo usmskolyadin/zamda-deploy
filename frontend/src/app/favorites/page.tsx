@@ -39,7 +39,7 @@ export default function Favorites() {
   if (!user) {
     return (
       <div className="text-center text-gray-700 p-10">
-        <h2 className="text-2xl font-bold">Пожалуйста, войдите в аккаунт</h2>
+        <h2 className="text-2xl font-bold">Please, login to continue</h2>
       </div>
     );
   }
@@ -62,8 +62,8 @@ export default function Favorites() {
             {isLoading ? (
               <p className="text-gray-500 text-center py-10">Loading favorites...</p>
             ) : ads.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">
-                У вас пока нет избранных объявлений.
+              <p className="text-gray-500 py-2">
+                So far you don't have favorite ads.
               </p>
             ) : (
               <div className="flex flex-col">

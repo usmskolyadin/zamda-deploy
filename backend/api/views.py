@@ -34,8 +34,67 @@ from .models import Notification
 from .serializers import NotificationSerializer
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 import logging
+import requests
+from django.conf import settings
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 logger = logging.getLogger(__name__)
 
+
+@method_decorator(csrf_exempt, name="dispatch")
+class GoogleAuthView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        code = request.data.get("code")
+        if not code:
+            return Response({"detail": "No code provided"}, status=400)
+
+        token_res = requests.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": "http://localhost:3000/auth/google/callback",
+            },
+        )
+
+        token_data = token_res.json()
+        access_token = token_data.get("access_token")
+        if not access_token:
+            return Response(token_data, status=400)
+
+        userinfo = requests.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        ).json()
+
+        email = userinfo["email"]
+        name = userinfo.get("name", "")
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={"username": email, "first_name": name},
+        )
+        if created or not hasattr(user, 'profile'):
+            UserProfile.objects.get_or_create(user=user)
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.first_name,
+            }
+        })
+    
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
@@ -72,7 +131,7 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     
 
 class ExtraFieldDefinitionViewSet(viewsets.ModelViewSet):
-    queryset = ExtraFieldDefinition.objects.select_related('subcategory')
+    queryset = ExtraFieldDefinition.objects.select_related('subcategory').prefetch_related('options')
     serializer_class = ExtraFieldDefinitionSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]

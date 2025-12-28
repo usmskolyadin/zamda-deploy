@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    CategoryViewSet, ChatViewSet, CurrentUserView, MessageViewSet, NotificationViewSet, RegisterRequestView, RegisterView, ReviewViewSet, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, UserAdvertisementViewSet, UserProfileViewSet, VerifyCodeView
+    CategoryViewSet, ChatViewSet, CurrentUserView, GoogleAuthView, MessageViewSet, NotificationViewSet, RegisterRequestView, RegisterView, ReviewViewSet, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, UserAdvertisementViewSet, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path('users/me/', CurrentUserView.as_view(), name='current_user'), 
     path('register/request/', RegisterRequestView.as_view(), name='register_request'),
     path('register/verify/', VerifyCodeView.as_view(), name='register_verify'),
+    path("auth/google/", GoogleAuthView.as_view()),
 ]
