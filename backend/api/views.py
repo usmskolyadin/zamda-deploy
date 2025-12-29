@@ -170,7 +170,18 @@ class AdvertisementFilter(FilterSet):
     class Meta:
         model = Advertisement
         fields = ["subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email']
-        
+
+from django.db.models import F, ExpressionWrapper, DurationField
+from django.utils.timezone import now
+from django.utils.timezone import now
+from datetime import timedelta
+from django.utils.timezone import now
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+EXPIRATION_DAYS = 30
+
 class AdvertisementViewSet(viewsets.ModelViewSet):
     queryset = (
         Advertisement.objects
@@ -210,14 +221,42 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(extra_values__field_definition__key=key, extra_values__value=val)
         return queryset
     
+
     def get_queryset(self):
-        return (
+        qs = (
             Advertisement.objects
             .select_related("owner", "subcategory__category")
             .prefetch_related("extra_values__field_definition", "likes", "images")
-            .filter(is_active=True)
-            .order_by("-created_at")
         )
+
+        status = self.request.query_params.get("status")
+        expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
+
+        if status == "active":
+            qs = qs.filter(
+                is_active=True,
+                created_at__gt=expiration_border
+            )
+
+        elif status == "archived":
+            qs = qs.filter(
+                created_at__lte=expiration_border
+            )
+
+        return qs.order_by("-created_at")
+    
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def relist(self, request, slug=None):
+        ad = self.get_object()
+
+        if ad.owner != request.user:
+            return Response({"detail": "Forbidden"}, status=403)
+
+        ad.created_at = now()
+        ad.is_active = True
+        ad.save(update_fields=["created_at", "is_active"])
+
+        return Response({"detail": "Relisted"})
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

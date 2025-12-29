@@ -7,6 +7,15 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "zamda-media.sfo3.cdn.digitaloceanspaces.com",
+        pathname: "/media/**",
+      },
+    ],
+  },
   webpack: (config) => {
     config.resolve.alias['lightningcss'] = false;
     return config;

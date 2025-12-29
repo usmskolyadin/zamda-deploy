@@ -3,6 +3,7 @@ import { Advertisement } from "../entities/advertisment/model/types";
 import { useViewAd } from "../features/hooks/use-view-ad";
 import { useAuth } from "../features/context/auth-context";
 import { useLikeAd } from "../features/hooks/use-like-ad";
+import Image from "next/image";
 
 type ProductCardProps = {
   ad?: Advertisement;
@@ -36,9 +37,11 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
     <Link href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
       <div className="bg-white rounded-2xl w-full hover:opacity-70 transition">
         <div className="relative">
-          <img
+          <Image
             src={ad.images[0]?.image}
             alt={ad.title}
+            width={200}
+            height={400}
             className="w-full max-h-[200px] min-h-[200px] object-cover rounded-2xl mb-2"
           />
           <button

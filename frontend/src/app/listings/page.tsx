@@ -9,6 +9,7 @@ import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
+import { apiFetchAuth } from "@/src/shared/api/auth.client";
 
 export default function Listings() {
   const [activeTab, setActiveTab] = useState("active");
@@ -17,7 +18,9 @@ export default function Listings() {
   const [ads, setAds] = useState<Advertisement[]>([]);  
   const profileId = user?.profile.id
   const [profile, setProfile] = useState()
-  
+  const [activeAds, setActiveAds] = useState<Advertisement[]>([]);
+  const [archivedAds, setArchivedAds] = useState<Advertisement[]>([]);
+
   useEffect(() => {
     if (!profileId) return;
 
@@ -30,23 +33,39 @@ export default function Listings() {
   }, [profileId]);
 
 
-  console.log(user)
-    useEffect(() => {
-    if (!user) return;
+const fetchActiveAds = async () => {
+  const res = await apiFetch<{ results: Advertisement[] }>(
+    `/api/ads/?owner_username=${user?.username}&status=active`
+  );
+  setActiveAds(res.results);
+};
 
-    const fetchAds = async () => {
-        const query = `owner_username=${user.username}`; 
-        const res = await apiFetch<{ results: Advertisement[] }>(`/api/ads/?${query}`);
-        setAds(res.results);
-        setAdsCount(res.results.length);
-    };
-    fetchAds();
-    }, [user]);
+const fetchArchivedAds = async () => {
+  const res = await apiFetch<{ results: Advertisement[] }>(
+    `/api/ads/?owner_username=${user?.username}&status=archived`
+  );
+  setArchivedAds(res.results);
+};
 
-  const activeAds = ads.filter(ad => ad.time_left > 0);
-  const archivedAds = ads.filter(ad => ad.time_left <= 0);
-  const activeCount = activeAds.length;
-  const archivedCount = archivedAds.length;
+useEffect(() => {
+  if (!user) return;
+
+  fetchActiveAds();
+  fetchArchivedAds();
+}, [user]);
+
+
+const activeCount = activeAds.length;
+const archivedCount = archivedAds.length;
+
+const handleRelist = async (slug: string) => {
+  await apiFetchAuth(`/api/ads/${slug}/relist/`, {
+    method: "POST",
+  });
+
+  fetchActiveAds();
+  fetchArchivedAds();
+};
 
   function formatTimeLeft(seconds: number) {
     if (seconds <= 0) return "Expired";
@@ -95,7 +114,6 @@ export default function Listings() {
                 Archived <sup className="text-xs font-medium">{archivedCount}</sup>
               </button>
             </div>
-
                 <div>
             </div>
             {activeTab === "archived" && (
@@ -138,19 +156,27 @@ export default function Listings() {
                             <p className="text-md text-gray-900 mt-2 line-clamp-3 break-all overflow-hidden">
                                 {ad.description}
                             </p>
-                            <p className="mt-2 text-black font-medium text-md">
-                              Times left: {formatTimeLeft(ad.time_left)} 
-                              
-                              <span className="cursor-pointer relative group z-30 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
-                                  ?
-                                  <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap 
-                                                  px-2.5 py-1.5 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 
-                                                  transition pointer-events-none">
-                                          After 30 days, your ad will be moved to the archive. You will need to republish it after that.
+                            <div className="flex items-center gap-4">
+                                <button
+                                  onClick={() => handleRelist(ad.slug)}
+                                  className="cursor-pointer px-4 py-2 w-48 my-2 rounded-full bg-black text-white hover:bg-gray-800 transition"
+                                >
+                                  Relist
+                                </button>
+                              <p className="mt-2 text-black font-medium text-md">
+                                Times left: {formatTimeLeft(ad.time_left)} 
+                                
+                                <span className="cursor-pointer relative group z-30 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
+                                    ?
+                                    <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap 
+                                                    px-2.5 py-1.5 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 
+                                                    transition pointer-events-none">
+                                            After 30 days, your ad will be moved to the archive. You will need to republish it after that.
+                                    </span>
                                   </span>
-                                </span>
 
-                            </p>
+                              </p>
+                            </div>
                             <div className="flex justify-between w-1/3 mt-2">
                             <div className="flex items-center">
                                 <svg
@@ -207,7 +233,7 @@ export default function Listings() {
 
             {activeTab === "active" && (
             <div className={`flex flex-col`}>
-               {ads.length === 0 ? (
+               {activeAds.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <img
                     src="/not_found.png" 
@@ -223,7 +249,7 @@ export default function Listings() {
 
                 </div>
               ) : (
-                ads.map((ad) => (
+                activeAds.map((ad) => (
                 <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
                     <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2">
                         <div className="lg:mr-4 flex-shrink-0">
