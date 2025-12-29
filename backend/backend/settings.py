@@ -200,6 +200,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,  
     "AUTH_HEADER_TYPES": ('Bearer',),
 }
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:3000/auth/google/callback")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.sendgrid.net"

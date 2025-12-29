@@ -59,7 +59,7 @@ class GoogleAuthView(APIView):
                 "client_secret": settings.GOOGLE_CLIENT_SECRET,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": "http://localhost:3000/auth/google/callback",
+                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
             },
         )
 
