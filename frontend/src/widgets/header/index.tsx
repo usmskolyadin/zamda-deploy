@@ -68,7 +68,6 @@ export default function Header() {
                       </span>
                     )}
                 </Link>
-
                 <Link href={"/favorites"}>
                   <svg className="mr-3 hover:scale-105" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M23.8334 9.60074C23.8334 11.2761 23.1901 12.8853 22.0414 14.0756C19.3971 16.8166 16.8323 19.6747 14.0892 22.3163C13.4604 22.913 12.463 22.8913 11.8613 22.2676L3.95832 14.0756C1.56956 11.5995 1.56956 7.602 3.95832 5.12587C6.37055 2.6254 10.3003 2.6254 12.7126 5.12587L12.9999 5.42362L13.2869 5.12604C14.4435 3.92654 16.0187 3.25 17.6642 3.25C19.3096 3.25 20.8847 3.92648 22.0414 5.12587C23.1902 6.31632 23.8334 7.92542 23.8334 9.60074Z" fill="white"/>
@@ -131,18 +130,20 @@ export default function Header() {
                         group-hover:pointer-events-auto font-medium
                       "
                     >
-                      <div className="py-3 flex flex-col border-b border-gray-200">
-                        <div className="px-6 hover:bg-gray-100 border-b py-2 flex items-center cursor-pointer">
-                          <h2 className="mr-2 font-semibold text-black w-24">
-                            {user?.first_name} <br />
-                            {user?.last_name}
-                          </h2>
-                          <img
-                            className="rounded-full w-10 h-10 object-cover"
-                            src={user?.profile?.avatar}
-                            alt=""
-                          />
-                        </div>
+                      <div className="py-3 flex flex-col border-b  border-gray-200">
+                        <Link className=" py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/listings">
+                          <div className="px-6 hover:bg-gray-100 border-b border-black py-2 flex items-center cursor-pointer">
+                            <h2 className="mr-2 font-semibold text-black w-24">
+                              {user?.first_name} <br />
+                              {user?.last_name}
+                            </h2>
+                            <img
+                              className="rounded-full w-10 h-10 object-cover"
+                              src={user?.profile?.avatar}
+                              alt=""
+                            />
+                          </div>
+                        </Link>
                         <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/listings">
                           My Listings
                         </Link>
@@ -177,9 +178,9 @@ export default function Header() {
                     </div>
                   </div>
 
-                ) : (
-                <p className='ml-8 w-36 text-right text-white'><Link href={"/login"}>Sign in</Link> | <Link href={"/register"}>Sign up</Link></p>
-                )
+                  ) : (
+                    <p className='ml-8 w-36 text-right text-white'><Link href={"/login"}>Sign in</Link> | <Link href={"/register"}>Sign up</Link></p>
+                  )
                 }
               </div>
             </div>
