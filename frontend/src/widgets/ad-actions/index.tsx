@@ -42,8 +42,6 @@ export default function AdActions({ ad }: AdPageProps) {
   };
   
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this ad?")) return;
-
     try {
       await apiFetchAuth(`/api/ads/${ad.slug}/`, {
         method: "DELETE",

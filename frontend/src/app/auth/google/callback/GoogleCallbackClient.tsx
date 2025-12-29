@@ -21,7 +21,7 @@ export default function GoogleCallbackClient() {
 
     const handleGoogleLogin = async () => {
       try {
-        const tokenRes = await fetch(`${API_URL}api/auth/google/`, {
+        const tokenRes = await fetch(`${API_URL}/api/auth/google/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code }),
@@ -34,7 +34,7 @@ export default function GoogleCallbackClient() {
 
         const { access, refresh } = await tokenRes.json();
 
-        const userRes = await fetch(`${API_URL}api/users/me/`, {
+        const userRes = await fetch(`${API_URL}/api/users/me/`, {
           headers: { Authorization: `Bearer ${access}` },
         });
 
