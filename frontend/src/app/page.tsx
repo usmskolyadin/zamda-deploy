@@ -1,6 +1,7 @@
 import Tabs from "./Tabs";
 import Link from "next/link";
 import { getCategories } from "@/src/entities/category/api/get-categories";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +62,8 @@ export default async function Home() {
             <h1 className="text-4xl mt-12 font-bold text-black text-center">Recommended for you</h1>
             <Tabs />
           </div>
-          <div className="rounded-3xl w-full bg-[#F2F1F0] h-[136px] mt-12 flex justify-center items-center">
-            <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
+          <div className="rounded-3xl w-full bg-[#F2F1F0] h-[136px] mt-12 mb-14 lg:flex hidden flex justify-center items-center">
+            <Image src={"/zamdam.png"} width={1250} height={136} alt={""} />
           </div>
         </div>
       </section>
