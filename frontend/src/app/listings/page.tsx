@@ -59,13 +59,25 @@ const activeCount = activeAds.length;
 const archivedCount = archivedAds.length;
 
 const handleRelist = async (slug: string) => {
-  await apiFetchAuth(`/api/ads/${slug}/relist/`, {
-    method: "POST",
-  });
+  const confirmed = window.confirm(
+    "Are you sure you want to relist this advertisement?"
+  );
 
-  fetchActiveAds();
-  fetchArchivedAds();
+  if (!confirmed) return;
+
+  try {
+    await apiFetchAuth(`/api/ads/${slug}/relist/`, {
+      method: "POST",
+    });
+
+    fetchActiveAds();
+    fetchArchivedAds();
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to relist the advertisement");
+  }
 };
+
 
   function formatTimeLeft(seconds: number) {
     if (seconds <= 0) return "Expired";
@@ -159,11 +171,11 @@ const handleRelist = async (slug: string) => {
                             <div className="flex items-center gap-4">
                                 <button
                                   onClick={() => handleRelist(ad.slug)}
-                                  className="cursor-pointer px-4 py-2 w-48 my-2 rounded-full bg-black text-white hover:bg-gray-800 transition"
+                                  className="cursor-pointer px-4 py-1 w-48 my-2 rounded-full bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
                                 >
-                                  Relist
+                                  Renew Listing
                                 </button>
-                              <p className="mt-2 text-black font-medium text-md">
+                              <p className="text-black font-medium text-md">
                                 Times left: {formatTimeLeft(ad.time_left)} 
                                 
                                 <span className="cursor-pointer relative group z-30 ml-1.5 p-1.5 bg-gray-300 rounded-full px-2.5 text-xs cursor-default">
@@ -229,8 +241,6 @@ const handleRelist = async (slug: string) => {
                 )}
               </div>
             )}
-
-
             {activeTab === "active" && (
             <div className={`flex flex-col`}>
                {activeAds.length === 0 ? (

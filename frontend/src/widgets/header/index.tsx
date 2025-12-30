@@ -194,11 +194,8 @@ export default function Header() {
                     <h1 className=" mr-12 font-bold text-4xl text-black">Zamda</h1>
                   </div>
                 </Link>
-                
                 <CategoryDropdown />
-
               </div>
-
               <SearchBar />
               <div className="lg:flex hidden items-center">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

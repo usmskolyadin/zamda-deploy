@@ -42,6 +42,12 @@ export default function AdActions({ ad }: AdPageProps) {
   };
   
   const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this advertisement? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
     try {
       await apiFetchAuth(`/api/ads/${ad.slug}/`, {
         method: "DELETE",
@@ -72,7 +78,7 @@ export default function AdActions({ ad }: AdPageProps) {
               Delete
             </button>
           </div>
-          <button className="w-full p-3.5 bg-[#2AAEF7] hover:bg-blue-500 transition rounded-3xl cursor-pointer ">
+          <button className="w-full p-3.5 bg-[#2AAEF7] text-white hover:bg-blue-500 transition rounded-3xl cursor-pointer ">
             Increase views (Soon)
           </button>
         </div>
