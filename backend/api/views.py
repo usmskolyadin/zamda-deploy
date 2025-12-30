@@ -270,6 +270,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+        
     import logging
     logger = logging.getLogger(__name__)
 
@@ -280,18 +281,32 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             logger.exception("Error")
             return Response({"detail": str(e)}, status=500)
         
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
-    def like(self, request, slug=None):
-        ad = self.get_object()
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def liked(self, request):
         user = request.user
 
-        like, created = AdvertisementLike.objects.get_or_create(ad=ad, user=user)
-        if not created:
-            like.delete()
-            return Response({"detail": "Unliked", "likes_count": ad.likes.count()})
+        qs = Advertisement.objects.filter(likes=user)
 
-        return Response({"detail": "Liked", "likes_count": ad.likes.count()})
+        status = request.query_params.get("status")
+        expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
 
+        if status == "active":
+            qs = qs.filter(
+                is_active=True,
+                created_at__gt=expiration_border
+            )
+        elif status == "archived":
+            qs = qs.filter(
+                created_at__lte=expiration_border
+            )
+
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def view(self, request, slug=None):

@@ -217,10 +217,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return False
     
     def validate_extra(self, value):
-        """
-        value expected to be a dict: { 'mileage': 120000, 'year': 2015 }
-        Проверим, что ключи соответствуют ExtraFieldDefinition для subcategory (если subcategory указан в validated_data)
-        """
         if not isinstance(value, dict):
             raise serializers.ValidationError('Extra must be an object/dict of key->value.')
 
@@ -228,11 +224,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     
 
     def _validate_and_prepare_extra(self, subcategory, extra_dict):
-        """
-        Проверяет extra_dict по definitions для данной подкатегории.
-        Возвращает список кортежей (field_definition, casted_value).
-        """
-        
         prepared = []
         if not extra_dict:
             return prepared
@@ -263,7 +254,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             except json.JSONDecodeError:
                 extra_dict = {}
 
-        # Убедимся, что subcategory — это объект, а не slug или строка
         subcategory_obj = validated_data.get('subcategory')
         if isinstance(subcategory_obj, str):
             subcategory_obj = SubCategory.objects.get(slug=subcategory_obj)
@@ -273,11 +263,9 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         if not files:
             raise serializers.ValidationError({"images": "At least one image is required."})
         
-        # Создаем объявление
         validated_data['owner'] = self.context['request'].user
         ad = super().create(validated_data)
 
-        # Проверяем extra поля
         prepared = self._validate_and_prepare_extra(subcategory_obj, extra_dict or {})
         for definition, casted_str in prepared:
             AdvertisementExtraField.objects.create(
@@ -286,7 +274,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 value=str(casted_str)
             )
 
-        # Сохраняем изображения
         files = self.context['request'].FILES.getlist('images') if self.context.get('request') else []
         for f in files:
             filename = media_storage.save(f"advertisements/{f.name}", f)
@@ -295,17 +282,13 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return ad
 
     def update(self, instance, validated_data):
-        # Обрабатываем extra
         extra_dict = validated_data.pop('extra', None)
 
-        # Извлекаем новые изображения
         request = self.context.get('request')
         new_images = request.FILES.getlist('images') if request else []
 
-        # Обновляем обычные поля
         ad = super().update(instance, validated_data)
 
-        # Обновляем extra поля
         if extra_dict is not None:
             ad.extra_values.all().delete()
             if isinstance(extra_dict, str):
@@ -318,16 +301,15 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                     value=str(casted_str)
                 )
 
-        # Удаляем старые изображения, которых нет в existing_ids
         existing_ids = request.data.get('existing_ids')
         if existing_ids:
             if isinstance(existing_ids, str):
                 existing_ids = json.loads(existing_ids)
             ad.images.exclude(id__in=existing_ids).delete()
 
-        # Добавляем новые изображения
-        for image in new_images:
-            AdvertisementImage.objects.create(ad=ad, image=image)
+        for f in new_images:
+            filename = media_storage.save(f"advertisements/{f.name}", f)
+            AdvertisementImage.objects.create(ad=ad, image=filename)
 
         return ad
 

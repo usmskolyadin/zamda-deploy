@@ -29,7 +29,7 @@ export default function TabsExample() {
 
     const fetchLikedAds = async () => {
       try {
-        const res = await apiFetchAuth<{ results?: Advertisement[] }>(`/api/ads/liked/`);
+        const res = await apiFetchAuth<{ results?: Advertisement[] }>(`/api/ads/liked/?status=active`);
         const adsData = res.results ?? (Array.isArray(res) ? res : []);
         setLikedAds(adsData);
       } catch (e) {
@@ -50,7 +50,7 @@ export default function TabsExample() {
         return;
       }
 
-      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}`;
+      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}/?status=active`;
 
       if (tabId === "recommendations") {
         url += "&filter=recommendations";

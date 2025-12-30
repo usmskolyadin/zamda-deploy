@@ -27,10 +27,9 @@ function mapSortToOrdering(sort?: SortType) {
 export default async function SearchPage({ searchParams }: Props) {
   const params = new URLSearchParams();
 
-  // ✅ прокидываем ВСЕ параметры
   Object.entries(searchParams).forEach(([key, value]) => {
     if (!value) return;
-    if (key === "sort") return; // sort обрабатываем отдельно
+    if (key === "sort") return;
 
     if (Array.isArray(value)) {
       value.forEach(v => params.append(key, v));
@@ -39,11 +38,10 @@ export default async function SearchPage({ searchParams }: Props) {
     }
   });
 
-  // ✅ сортировка
   const ordering = mapSortToOrdering(searchParams.sort as SortType | undefined);
   if (ordering) params.append("ordering", ordering);
 
-  const res = await fetch(`${API_URL}/api/ads/?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/api/ads/?${params.toString()}/?status=active`, {
     cache: "no-store",
   });
 
@@ -83,7 +81,6 @@ export default async function SearchPage({ searchParams }: Props) {
             <p className="text-black text-xl font-medium text-center mt-2">
                 They will appear soon. In the meantime, you can search for something else or post your own.
             </p>
-
             </div>
             ) : (
                 ads.map((ad) => (

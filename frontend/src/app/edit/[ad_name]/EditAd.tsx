@@ -116,12 +116,12 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
       .catch(console.error);
   }, [selectedCategory]);
 
-useEffect(() => {
-  if (!adId || !accessToken) return;
+  useEffect(() => {
+    if (!adId || !accessToken) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  (async () => {
+    (async () => {
     try {
       const ad: Advertisement = await apiFetch<Advertisement>(`/api/ads/${params.ad_name}/`);
       

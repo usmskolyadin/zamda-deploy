@@ -27,7 +27,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch<any>("/api/ads/")
+    apiFetch<any>("/api/ads/?status=active")
       .then((data) => {
         setAds(data.results || data);
       })
@@ -39,7 +39,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch<any>("/api/ads/")
+    apiFetch<any>("/api/ads/?status=active")
       .then((data) => {
         setAds(data.results || data);
       })
