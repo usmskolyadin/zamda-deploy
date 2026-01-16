@@ -74,9 +74,6 @@ export default function ReviewsPage() {
                   </svg>
                   {profile.city ? profile.city : "No city selected"}
                 </p>
-                <h2 className="text-gray-800 font-medium text-md">
-                  {profile.username}
-                </h2>
               </div>
 
               <div className="flex items-center text-sm text-gray-700">
@@ -105,6 +102,7 @@ export default function ReviewsPage() {
                 Reviews
               </h1>
             </div>
+            <div className="mt-4">
             {(profile.username == user?.username) ? (
               <>
               </>
@@ -115,6 +113,7 @@ export default function ReviewsPage() {
                 Add review
               </Link>
             )}
+            </div>
 
             <div className="space-y-4 mt-4">
               {profile.reviews && profile.reviews.length > 0 ? (

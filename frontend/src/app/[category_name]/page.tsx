@@ -21,7 +21,7 @@ export default async function SubCategoriesPage({ params }: Props) {
       <section className="bg-[#ffffff] min-h-screen pb-16 pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-gray-500 pb-2">
-            <Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={category.name.toLocaleLowerCase()}>{category.name}</Link>
+            <Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={categorySlug}>{category.name}</Link>
           </p>
           <h1 className="text-black font-bold text-4xl py-4">
             {category.name}

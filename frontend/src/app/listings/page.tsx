@@ -94,7 +94,7 @@ const handleRelist = async (slug: string) => {
       <section className="bg-[#ffffff]  pb-16 p-4">
         
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <Sidebar/>
+          <Sidebar notHideOnPhone={true}/>
 
           <div className=" lg:w-3/4 lg:ml-24">
             <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px]  flex justify-center items-center">
@@ -142,12 +142,12 @@ const handleRelist = async (slug: string) => {
                           <img
                             src={ad.images[0]?.image}
                             alt={ad.title}
-                            className="rounded-2xl lg:h-48 lg:w-72 w-full object-cover"
+                            className="rounded-2xl lg:h-48 lg:w-72 h-52 w-full object-cover"
                             width={288}
                             height={192}
                           />
                         </div>
-                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col">
+                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
                             <div className="w-full flex items-center justify-between">
                             <h1 className="text-xl text-black font-bold truncate pr-2">
                                 {ad.title}
@@ -266,12 +266,12 @@ const handleRelist = async (slug: string) => {
                           <img
                             src={ad.images[0]?.image}
                             alt={ad.title}
-                            className="rounded-2xl lg:h-48 lg:w-72 w-full object-cover"
+                            className="rounded-2xl lg:h-48 lg:w-72 h-52 w-full object-cover"
                             width={288}
                             height={192}
                           />
                         </div>
-                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col">
+                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
                             <div className="w-full flex items-center justify-between">
                             <h1 className="text-xl text-black font-bold truncate pr-2">
                                 {ad.title}

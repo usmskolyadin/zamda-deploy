@@ -2,12 +2,14 @@
 
 import { API_URL } from "@/src/shared/api/base";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 
 export function useLikeAd(adSlug: string | undefined, token: string | null) {
+  const router = useRouter()
+
   const fetcher = (url: string) =>
     fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  // SWR ключ null, если adSlug отсутствует или пользователь не залогинен
   const { data, mutate, isLoading } = useSWR(
     adSlug && token ? `${API_URL}/api/ads/${adSlug}/` : null,
     fetcher,
@@ -15,11 +17,11 @@ export function useLikeAd(adSlug: string | undefined, token: string | null) {
   );
 
   const toggleLike = async () => {
-    if (!token || !adSlug) return;
+    if (!adSlug) return;
+    if (!token) return router.push("/login")
 
-    if (!data) return; // защита от undefined
+    if (!data) return; 
 
-    // оптимистическое обновление
     mutate(
       {
         ...data,

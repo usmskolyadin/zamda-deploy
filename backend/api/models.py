@@ -74,18 +74,28 @@ class ExtraFieldDefinition(models.Model):
     class Meta:
         unique_together = ("subcategory", "key")
 
+from django.db.models import Q
 
 class AdvertisementView(models.Model):
-    ad = models.ForeignKey("Advertisement", related_name="views", on_delete=models.CASCADE)
+    ad = models.ForeignKey("Advertisement", on_delete=models.CASCADE)
     user = models.ForeignKey(
-        User, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name="ad_views"
+        User, null=True, blank=True, on_delete=models.SET_NULL
     )
-    ip_address = models.GenericIPAddressField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     class Meta:
-        unique_together = ("ad", "ip_address") 
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ad", "user"],
+                condition=Q(user__isnull=False),
+                name="unique_ad_user_view"
+            ),
+            models.UniqueConstraint(
+                fields=["ad", "ip_address"],
+                condition=Q(user__isnull=True),
+                name="unique_ad_ip_view"
+            ),
+        ]
 
 class Advertisement(models.Model):
     owner = models.ForeignKey(User, related_name="ads", on_delete=models.CASCADE)

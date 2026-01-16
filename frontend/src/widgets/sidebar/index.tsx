@@ -3,12 +3,16 @@ import Link from 'next/link';
 import React from 'react'
 import { FaStar } from 'react-icons/fa'
 
-export default function Sidebar() {
+type SidebarProps = {
+  notHideOnPhone?: boolean;
+};
+
+export default function Sidebar({notHideOnPhone}: SidebarProps) {
   const { accessToken, user } = useAuth();
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
 
   return (
-          <div className="lg:w-1/4 hidden lg:block">
+          <div className={`lg:w-1/4 ${notHideOnPhone ? ("") : ("hidden lg:block")}`}>
             <div className="max-w-[712px]">
                   <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
                     <img
@@ -42,24 +46,28 @@ export default function Sidebar() {
                     </div>
                     <div className="lg:hidden block py-4">
                       <Link href={"/new"}>
-                        <button className="w-full p-4 bg-blue-500 rounded-2xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
+                        <button className="w-full p-4 bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
                       </Link>
                       <Link href={"/profile/edit"}>
-                        <button className="w-full mt-2 p-4 bg-[#36B731] rounded-2xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
+                        <button className="w-full mt-2 p-4 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
                       </Link>
+                      <div className='pt-4'>
+                        <Link href={"/logout"} >
+                          <button className="w-full mt-2 px-4 py-4 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
+                        </Link>
+                      </div>
                     </div>
                     </div>
                 </div>
             </div>
             <div className="lg:block hidden">
                 <div className="py-3 flex flex-col border-b border-gray-300">
-                    <Link className="hover:underline text-[#2AAEF7]" href="listings"><span className="text-[#2AAEF7] text-md h-12">My Listings</span> </Link>
-                    <Link className="hover:underline text-[#2AAEF7]" href="favorites"><span className="text-[#2AAEF7] text-md h-12">Favorites</span></Link>
-                    <Link className="hover:underline text-[#2AAEF7]" href="messages"><span className="text-[#2AAEF7] text-md h-12">Messages</span></Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href="/listings"><span className="text-[#2AAEF7] text-md h-12">My Listings</span> </Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href="/favorites"><span className="text-[#2AAEF7] text-md h-12">Favorites</span></Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href="/messages"><span className="text-[#2AAEF7] text-md h-12">Messages</span></Link>
                     <Link className="hover:underline text-[#2AAEF7]" href={`/reviews/${user?.profile.id}`}><span className="text-[#2AAEF7] text-md h-12">My Reviews</span> </Link>
                 </div>
                 <div className="py-3 flex flex-col border-b border-gray-300">
-                    <Link href="listings"><span className="text-[#2AAEF7] text-md h-12">Wallet</span> </Link>
                     <Link href="favorites"><span className="text-[#2AAEF7] text-md h-12">Paid services</span></Link>
                 </div>
                 <div className="py-3 flex flex-col mb-4">
@@ -70,6 +78,5 @@ export default function Sidebar() {
               <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
             </div>
           </div>
-
   )
 }

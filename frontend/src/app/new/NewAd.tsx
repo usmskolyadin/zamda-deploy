@@ -146,8 +146,8 @@ useEffect(() => {
 
 useEffect(() => {
   if (!selectedCategory) {
-    setSelectedSubcategory("");  // очищаем выбранную подкатегорию
-    setExtraFields([]);          // очищаем дополнительные поля
+    setSelectedSubcategory(""); 
+    setExtraFields([]);         
     return;
   }
 
@@ -320,7 +320,7 @@ const handleSubmit = async (e: FormEvent) => {
 <div className="w-full">
   <section className="bg-white pt-8 px-4">
     <div className="max-w-screen-xl mx-auto">
-      <h1 className="text-black text-center font-bold text-4xl py-4">New ad</h1>
+      <h1 className="text-black text-center font-bold text-4xl py-4">New Ad</h1>
     </div>
   </section>
 
@@ -375,14 +375,14 @@ const handleSubmit = async (e: FormEvent) => {
             <label className="w-full max-w-md flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Listing Title</p>
               <p className="text-gray-700 text-sm font-medium">
-                Minimum length 10 symbols, max. length 30 symbols
+                Minimum length 5 symbols, max. length 30 symbols
               </p>
               <input
                 type="text"
                 placeholder="Enter title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                minLength={10}
+                minLength={5}
                 maxLength={30}
                 className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900"
                 required
@@ -396,6 +396,8 @@ const handleSubmit = async (e: FormEvent) => {
               </p>
               <input
                 type="number"
+                min={1}
+                max={9999999}
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -407,7 +409,7 @@ const handleSubmit = async (e: FormEvent) => {
             <label className="w-full max-w-md flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Description</p>
               <p className="text-gray-700 text-sm font-medium">
-                Min. length 50, max. length 1500 symbols
+                Min. length 5, max. length 1500 symbols
               </p>
               <textarea
                 placeholder="Enter description"
@@ -416,7 +418,7 @@ const handleSubmit = async (e: FormEvent) => {
                 className="p-4 border border-black rounded-3xl mt-1 text-gray-900"
                 rows={4}
                 required
-                minLength={50}
+                minLength={5}
                 maxLength={1500}
               />
             </label>

@@ -23,12 +23,52 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Проверки
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePassword = (password: string) =>
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
+  const isEmpty = (v: string) => !v.trim();
 
-  // 1 шаг — регистрация (отправка письма с кодом)
+  const validateName = (name: string) => {
+    if (isEmpty(name)) return "This field is required";
+    if (name.length < 2) return "Must be at least 2 characters";
+    if (name.length > 50) return "Too long";
+    if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name))
+      return "Only letters, spaces, apostrophes and hyphens allowed";
+    return null;
+  };
+
+  const validateEmail = (email: string) => {
+    if (isEmpty(email)) return "Email is required";
+    if (email.length > 254) return "Email is too long";
+
+    const emailRegex = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$/x";
+
+    if (!emailRegex.test(email)) return "Invalid email address";
+    return null;
+  };
+
+  const validatePassword = (password: string, email?: string) => {
+    if (password.length < 8) return "At least 8 characters";
+    if (password.length > 128) return "Password too long";
+    if (/\s/.test(password)) return "Password must not contain spaces";
+    if (!/[a-z]/.test(password)) return "Must include a lowercase letter";
+    if (!/[A-Z]/.test(password)) return "Must include an uppercase letter";
+    if (!/\d/.test(password)) return "Must include a number";
+    if (!/[!@#$%^&*()_+=\-{}[\]|:;"'<>,.?/~`]/.test(password))
+      return "Must include a special character";
+
+    if (email && password.toLowerCase().includes(email.split("@")[0]))
+      return "Password must not contain your email";
+
+    if (/^(.)\1+$/.test(password))
+      return "Password is too weak";
+
+    return null;
+  };
+
+  const validateCode = (code: string) => {
+    if (!/^\d{6}$/.test(code))
+      return "Verification code must be 6 digits";
+    return null;
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -165,7 +205,7 @@ export default function Register() {
 
                 <button
                   type="submit"
-                  className="mt-4 cursor-pointer bg-black w-full h-[44px] rounded-3xl flex justify-center items-center text-white"
+                  className="mt-4 hover:opacity-80 transition cursor-pointer bg-black w-full h-[44px] rounded-3xl flex justify-center items-center text-white"
                 >
                   Register
                 </button>

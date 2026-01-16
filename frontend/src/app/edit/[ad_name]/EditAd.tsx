@@ -262,19 +262,28 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 w-full max-w-3xl mx-auto">
             <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Title</p>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+              <p className="text-gray-700 text-sm font-medium">
+                Minimum length 5 symbols, max. length 30 symbols
+              </p>
+              <input type="text" min={5} max={30} value={title} onChange={(e) => setTitle(e.target.value)}
                      className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
             </label>
 
             <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Price ($)</p>
-              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)}
+              <p className="text-gray-700 text-sm font-medium">
+                Enter only final price
+              </p>
+              <input type="number" min={1} max={9999999} value={price} onChange={(e) => setPrice(e.target.value)}
                      className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
             </label>
 
             <label className="w-full flex-col flex font-semibold text-gray-800 col-span-2">
               <p className="font-semibold text-black text-xl">Description</p>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+              <p className="text-gray-700 text-sm font-medium">
+                Min. length 5, max. length 1500 symbols
+              </p>
+              <textarea value={description} minLength={5} maxLength={1500} onChange={(e) => setDescription(e.target.value)}
                         className="p-4 border border-black rounded-3xl mt-1 text-gray-900" rows={5} required />
             </label>
 

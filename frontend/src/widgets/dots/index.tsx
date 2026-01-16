@@ -49,6 +49,19 @@ export default function ThreeDotsDropdown({ chatId }: DropdownProps) {
     }
   };
 
+  const deleteChat = async () => {
+    if (!confirm("Are you sure you want to delete chat with this user?")) return;
+
+    try {
+      await apiFetchAuth(`/api/chats/${chatId}/block/`, {
+        method: "POST",
+      });
+      window.location.href = "/messages";
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   const submitReport = async () => {
     if (!reason) return;
 
@@ -98,6 +111,12 @@ export default function ThreeDotsDropdown({ chatId }: DropdownProps) {
               onClick={blockUser}
             >
               Block user
+            </button>
+            <button
+              className="cursor-pointer block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-xl"
+              onClick={deleteChat}
+            >
+              Delete chat
             </button>
             <button
               className="cursor-pointer block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-xl"

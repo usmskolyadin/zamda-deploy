@@ -95,7 +95,7 @@ export default function Header() {
                           </clipPath>
                         </defs>
                       </svg>
-                    Place an ad
+                    Place an Ad
                   </div>
                 </button>
                 </Link>
@@ -106,7 +106,7 @@ export default function Header() {
                         {user?.first_name}
                       </h2>
                       <img
-                        className="rounded-full w-10 h-10 object-cover"
+                        className="rounded-full bg-white w-10 h-10 object-cover"
                         src={user?.profile?.avatar}
                         alt=""
                       />

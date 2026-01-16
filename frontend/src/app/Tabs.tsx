@@ -88,13 +88,6 @@ export default function TabsExample() {
     fetchAdsByTab(activeTab, nextPage);
   };
 
-  if (!user) {
-    return (
-      <div className="text-center text-gray-700 p-10">
-        <h2 className="text-2xl font-bold">Please log in to continue</h2>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-screen-xl mx-auto py-6 flex flex-col items-center">

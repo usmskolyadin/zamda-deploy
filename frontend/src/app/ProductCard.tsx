@@ -47,7 +47,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
               e.stopPropagation();
               toggleLike();
             }}
-            className="absolute top-2 right-2 cursor-pointer rounded-full"
+            className="absolute hover:bg-white-80 transition top-2 right-2 cursor-pointer rounded-full"
           >
             {isLiked ? (
                 <div className="absolute top-0 right-0 fdfdsdf bg-black/30 p-2 rounded-full">

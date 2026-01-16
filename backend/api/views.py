@@ -94,11 +94,12 @@ class GoogleAuthView(APIView):
                 "name": user.first_name,
             }
         })
-    
+from rest_framework.permissions import AllowAny
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     lookup_field = "slug"
     lookup_value_regex = "[^/]+"
 
@@ -114,7 +115,7 @@ class SubCategoryFilter(django_filters.FilterSet):
 class SubCategoryViewSet(viewsets.ModelViewSet):
     queryset = SubCategory.objects.select_related('category').all()
     serializer_class = SubCategorySerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['category']
     search_fields = ['name']
@@ -244,7 +245,25 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             )
 
         return qs.order_by("-created_at")
-    
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def like(self, request, slug=None):
+        ad = self.get_object()
+        user = request.user
+
+        if ad.likes.filter(id=user.id).exists():
+            ad.likes.remove(user)
+            return Response({
+                "detail": "Unliked",
+                "likes_count": ad.likes.count()
+            })
+
+        ad.likes.add(user)
+        return Response({
+            "detail": "Liked",
+            "likes_count": ad.likes.count()
+        })
+
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def relist(self, request, slug=None):
         ad = self.get_object()
@@ -312,24 +331,35 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     def view(self, request, slug=None):
         ad = self.get_object()
         user = request.user if request.user.is_authenticated else None
-        ip = request.META.get("REMOTE_ADDR")
 
-        try:
-            if user:
-                obj, created = AdvertisementView.objects.get_or_create(ad=ad, user=user)
-                if created:
-                    ad.views_count += 1
-                    ad.save(update_fields=["views_count"])
-            else:
-                obj, created = AdvertisementView.objects.get_or_create(ad=ad, ip_address=ip, user=None)
-                if created:
-                    ad.views_count += 1
-                    ad.save(update_fields=["views_count"])
-        except IntegrityError:
-            pass
+        ip = (
+            request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0]
+            or request.META.get("REMOTE_ADDR")
+        )
 
-        return Response({"detail": "View counted", "views_count": ad.views_count})
-    
+        if user:
+            obj, created = AdvertisementView.objects.get_or_create(
+                ad=ad,
+                user=user
+            )
+        else:
+            obj, created = AdvertisementView.objects.get_or_create(
+                ad=ad,
+                ip_address=ip,
+                user=None
+            )
+
+        if created:
+            ad.views_count = F("views_count") + 1
+            ad.save(update_fields=["views_count"])
+            ad.refresh_from_db(fields=["views_count"])
+
+        return Response({
+            "detail": "View counted",
+            "views_count": ad.views_count
+        })
+
+        
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def liked(self, request):
         """Возвращает все объявления, лайкнутые текущим пользователем."""
@@ -527,12 +557,19 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAdminUser
 
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = UserProfile.objects.prefetch_related('reviews').all()
     serializer_class = ProfileSerializer
 
-
+    def list(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "Method not allowed."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+    
 import random
 from django.core.mail import send_mail
 from rest_framework import generics, status

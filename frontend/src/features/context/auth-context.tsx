@@ -40,6 +40,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const router = useRouter();
+  const clearAuth = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    setAccessToken(null);
+    setUser(null);
+  };
 
   function safeParseUser(data: string | null): User | null {
     if (!data) return null;
@@ -60,27 +67,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (token && userData) {
       setAccessToken(token);
       setUser(safeParseUser(userData));
-    } else if (refresh) {
+      return;
+    }
+
+    if (refresh) {
       fetch(`${API_URL}/api/token/refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh }),
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.access) {
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.access) {
             localStorage.setItem('access_token', data.access);
             setAccessToken(data.access);
-            if (userData) {
-              setUser(safeParseUser(userData));
-            }
+            setUser(safeParseUser(userData));
           } else {
-            handleLogout();
+            // просто очищаем, БЕЗ редиректа
+            clearAuth();
           }
         })
-        .catch(() => handleLogout());
-    } else {
-      handleLogout();
+        .catch(clearAuth);
     }
   }, []);
 

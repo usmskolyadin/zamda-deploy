@@ -121,7 +121,7 @@ export default function ProfileEdit() {
         <div className="max-w-screen-xl lg:flex mx-auto">
           <div className="flex-col items-center mx-auto mt-4 mb-4 lg:mt-0 lg:mb-0 w-full max-w-md">
             <form onSubmit={handleSubmit} encType="multipart/form-data">
-                          <div className="mt-2">
+              <div className="mt-2">
                 {avatarPreview && (
                     <>
                         <div className="flex flex-col items-center justify-center py-2">
