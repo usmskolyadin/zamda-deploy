@@ -96,6 +96,12 @@ class AdvertisementView(models.Model):
                 name="unique_ad_ip_view"
             ),
         ]
+        
+class AdvertisementStatus(models.TextChoices):
+    MODERATION = "moderation", "На модерации"
+    ACTIVE = "active", "Активно"
+    REJECTED = "rejected", "Отклонено"
+    ARCHIVED = "archived", "Архив"
 
 class Advertisement(models.Model):
     owner = models.ForeignKey(User, related_name="ads", on_delete=models.CASCADE)
@@ -106,19 +112,28 @@ class Advertisement(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
 
-    created_at = models.DateTimeField(auto_now_add=True)     
-    updated_at = models.DateTimeField(auto_now=True)       
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     location = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=AdvertisementStatus.choices,
+        default=AdvertisementStatus.MODERATION
+    )
+
+    reject_reason = models.TextField(blank=True, null=True)
 
     views_count = models.PositiveIntegerField(default=0)
+
     likes = models.ManyToManyField(
         User,
         related_name="liked_ads",
         through="AdvertisementLike",
         blank=True
     )
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title)
@@ -128,14 +143,14 @@ class Advertisement(models.Model):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = slug
+
         super().save(*args, **kwargs)
 
-    def check_expiration(self):
+    def archive_if_expired(self):
         if self.created_at < timezone.now() - timedelta(days=30):
-            if self.is_active:
-                self.is_active = False
-                self.save(update_fields=["is_active"])
-        return self
+            if self.status == AdvertisementStatus.ACTIVE:
+                self.status = AdvertisementStatus.ARCHIVED
+                self.save(update_fields=["status"])
 
 class AdvertisementLike(models.Model):
     ad = models.ForeignKey(Advertisement, related_name="ad_likes", on_delete=models.CASCADE)

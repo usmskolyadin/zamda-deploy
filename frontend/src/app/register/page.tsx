@@ -28,31 +28,32 @@ export default function Register() {
   const validateName = (name: string) => {
     if (isEmpty(name)) return "This field is required";
     if (name.length < 2) return "Must be at least 2 characters";
-    if (name.length > 50) return "Too long";
+    if (name.length > 50) return "Too long name";
     if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name))
       return "Only letters, spaces, apostrophes and hyphens allowed";
     return null;
   };
 
   const validateEmail = (email: string) => {
-    if (isEmpty(email)) return "Email is required";
+    if (!email.trim()) return "Email is required";
     if (email.length > 254) return "Email is too long";
 
-    const emailRegex = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$/x";
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$/;
 
     if (!emailRegex.test(email)) return "Invalid email address";
     return null;
   };
 
+
   const validatePassword = (password: string, email?: string) => {
-    if (password.length < 8) return "At least 8 characters";
+    if (password.length < 8) return "Password at least 8 characters";
     if (password.length > 128) return "Password too long";
     if (/\s/.test(password)) return "Password must not contain spaces";
-    if (!/[a-z]/.test(password)) return "Must include a lowercase letter";
-    if (!/[A-Z]/.test(password)) return "Must include an uppercase letter";
-    if (!/\d/.test(password)) return "Must include a number";
+    if (!/[a-z]/.test(password)) return "Password must include a lowercase letter";
+    if (!/[A-Z]/.test(password)) return "Password must include an uppercase letter";
+    if (!/\d/.test(password)) return "Password must include a number";
     if (!/[!@#$%^&*()_+=\-{}[\]|:;"'<>,.?/~`]/.test(password))
-      return "Must include a special character";
+      return "Password must include a special character";
 
     if (email && password.toLowerCase().includes(email.split("@")[0]))
       return "Password must not contain your email";
@@ -69,23 +70,28 @@ export default function Register() {
     return null;
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    if (!validateEmail(formData.email)) {
-      setError("Invalid email format");
-      return;
-    }
-    if (!validatePassword(formData.password)) {
-      setError("Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.");
-      return;
-    }
-    if (formData.password !== formData.password2) {
-      setError("Passwords do not match");
-      return;
-    }
+  const firstNameError = validateName(formData.first_name);
+  if (firstNameError) return setError(firstNameError);
+
+  const lastNameError = validateName(formData.last_name);
+  if (lastNameError) return setError(lastNameError);
+
+  const emailError = validateEmail(formData.email);
+  if (emailError) return setError(emailError);
+
+  const passwordError = validatePassword(
+    formData.password,
+    formData.email
+  );
+  if (passwordError) return setError(passwordError);
+
+  if (formData.password !== formData.password2)
+    return setError("Passwords do not match");
 
     try {
       const res = await fetch(`${API_URL}/api/register/request/`, {
@@ -110,6 +116,9 @@ export default function Register() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    const codeError = validateCode(code);
+    if (codeError) return setError(codeError);
 
     try {
       const res = await fetch(`${API_URL}/api/register/verify/`, {

@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import AdvertisementLike, AdvertisementView, Category, Chat, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
     CategorySerializer, ChatSerializer, MessageSerializer, ProfileSerializer, ReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
@@ -180,42 +180,45 @@ from django.utils.timezone import now
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
+class IsOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.owner == request.user
+    
 EXPIRATION_DAYS = 30
 
 class AdvertisementViewSet(viewsets.ModelViewSet):
-    queryset = (
-        Advertisement.objects
-        .select_related("owner", "subcategory__category")
-        .prefetch_related("extra_values__field_definition", "likes", "images")
-    )
+    queryset = Advertisement.objects.all()
     serializer_class = AdvertisementSerializer
     permission_classes = [IsOwnerOrReadOnly]
-    pagination_class = AdvertisementPagination  
+    pagination_class = AdvertisementPagination
+
+    lookup_field = "slug"
+    lookup_value_regex = "[^/]+"
 
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
-        filters.OrderingFilter
+        filters.OrderingFilter,
     ]
-    filterset_class = AdvertisementFilter
+
     filterset_fields = [
         "subcategory",
         "subcategory__category",
         "owner__username",
-        "owner__profile__city"
+        "owner__profile__city",
+        "status",
     ]
+
     search_fields = [
         "title",
         "description",
         "owner__username",
-        "owner__email"
     ]
+
     ordering_fields = ["created_at", "price"]
     ordering = ["-created_at"]
-
-    lookup_field = "slug"
-    lookup_value_regex = "[^/]+"
 
     def filter_extra(self, queryset, name, value):
         for key, val in value.items():
@@ -223,28 +226,77 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return queryset
     
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        if self.action in ["my_ads", "liked"]:
+            return [IsAuthenticated()]
+        if self.action in ["update", "partial_update", "destroy", "relist"]:
+            return [IsAuthenticated(), IsOwner()]
+        return [IsAuthenticated()]
+
     def get_queryset(self):
         qs = (
             Advertisement.objects
             .select_related("owner", "subcategory__category")
-            .prefetch_related("extra_values__field_definition", "likes", "images")
+            .prefetch_related("images", "likes", "extra_values__field_definition")
         )
 
-        status = self.request.query_params.get("status")
         expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
+        qs.filter(
+            status=AdvertisementStatus.ACTIVE,
+            created_at__lte=expiration_border
+        ).update(status=AdvertisementStatus.ARCHIVED)
 
-        if status == "active":
-            qs = qs.filter(
-                is_active=True,
-                created_at__gt=expiration_border
-            )
+        # 🔴 owner-действия — видят ВСЕ свои объявления
+        if self.action in ["relist", "update", "partial_update", "destroy"]:
+            if self.request.user.is_authenticated:
+                return qs.filter(owner=self.request.user)
 
-        elif status == "archived":
-            qs = qs.filter(
-                created_at__lte=expiration_border
-            )
+        # 🔵 retrieve — показываем только активные
+        if self.action == "retrieve":
+            return qs.filter(status=AdvertisementStatus.ACTIVE)
 
-        return qs.order_by("-created_at")
+        # 🔵 list — только активные
+        return qs.filter(status=AdvertisementStatus.ACTIVE)
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated], url_path="my")
+    def my_ads(self, request):
+        """
+        ЛК пользователя:
+        - Active объявления
+        - Archived объявления
+        - Moderation и Rejected объявления
+        """
+        qs = (
+            Advertisement.objects
+            .filter(owner=request.user)
+            .select_related("subcategory__category")
+            .prefetch_related("images", "likes", "extra_values__field_definition")
+            .order_by("-created_at")
+        )
+
+        # Фильтр по вкладкам через query param
+        tab = request.query_params.get("tab", "active").lower()
+        if tab == "active":
+            qs = qs.filter(status=AdvertisementStatus.ACTIVE)
+        elif tab == "archived":
+            qs = qs.filter(status=AdvertisementStatus.ARCHIVED)
+        elif tab == "moderation":
+            qs = qs.filter(status=AdvertisementStatus.MODERATION)
+        elif tab == "rejected":
+            qs = qs.filter(status=AdvertisementStatus.REJECTED)
+        # если tab не передан — возвращаем все статусы кроме архивных
+        else:
+            qs = qs.exclude(status=AdvertisementStatus.ARCHIVED)
+
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def like(self, request, slug=None):
@@ -272,10 +324,11 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Forbidden"}, status=403)
 
         ad.created_at = now()
-        ad.is_active = True
-        ad.save(update_fields=["created_at", "is_active"])
+        ad.status = AdvertisementStatus.MODERATION
+        ad.reject_reason = ""  # очищаем причину отказа, если была
+        ad.save(update_fields=["created_at", "status", "reject_reason"])
 
-        return Response({"detail": "Relisted"})
+        return Response({"detail": "Sent to moderation"})
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -300,33 +353,6 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             logger.exception("Error")
             return Response({"detail": str(e)}, status=500)
         
-    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
-    def liked(self, request):
-        user = request.user
-
-        qs = Advertisement.objects.filter(likes=user)
-
-        status = request.query_params.get("status")
-        expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
-
-        if status == "active":
-            qs = qs.filter(
-                is_active=True,
-                created_at__gt=expiration_border
-            )
-        elif status == "archived":
-            qs = qs.filter(
-                created_at__lte=expiration_border
-            )
-
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def view(self, request, slug=None):
         ad = self.get_object()
@@ -362,20 +388,47 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def liked(self, request):
-        """Возвращает все объявления, лайкнутые текущим пользователем."""
+        """
+        Возвращает все объявления, лайкнутые текущим пользователем.
+        Только активные (неархивные) объявления учитываются по умолчанию.
+        Можно передавать status=archived для архива.
+        """
         user = request.user
-        liked_ads = Advertisement.objects.filter(likes=user).select_related(
-            "owner", "subcategory__category"
-        ).prefetch_related("likes", "extra_values__field_definition", "images")
+        status = request.query_params.get("status", "active").lower()
+        expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
 
-        page = self.paginate_queryset(liked_ads)
+        qs = Advertisement.objects.filter(likes=user).select_related(
+            "owner", "subcategory__category"
+        ).prefetch_related(
+            "likes", "extra_values__field_definition", "images"
+        )
+
+        if status == "active":
+            qs = qs.filter(
+                status=AdvertisementStatus.ACTIVE,
+                created_at__gt=expiration_border
+            )
+        elif status == "archived":
+            qs = qs.filter(
+                status=AdvertisementStatus.ARCHIVED,
+                created_at__lte=expiration_border
+            )
+        elif status == "moderation":
+            qs = qs.filter(status=AdvertisementStatus.MODERATION)
+        elif status == "rejected":
+            qs = qs.filter(status=AdvertisementStatus.REJECTED)
+        else:
+            qs = qs.none()
+
+        page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(liked_ads, many=True)
+        serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
-    
+
+        
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdvertisementImage, Category, ExtraFieldOption, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import AdvertisementImage, AdvertisementStatus, Category, ExtraFieldOption, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -38,17 +38,56 @@ class AdvertisementImageInline(admin.TabularInline):
     
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
-    list_display = ('title','owner','subcategory','price','is_active','created_at', 'get_first_image')
-    list_filter = ('subcategory','is_active')
-    search_fields = ('title','description')
-    inlines = [AdvertisementExtraFieldInline, AdvertisementImageInline]
+    list_display = (
+        "id",
+        "title",
+        "owner",
+        "status",
+        "created_at",
+    )
 
-    def get_first_image(self, obj):
-        first = obj.images.first()
-        if first:
-            return first.image.url
-        return "-"
-    get_first_image.short_description = "Image"
+    list_filter = (
+        "status",
+        "subcategory",
+    )
+
+    search_fields = (
+        "title",
+        "owner__username",
+    )
+
+    readonly_fields = (
+        "owner",
+        "created_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        ("Основное", {
+            "fields": (
+                "owner",
+                "title",
+                "description",
+                "price",
+                "subcategory",
+                "location",
+            )
+        }),
+        ("Модерация", {
+            "fields": (
+                "status",
+                "reject_reason",
+            )
+        }),
+        ("Даты", {
+            "fields": (
+                "created_at",
+                "updated_at",
+            )
+        }),
+    )
+
+
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):

@@ -12,7 +12,6 @@ type ProductCardProps = {
 export default function ProductCard({ ad, loading }: ProductCardProps) {
   const { accessToken } = useAuth();
   const { isLiked, likesCount, toggleLike, loading: likeLoading } = useLikeAd(ad?.slug, accessToken);
-  const { viewsCount } = useViewAd(ad?.slug);
 
   if (loading || !ad) {
     return (
@@ -47,7 +46,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
               e.stopPropagation();
               toggleLike();
             }}
-            className="absolute hover:bg-white-80 transition top-2 right-2 cursor-pointer rounded-full"
+            className="absolute hover:bg-whiteц-80 transition top-2 right-2 cursor-pointer rounded-full"
           >
             {isLiked ? (
                 <div className="absolute top-0 right-0 fdfdsdf bg-black/30 p-2 rounded-full">
@@ -100,7 +99,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                 {ad.location}
               </p>     
               <div className="flex justify-between w-full">
-                <span className="text-black font-semibold text-xl flex items-center">${ad.price}</span>
+                <span className="text-black font-semibold text-xl flex items-center">${Number(ad.price)}</span>
                 <div className="flex items-center">
                                   <span className="text-sm text-black/80 font-medium mr-1 flex items-center">
                     <svg className="mr-1" width="18" height="18" viewBox="0 -4 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -114,7 +113,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                             </g>
                         </g>
                     </svg>
-                    {viewsCount ?? ad.views_count}
+                    {ad.views_count}
                   </span> 
                   <span className="mr-1">•</span>  
                   <span className="text-sm text-black/80 font-medium flex items-center">

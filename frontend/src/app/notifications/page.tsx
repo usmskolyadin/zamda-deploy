@@ -37,7 +37,7 @@ export default function Notifications() {
 
   return (
     <div className=" w-full">
-      <section className="bg-[#ffffff]  pb-16 p-4">
+      <section className="bg-[#ffffff]  pb-16 p-4 h-screen">
         
         <div className="max-w-screen-xl lg:flex mx-auto">
           <Sidebar />

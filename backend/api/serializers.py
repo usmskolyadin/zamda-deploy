@@ -2,7 +2,7 @@ import json
 import uuid
 from rest_framework import serializers
 from .models import (
-    AdvertisementImage, Category, Chat, ExtraFieldOption, Notification, Review, SubCategory,
+    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, Review, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
 )
 from django.contrib.auth.models import User
@@ -157,50 +157,93 @@ class OwnerSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "first_name", "last_name", "email", "profile"]
 
+EXPIRATION_DAYS = 30
+
 from datetime import timedelta
 from django.utils import timezone
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
+    time_left = serializers.SerializerMethodField()
 
     owner = OwnerSerializer(read_only=True)
-    extra_values = serializers.SerializerMethodField(read_only=True)
     images = AdvertisementImageSerializer(many=True, read_only=True)
+    extra_values = serializers.SerializerMethodField(read_only=True)
+
     extra = serializers.JSONField(write_only=True, required=False)
-    subcategory = serializers.SlugRelatedField(slug_field="slug", read_only=True)
+
+    subcategory = serializers.SlugRelatedField(
+        slug_field="slug",
+        read_only=True
+    )
     subcategory_slug = serializers.SlugRelatedField(
         queryset=SubCategory.objects.all(),
         slug_field="slug",
         write_only=True,
-        source='subcategory'
+        source="subcategory"
     )
-    # subcategory_id = serializers.PrimaryKeyRelatedField(
-    #     queryset=SubCategory.objects.all(),
-    #     write_only=True,
-    #     source='subcategory'
-    # )
-    owner_profile_id = serializers.IntegerField(source="owner.profile.id", read_only=True)
-    category_slug = serializers.CharField(source="subcategory.category.slug", read_only=True)
-    time_left = serializers.SerializerMethodField()
+
+    owner_profile_id = serializers.IntegerField(
+        source="owner.profile.id",
+        read_only=True
+    )
+    category_slug = serializers.CharField(
+        source="subcategory.category.slug",
+        read_only=True
+    )
+
+    status = serializers.CharField(read_only=True)
+    reject_reason = serializers.CharField(read_only=True)
 
     class Meta:
         model = Advertisement
-        fields = ('id','owner','subcategory', 'subcategory_slug', 'category_slug', 'slug', 'title','price','description','images',
-                  'created_at','is_active','extra_values','extra', 'owner_profile_id', "views_count",
-                   "likes_count", "is_liked", "location", 'time_left')
-        read_only_fields = ('created_at','owner','extra_values')
-    
+        fields = (
+            "id",
+            "owner",
+            "subcategory",
+            "subcategory_slug",
+            "category_slug",
+            "slug",
+            "title",
+            "price",
+            "description",
+            "location",
+            "images",
+            "created_at",
+            "views_count",
+            "likes_count",
+            "is_liked",
+            "extra_values",
+            "extra",
+            "status",
+            "reject_reason",
+            "time_left",
+            "owner_profile_id",
+        )
+
+        read_only_fields = (
+            "created_at",
+            "owner",
+            "status",
+            "reject_reason",
+            "extra_values",
+        )
+
+    # -------------------- computed fields --------------------
+
     def get_time_left(self, obj):
-        expires_at = obj.created_at + timedelta(days=30)
+        if obj.status != AdvertisementStatus.ACTIVE:
+            return 0
+
+        expires_at = obj.created_at + timedelta(days=EXPIRATION_DAYS)
         now = timezone.now()
-        
+
         if now >= expires_at:
             return 0
 
-        time_left = expires_at - now
-        return int(time_left.total_seconds()) 
-    
+        return int((expires_at - now).total_seconds())
+
     def get_extra_values(self, obj):
         return AdvertisementExtraFieldSerializer(
             obj.extra_values.select_related("field_definition"),
@@ -211,105 +254,141 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return obj.likes.count()
 
     def get_is_liked(self, obj):
-        user = self.context.get("request").user
-        if user.is_authenticated:
-            return obj.likes.filter(id=user.id).exists()
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(id=request.user.id).exists()
         return False
-    
+
+    # -------------------- validation --------------------
+
     def validate_extra(self, value):
         if not isinstance(value, dict):
-            raise serializers.ValidationError('Extra must be an object/dict of key->value.')
-
+            raise serializers.ValidationError(
+                "Extra must be an object: key -> value"
+            )
         return value
-    
 
     def _validate_and_prepare_extra(self, subcategory, extra_dict):
         prepared = []
         if not extra_dict:
             return prepared
 
-        defs = {d.key: d for d in ExtraFieldDefinition.objects.filter(subcategory=subcategory)}
+        defs = {
+            d.key: d
+            for d in ExtraFieldDefinition.objects.filter(
+                subcategory=subcategory
+            )
+        }
+
         for key, raw_val in extra_dict.items():
             if key not in defs:
-                raise serializers.ValidationError({ 'extra': f'Unknown field key "{key}" for subcategory.'})
+                raise serializers.ValidationError({
+                    "extra": f'Unknown field "{key}" for this subcategory'
+                })
+
             definition = defs[key]
+
             try:
-                casted = cast_value_by_type(raw_val, definition.field_type)
+                casted = cast_value_by_type(
+                    raw_val,
+                    definition.field_type
+                )
             except serializers.ValidationError as e:
-                raise serializers.ValidationError({ 'extra': { key: e.detail if hasattr(e,'detail') else str(e) }})
-            if definition.field_type == 'date':
-                date_field = serializers.DateField()
-                try:
-                    casted = date_field.to_internal_value(raw_val)
-                except serializers.ValidationError as e:
-                    raise serializers.ValidationError({ 'extra': { key: e.detail }})
+                raise serializers.ValidationError({
+                    "extra": {key: e.detail}
+                })
+
+            if definition.field_type == "date":
+                casted = serializers.DateField().to_internal_value(raw_val)
+
             prepared.append((definition, str(casted)))
+
         return prepared
 
-    def create(self, validated_data):
-        extra_dict = validated_data.pop('extra', None)
-        if isinstance(extra_dict, str):
-            try:
-                extra_dict = json.loads(extra_dict)
-            except json.JSONDecodeError:
-                extra_dict = {}
+    # -------------------- create / update --------------------
 
-        subcategory_obj = validated_data.get('subcategory')
-        if isinstance(subcategory_obj, str):
-            subcategory_obj = SubCategory.objects.get(slug=subcategory_obj)
-            validated_data['subcategory'] = subcategory_obj
-        
-        files = self.context['request'].FILES.getlist('images') if self.context.get('request') else []
+    def create(self, validated_data):
+        request = self.context["request"]
+
+        extra_dict = validated_data.pop("extra", None)
+        files = request.FILES.getlist("images")
+
         if not files:
-            raise serializers.ValidationError({"images": "At least one image is required."})
-        
-        validated_data['owner'] = self.context['request'].user
+            raise serializers.ValidationError({
+                "images": "At least one image is required"
+            })
+
+        validated_data.update({
+            "owner": request.user,
+            "status": AdvertisementStatus.MODERATION,
+            "reject_reason": None,
+        })
+
         ad = super().create(validated_data)
 
-        prepared = self._validate_and_prepare_extra(subcategory_obj, extra_dict or {})
-        for definition, casted_str in prepared:
+        prepared = self._validate_and_prepare_extra(
+            ad.subcategory,
+            extra_dict or {}
+        )
+
+        for definition, value in prepared:
             AdvertisementExtraField.objects.create(
                 ad=ad,
                 field_definition=definition,
-                value=str(casted_str)
+                value=value
             )
 
-        files = self.context['request'].FILES.getlist('images') if self.context.get('request') else []
         for f in files:
-            filename = media_storage.save(f"advertisements/{f.name}", f)
-            AdvertisementImage.objects.create(ad=ad, image=filename)
+            filename = media_storage.save(
+                f"advertisements/{f.name}",
+                f
+            )
+            AdvertisementImage.objects.create(
+                ad=ad,
+                image=filename
+            )
 
         return ad
 
     def update(self, instance, validated_data):
-        extra_dict = validated_data.pop('extra', None)
+        request = self.context["request"]
 
-        request = self.context.get('request')
-        new_images = request.FILES.getlist('images') if request else []
+        extra_dict = validated_data.pop("extra", None)
+        new_images = request.FILES.getlist("images")
+
+        instance.status = AdvertisementStatus.MODERATION
+        instance.reject_reason = None
 
         ad = super().update(instance, validated_data)
 
         if extra_dict is not None:
             ad.extra_values.all().delete()
-            if isinstance(extra_dict, str):
-                extra_dict = json.loads(extra_dict)
-            prepared = self._validate_and_prepare_extra(ad.subcategory, extra_dict or {})
-            for definition, casted_str in prepared:
+            prepared = self._validate_and_prepare_extra(
+                ad.subcategory,
+                extra_dict
+            )
+            for definition, value in prepared:
                 AdvertisementExtraField.objects.create(
                     ad=ad,
                     field_definition=definition,
-                    value=str(casted_str)
+                    value=value
                 )
 
-        existing_ids = request.data.get('existing_ids')
+        existing_ids = request.data.get("existing_ids")
         if existing_ids:
             if isinstance(existing_ids, str):
                 existing_ids = json.loads(existing_ids)
             ad.images.exclude(id__in=existing_ids).delete()
 
         for f in new_images:
-            filename = media_storage.save(f"advertisements/{f.name}", f)
-            AdvertisementImage.objects.create(ad=ad, image=filename)
+            filename = media_storage.save(
+                f"advertisements/{f.name}",
+                f
+            )
+            AdvertisementImage.objects.create(
+                ad=ad,
+                image=filename
+            )
 
         return ad
 
