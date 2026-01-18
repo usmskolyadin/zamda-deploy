@@ -31,11 +31,25 @@ class AdvertisementExtraFieldInline(admin.TabularInline):
     model = AdvertisementExtraField
     extra = 0
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "field_definition":
+            try:
+                obj_id = request.resolver_match.kwargs.get("object_id")
+                if obj_id:
+                    ad = Advertisement.objects.get(pk=obj_id)
+                    kwargs["queryset"] = ExtraFieldDefinition.objects.filter(
+                        subcategory=ad.subcategory
+                    )
+            except Exception:
+                pass
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class AdvertisementImageInline(admin.TabularInline):
     model = AdvertisementImage
     extra = 1
-    
+    fields = ("image",)
+
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
     list_display = (
@@ -60,6 +74,11 @@ class AdvertisementAdmin(admin.ModelAdmin):
         "owner",
         "created_at",
         "updated_at",
+    )
+
+    inlines = (
+        AdvertisementImageInline,
+        AdvertisementExtraFieldInline,
     )
 
     fieldsets = (
