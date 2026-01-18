@@ -204,8 +204,8 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     ]
 
     filterset_fields = [
-        "subcategory",
-        "subcategory__category",
+        "subcategory__slug",
+        "subcategory__category__slug",
         "owner__username",
         "owner__profile__city",
         "status",
