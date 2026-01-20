@@ -6,9 +6,9 @@ from django.db import IntegrityError
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, PasswordResetCode, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
-    CategorySerializer, ChatSerializer, MessageSerializer, ProfileSerializer, ReportSerializer, ReviewSerializer, SubCategorySerializer,
+    CategorySerializer, ChatSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
 )
 from .permissions import IsOwnerOrReadOnly
@@ -181,6 +181,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+from django.db.models import Count
 
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -257,8 +258,47 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return qs.filter(status=AdvertisementStatus.ACTIVE)
 
-        # 🔵 list — только активные
         return qs.filter(status=AdvertisementStatus.ACTIVE)
+    
+    from rest_framework.permissions import IsAuthenticated
+    from rest_framework.decorators import action
+    from rest_framework.response import Response
+
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="my/counts",
+    )
+    def my_counts(self, request):
+        """
+        Количество объявлений пользователя по статусам
+        """
+        qs = (
+            Advertisement.objects
+            .filter(owner=request.user)
+            .values("status")
+            .annotate(count=Count("id"))
+        )
+
+        # значения по умолчанию
+        result = {
+            AdvertisementStatus.ACTIVE: 0,
+            AdvertisementStatus.ARCHIVED: 0,
+            AdvertisementStatus.MODERATION: 0,
+            AdvertisementStatus.REJECTED: 0,
+        }
+
+        for row in qs:
+            result[row["status"]] = row["count"]
+
+        return Response({
+            "active": result[AdvertisementStatus.ACTIVE],
+            "archived": result[AdvertisementStatus.ARCHIVED],
+            "moderation": result[AdvertisementStatus.MODERATION],
+            "rejected": result[AdvertisementStatus.REJECTED],
+        })
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated], url_path="my")
     def my_ads(self, request):
@@ -746,3 +786,87 @@ class VerifyCodeView(generics.GenericAPIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }, status=201)
+    
+class PasswordResetRequestView(generics.GenericAPIView):
+    serializer_class = PasswordResetRequestSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=400)
+
+        code = str(random.randint(100000, 999999))
+
+        PasswordResetCode.objects.update_or_create(
+            email=email,
+            defaults={"code": code},
+        )
+
+        html = render_to_string("emails/reset_password.html", {
+            "code": code,
+            "email": email,
+        })
+
+        message = Mail(
+            from_email="support@zamda.net",
+            to_emails=email,
+            subject="ZAMDA — Password reset",
+            html_content=html,
+        )
+
+        SendGridAPIClient(os.getenv("SENDGRID_API_KEY")).send(message)
+
+        return Response({"detail": "Reset code sent"}, status=200)
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        code = serializer.validated_data["code"]
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            record = PasswordResetCode.objects.get(email=email)
+        except PasswordResetCode.DoesNotExist:
+            return Response({"detail": "Invalid request"}, status=400)
+
+        if record.is_expired():
+            record.delete()
+            return Response({"detail": "Code expired"}, status=400)
+
+        if record.code != code:
+            return Response({"detail": "Invalid code"}, status=400)
+
+        user = User.objects.get(email=email)
+        user.set_password(new_password)
+        user.save()
+
+        record.delete()
+
+        return Response({"detail": "Password updated"}, status=200)
+
+class MyAdsCountsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        qs = Advertisement.objects.filter(owner=user)
+
+        return Response({
+            "active": qs.filter(status="active").count(),
+            "archived": qs.filter(status="archived").count(),
+            "moderation": qs.filter(status="moderation").count(),
+            "rejected": qs.filter(status="rejected").count(),
+        })

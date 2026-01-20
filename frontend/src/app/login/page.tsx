@@ -172,7 +172,7 @@ export default function Login() {
               />
 
               <p className="text-black mt-2 text-left text-sm">
-                Forgot your password? <Link className="underline" href="/register">Restore</Link>
+                Forgot your password? <Link className="underline" href="/restorepassword">Restore</Link>
               </p>
 
               {error && <p className="text-red-500 mt-2 text-center">{error}</p>}

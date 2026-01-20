@@ -51,8 +51,8 @@ export default function SearchBar() {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-4 border-0.5  border text-gray-900 border-black rounded-3xl ml-2 lg:h-[44px] h-[40px] lg:w-[510px] w-3/4"
-        placeholder="Find an ad..."
+        className="p-4 border-0.5  border text-gray-900 border-black rounded-3xl ml-2 lg:h-[44px] h-[40px] lg:w-[510px] w-58"
+        placeholder="Find an Ad..."
         type="text"
       />
       {loading && <p className="absolute top-12 left-4 text-gray-900">Loading...</p>}

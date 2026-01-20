@@ -11,13 +11,33 @@ import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 
-export default function Listings() {
+type Counts = {
+  active: number;
+  archived: number;
+  moderation: number;
+  rejected: number;
+};
+
+export default function ListingsClient() {
   const [activeTab, setActiveTab] = useState<"active" | "archived" | "moderation" | "rejected">("active");
   const { user } = useAuth();
   const profileId = user?.profile.id;
 
   const [profile, setProfile] = useState<any>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
+  const [counts, setCounts] = useState<Counts>()
+
+  useEffect(() => {
+    if (!profileId) return;
+
+    const fetchCounts = async () => {
+      const res = await apiFetchAuth(`/api/ads/my/counts/`);
+      setCounts(res)
+      console.log(res)
+    };
+
+    fetchCounts();
+  }, [profileId]);
 
   useEffect(() => {
     if (!profileId) return;
@@ -85,7 +105,7 @@ export default function Listings() {
                 onClick={() => setActiveTab("active")}
               >
                 Active Listings 
-                {/* <sup className="text-xs font-medium">{activeCount}</sup> */}
+                <sup className="text-sm font-medium ml-1">{counts?.active}</sup>
               </button>
               <button
                 className={`cursor-pointer text-lg font-bold pb-2 ${
@@ -94,7 +114,7 @@ export default function Listings() {
                 onClick={() => setActiveTab("archived")}
               >
                 Archived 
-                {/* <sup className="text-xs font-medium">{archivedCount}</sup> */}
+                <sup className="text-sm font-medium ml-1">{counts?.archived}</sup>
               </button>
               <button
                 className={`cursor-pointer text-lg font-bold  pb-2 ${
@@ -102,8 +122,8 @@ export default function Listings() {
                 }`}
                 onClick={() => setActiveTab("moderation")}
               >
-                On Moderation 
-                {/* <sup className="text-xs font-medium">{moderationCount}</sup> */}
+                Pending Review
+                <sup className="text-sm font-medium ml-1">{counts?.moderation}</sup>
               </button>
               <button
                 className={`cursor-pointer text-lg font-bold pb-2 ${
@@ -111,8 +131,8 @@ export default function Listings() {
                 }`}
                 onClick={() => setActiveTab("rejected")}
               >
-                Rejected 
-                {/* <sup className="text-xs font-medium">{rejectedCount}</sup> */}
+                Not Approved 
+                <sup className="text-sm font-medium ml-1">{counts?.rejected}</sup>
               </button>
             </div>
 
