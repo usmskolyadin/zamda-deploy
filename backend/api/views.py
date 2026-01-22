@@ -203,14 +203,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-
-    filterset_fields = [
-        "subcategory__slug",
-        "subcategory__category__slug",
-        "owner__username",
-        "owner__profile__city",
-        "status",
-    ]
+    filterset_class = AdvertisementFilter
 
     search_fields = [
         "title",
@@ -598,13 +591,51 @@ class ChatViewSet(viewsets.ModelViewSet):
 
         return Response({"ok": True}, status=201)
 
-    
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.all()
+        user_qs = Notification.objects.filter(
+            user=self.request.user,
+            is_deleted=False
+        )
+        global_qs = Notification.objects.filter(
+            is_global=True,
+            is_deleted=False
+        )
+        return (user_qs | global_qs).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        notification = self.get_object()
+        notification.is_deleted = True
+        notification.save(update_fields=["is_deleted"])
+        return Response(status=204)
+
+    @action(detail=False, methods=["get"])
+    def unread_count(self, request):
+        user_notifications = Notification.objects.filter(
+            user=request.user,
+            is_read=False,
+            is_deleted=False
+        )
+        global_notifications = Notification.objects.filter(
+            is_global=True,
+            is_read=False,
+            is_deleted=False
+        )
+        total_count = (user_notifications | global_notifications).count()
+        return Response({'unread_count': total_count})
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()

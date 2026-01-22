@@ -41,7 +41,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const ordering = mapSortToOrdering(searchParams.sort as SortType | undefined);
   if (ordering) params.append("ordering", ordering);
 
-  const res = await fetch(`${API_URL}/api/ads/?${params.toString()}/?status=active`, {
+  const res = await fetch(`${API_URL}/api/ads/?${params.toString()}`, {
     cache: "no-store",
   });
 

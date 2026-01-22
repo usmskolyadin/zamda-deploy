@@ -33,7 +33,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
 
   return (
     <Link href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
-      <div className="bg-white rounded-2xl w-full hover:opacity-70 transition">
+      <div className="bg-white rounded-2xl  w-full hover:opacity-70 transition">
         <div className="relative">
           <img
             src={ad.images[0]?.image}
@@ -84,7 +84,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
               }}
-              className="text-gray-800 line-clamp-3 break-words overflow-hidden leading-snug"
+              className="text-gray-800 min-h-17 line-clamp-3 break-words overflow-hidden leading-snug"
             >
               {ad.description}
             </p>

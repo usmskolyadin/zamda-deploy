@@ -473,7 +473,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ["id", "title", "message", "is_read", "created_at"]
+        fields = ["id", "title", "message", "is_read", "created_at", "user"]
 
 from rest_framework import serializers
 from django.contrib.auth.models import User

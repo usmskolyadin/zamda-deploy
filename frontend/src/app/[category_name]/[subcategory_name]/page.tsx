@@ -15,8 +15,6 @@ interface Props {
   searchParams: { [key: string]: string | undefined };
 }
 
-
-
 export default async function AdsBySubcategory({ params, searchParams }: Props) {
   const subcategories = await getSubCategories(params.category_name);
 

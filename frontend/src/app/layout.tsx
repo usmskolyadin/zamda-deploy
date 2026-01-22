@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import Script from "next/script";
+import { ReduxProvider } from "./providers/redux-provider";
 
 export const metadata: Metadata = {
   title: "Zamda — Buy & Sell Locally in the USA",
@@ -40,7 +41,9 @@ export default function RootLayout({
         />
       </head> 
       <body className="antialiased bg-white">
-        <ClientLayout>{children}</ClientLayout>
+        <ReduxProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </ReduxProvider>
       </body>
     </html>
   );
