@@ -27,22 +27,11 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch<any>("/api/ads/?status=active")
+    apiFetch<any>(`/api/ads/${ad.slug}/similar/`)
       .then((data) => {
         setAds(data.results || data);
       })
       
-      .catch((err) => console.error("API error:", err))
-      .finally(() => setLoading(false));
-  }, []);
-
-
-  useEffect(() => {
-    setLoading(true);
-    apiFetch<any>("/api/ads/?status=active")
-      .then((data) => {
-        setAds(data.results || data);
-      })
       .catch((err) => console.error("API error:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -108,7 +97,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
 
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <div className="lg:w-2/3">
+          <div className="lg:w-2/3 lg:pr-36">
 
             <AdSlider ad={ad} />
             <div className="mt-8">
@@ -117,12 +106,12 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
               <h1 className="text-xl font-semibold text-black mt-2 mb-2">
                 Description
               </h1>
-              <p className="text-black lg:w-2/3 break-words overflow-hidden">{ad.description}</p>
+              <p className="text-black break-words overflow-hidden">{ad.description}</p>
               <h1 className="text-xl font-semibold text-black mt-2 mb-1">
                 Location
               </h1>
-              <p className="text-black lg:w-2/3 mb-2">{ad.location}</p>
-              <div className="lg:w-2/3 w-full mb-4">
+              <p className="text-black mb-2">{ad.location}</p>
+              <div className=" w-full mb-4">
                 <AdMap
                   lat={ad.latitude}
                   lng={ad.longitude}
@@ -151,7 +140,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
               <h1 className="text-2xl font-bold text-black mt-24 mb-2">
                 Similar Listings
               </h1>
-              <div className="grid gap-3 lg:grid-cols-3 grid-cols-1 mt-4 lg:mr-36">
+              <div className="grid gap-3 lg:grid-cols-3 grid-cols-1 mt-4 ">
                 {ads.map((similarAd: Advertisement) => (
                   <ProductCard key={similarAd.id} ad={similarAd} />
                 ))}

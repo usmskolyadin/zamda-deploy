@@ -198,7 +198,7 @@ function FiltersBody({
   handleShow,
 }: FiltersBodyProps) {
   return (
-  <div className=" w-full p-4 bg-white rounded-3xl">
+  <div className=" w-full pr-8 bg-white rounded-3xl">
   <h1 className="text-black font-bold text-3xl py-4">Filters</h1>
 
   <div className="mb-4">

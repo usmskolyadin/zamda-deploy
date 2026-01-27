@@ -92,7 +92,7 @@ if (loading) {
                 <div className="flex">
                   <img src={c.seller.profile.avatar} className="rounded-full w-12 h-12 mr-4" />
                   <div>
-                    <div className="text-black font-semibold">{c.ad_title}</div>
+                    <div className="text-black font-semibold">{c.seller.first_name} {c.seller.last_name} <span className="text-gray-600 ml-0.5">{c.ad_title}</span></div>
                     <div className="text-gray-600 text-sm truncate max-w-[60ch]">
                       {c.last ? c.last.text : "No messages yet"}
                     </div>

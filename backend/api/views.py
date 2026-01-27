@@ -3,6 +3,8 @@ from django.forms import ValidationError
 from django.shortcuts import render
 from django.db import IntegrityError
 
+from api.services.recommendations import AdvertisementRecommender
+
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -182,6 +184,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from django.db.models import Count
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -221,7 +226,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "similar"]:
             return [AllowAny()]
         if self.action in ["my_ads", "liked"]:
             return [IsAuthenticated()]
@@ -242,22 +247,39 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             created_at__lte=expiration_border
         ).update(status=AdvertisementStatus.ARCHIVED)
 
-        # 🔴 owner-действия — видят ВСЕ свои объявления
         if self.action in ["relist", "update", "partial_update", "destroy"]:
             if self.request.user.is_authenticated:
                 return qs.filter(owner=self.request.user)
 
-        # 🔵 retrieve — показываем только активные
         if self.action == "retrieve":
             return qs.filter(status=AdvertisementStatus.ACTIVE)
 
         return qs.filter(status=AdvertisementStatus.ACTIVE)
     
-    from rest_framework.permissions import IsAuthenticated
-    from rest_framework.decorators import action
-    from rest_framework.response import Response
 
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[AllowAny],
+        url_path="similar"
+    )
+    def similar(self, request, slug=None):
+        """
+        Похожие объявления
+        GET /ads/{slug}/similar/
+        """
+        ad = self.get_object()
 
+        qs = AdvertisementRecommender.similar(ad)
+
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+    
     @action(
         detail=False,
         methods=["get"],

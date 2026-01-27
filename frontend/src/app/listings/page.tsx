@@ -121,7 +121,7 @@ export default function ListingsClient() {
                   activeTab === "moderation" ? "text-black border-b-4 border-black" : "text-gray-400"
                 }`}
                 onClick={() => setActiveTab("moderation")}
-              >
+              > 
                 Pending Review
                 <sup className="text-sm font-medium ml-1">{counts?.moderation}</sup>
               </button>
@@ -136,7 +136,6 @@ export default function ListingsClient() {
               </button>
             </div>
 
-            {/* Ads List */}
             <div className="flex flex-col">
               {ads.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -169,9 +168,13 @@ export default function ListingsClient() {
 
                       <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
                         <div className="w-full flex items-center justify-between">
-                        <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
-                                <h1 className="text-xl text-black font-bold truncate pr-2">{ad.title}</h1>
-                        </Link>
+                        {activeTab === "archived" || activeTab === "rejected" || activeTab === "moderation" ? (
+                          <h1 className="text-xl text-black font-bold truncate pr-2">{ad.title}</h1>
+                        ) : (
+                          <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
+                                  <h1 className="text-xl text-black font-bold truncate pr-2">{ad.title}</h1>
+                          </Link>
+                        )}
                           <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
                             {new Date(ad.created_at).toLocaleString("en-US", {
                               month: "long",
@@ -188,7 +191,6 @@ export default function ListingsClient() {
                           {ad.description}
                         </p>
 
-                        {/* Status */}
                         <p className="mt-2 text-black font-medium text-sm">
                           <span
                             className={`text-sm font-medium mr-2 ${

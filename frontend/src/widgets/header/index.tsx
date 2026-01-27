@@ -77,7 +77,7 @@ export default function Header() {
                     <path fillRule="evenodd" clipRule="evenodd" d="M10.7182 22.0474C11.1063 21.8221 11.6035 21.9543 11.8287 22.3425C11.9478 22.5476 12.1186 22.718 12.3241 22.8365C12.5297 22.9549 12.7628 23.0172 13 23.0172C13.2373 23.0172 13.4704 22.9549 13.6759 22.8365C13.8815 22.718 14.0524 22.5476 14.1714 22.3425C14.3965 21.9543 14.8938 21.8221 15.2818 22.0474C15.67 22.2725 15.8022 22.7697 15.577 23.1579C15.3151 23.6093 14.9393 23.984 14.487 24.2446C14.0347 24.505 13.522 24.6422 13 24.6422C12.4782 24.6422 11.9653 24.505 11.5131 24.2446C11.0608 23.984 10.6849 23.6093 10.4231 23.1579C10.1979 22.7697 10.33 22.2725 10.7182 22.0474Z" fill="white"/>
                   </svg>
                     {n_unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-0 bg-red-500 text-white text-xs font-bold px-1.5 py-0 rounded-full">
+                      <span className="absolute -top-1 right-1 bg-red-500 text-white text-xs font-bold px-1 py-0 rounded-full">
                         {n_unreadCount > 99 ? "99+" : n_unreadCount}
                       </span>
                     )}
@@ -93,7 +93,7 @@ export default function Header() {
                     )}
                 </Link>
                 <Link href={"/favorites"}>
-                  <svg className="mr-3 hover:scale-105" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="mr-1.5 hover:scale-105" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M23.8334 9.60074C23.8334 11.2761 23.1901 12.8853 22.0414 14.0756C19.3971 16.8166 16.8323 19.6747 14.0892 22.3163C13.4604 22.913 12.463 22.8913 11.8613 22.2676L3.95832 14.0756C1.56956 11.5995 1.56956 7.602 3.95832 5.12587C6.37055 2.6254 10.3003 2.6254 12.7126 5.12587L12.9999 5.42362L13.2869 5.12604C14.4435 3.92654 16.0187 3.25 17.6642 3.25C19.3096 3.25 20.8847 3.92648 22.0414 5.12587C23.1902 6.31632 23.8334 7.92542 23.8334 9.60074Z" fill="white"/>
                   </svg>
                 </Link>
