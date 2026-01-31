@@ -209,13 +209,13 @@ export default function Header() {
               </div>
             </div>
           </header>
-          <nav className="flex lg:h-[80px] h-[140px] bg-white items-center shadow-lg p-4 ">
+          <nav className="flex lg:h-[80px] h-[110px] bg-white items-center shadow-lg p-4 ">
             <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>
                   <div className="flex items-center">
-                    <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
-                    <h1 className=" mr-12 font-bold text-4xl text-black">Zamda</h1>
+                    <Image src={"/zamda-white.png"} width={1000} height={1000} className="lg:w-10 w-8 lg:h-10 h-8" alt={""} />
+                    <h1 className=" mr-12 font-bold lg:text-4xl text-3xl text-black">Zamda</h1>
                   </div>
                 </Link>
                 <CategoryDropdown />

@@ -15,11 +15,11 @@ const ProfileImg = (profileImgUrl: string) => {
 }
 
 const tabs = [
-  { id: "search", label: "Search", icon: <FaSearch />, href: "/search" },
-  { id: "favorites", label: "Favorites", icon: <FaHeart />, href: "/favorites" },
-  { id: "ads", label: "Place an Ad", icon: <FaPlusCircle />, highlight: true, href: "/new" },
-  { id: "messages", label: "Messages", icon: <FaCommentDots />, href: "/messages" },
-  { id: "profile", label: "Profile", icon: <FaUser />, href: "/listings" },
+  { id: "search", label: "Search", icon: <FaSearch className="w-5 h-5" />, href: "/search" },
+  { id: "favorites", label: "Favorites", icon: <FaHeart className="w-5 h-5" />, href: "/favorites" },
+  { id: "ads", label: "Place an Ad", icon: <FaPlusCircle className="w-5 h-5" />, highlight: true, href: "/new" },
+  { id: "messages", label: "Messages", icon: <FaCommentDots className="w-5 h-5" />, href: "/messages" },
+  { id: "profile", label: "Profile", icon: <FaUser className="w-5 h-5" />, href: "/listings" },
 ];
 
 export default function BottomNav() {
@@ -45,8 +45,8 @@ export default function BottomNav() {
   }, [user])
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow z-50">
-      <div className="flex lg:hidden justify-around items-center py-2">
+<nav className="fixed bottom-0 left-0 right-0 bg-white z-50 shadow-[0_-6px_20px_rgba(0,0,0,0.12)]">
+      <div className="flex lg:hidden justify-around items-center py-1.5">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
 

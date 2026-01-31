@@ -162,7 +162,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
                 )}
 
                 {!loading && !error && ads.length > 0 && (
-                  <div className="grid gap-3 lg:grid-cols-3 grid-cols-1 mt-4">
+                  <div className="grid gap-3 lg:grid-cols-3 grid-cols-2 mt-4">
                     {ads.map((similarAd) => (
                       <ProductCard key={similarAd.id} ad={similarAd} />
                     ))}

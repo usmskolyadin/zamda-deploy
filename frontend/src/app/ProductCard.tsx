@@ -38,7 +38,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           <img
             src={ad.images[0]?.image}
             alt={ad.title}
-            className="w-full max-h-[200px] min-h-[200px] object-cover rounded-2xl mb-2"
+            className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-2xl mb-2"
           />
           <button
             onClick={(e) => {
@@ -73,8 +73,8 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           </button>
         </div>
 
-        <div className="p-4 flex-col items-center justify-center">
-          <h3 className="font-semibold text-xl text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden truncate">
+        <div className="lg:p-4 p-2 flex-col items-center justify-center">
+          <h3 className="font-semibold lg:text-xl text-lg text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden truncate">
             {ad.title}
           </h3>
           <div className="pl-2 pr-2">
@@ -89,19 +89,19 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
               {ad.description}
             </p>
           </div>
-          <div className="mt-4 flex items-center justify-between p-2 space-x-2 mb-1 w-full">
+          <div className="lg:mt-4 mt-2 flex items-center justify-between p-2 space-x-2 mb-1 w-full">
             <div className="w-full">
               <p className="pb-1 w-full flex items-center text-sm font-medium text-black/80 truncate overflow-hidden text-ellipsis max-w-[180px] sm:max-w-[220px] md:max-w-[260px]">
-                <svg className="mr-1" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="mr-1 min-h-5 min-w-5" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 
                 {ad.location}
               </p>     
               <div className="flex justify-between w-full">
-                <span className="text-black font-semibold text-xl flex items-center">${Number(ad.price)}</span>
+                <span className="text-black font-semibold lg:text-xl text-lg flex items-center">${Number(ad.price)}</span>
                 <div className="flex items-center">
-                                  <span className="text-sm text-black/80 font-medium mr-1 flex items-center">
+                  <span className="text-sm text-black/80 font-medium mr-1 flex items-center">
                     <svg className="mr-1" width="18" height="18" viewBox="0 -4 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                             <g id="Dribbble-Light-Preview" transform="translate(-260.000000, -4563.000000)" fill="#000000">

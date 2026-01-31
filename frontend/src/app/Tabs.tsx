@@ -107,7 +107,7 @@ export default function TabsExample() {
             ))}
           </div>
         ) : ads.length ? (
-          <div className="grid lg:grid-cols-4 grid-cols-1 gap-4 mt-6">
+          <div className="grid lg:grid-cols-4 grid-cols-2 gap-4 mt-6">
             {ads.map((ad) => (
               <ProductCard key={ad.id} ad={ad} />
             ))}

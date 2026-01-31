@@ -8,7 +8,7 @@ type SidebarProps = {
 };
 
 export default function Sidebar({notHideOnPhone}: SidebarProps) {
-  const { accessToken, user } = useAuth();
+  const { user, logout } = useAuth();
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
 
   return (
@@ -52,9 +52,7 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                         <button className="w-full mt-2 p-4 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
                       </Link>
                       <div className='pt-4'>
-                        <Link href={"/logout"} >
-                          <button className="w-full mt-2 px-4 py-4 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
-                        </Link>
+                          <button onClick={logout} className="w-full mt-2 px-4 py-4 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
                       </div>
                     </div>
                     </div>

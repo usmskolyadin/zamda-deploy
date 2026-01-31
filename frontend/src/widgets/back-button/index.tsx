@@ -14,7 +14,7 @@ export default function BackButton({ absolute = false, className }: BackButtonPr
     <button
       onClick={() => router.back()}
       className={`
-        flex items-center cursor-pointer border border-black justify-center p-2 rounded-full hover:bg-gray-200 transition
+        flex items-center cursor-pointer border border-black justify-center lg:p-2 p-1 rounded-full hover:bg-gray-200 transition
         ${absolute ? "absolute right-0 top-[-2]" : "static"}
         ${className || ""}
       `}

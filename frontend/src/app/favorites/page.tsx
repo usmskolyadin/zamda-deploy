@@ -74,7 +74,7 @@ export default function Favorites() {
                             <img
                             src={ad.images[0]?.image}
                             alt={ad.title}
-                            className="rounded-2xl lg:h-48 lg:w-72 w-full object-cover"
+                            className="rounded-2xl lg:h-48 lg:w-72 min-h-52 max-h-52 w-full object-cover"
                             width={288}
                             height={192}
                             />

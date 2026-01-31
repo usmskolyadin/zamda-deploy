@@ -40,7 +40,7 @@ export default function CategoryDropdown() {
     >
       <button
         type="button"
-        className={`rounded-3xl cursor-pointer p-4 lg:h-[44px] h-[40px] lg:w-[188px] w-[170px] flex justify-center items-center transition-colors duration-200
+        className={`rounded-3xl cursor-pointer p-4 lg:h-[44px] h-[35px] lg:w-[188px] w-[170px] flex justify-center items-center transition-colors duration-200
           ${open ? "bg-[#E5E9F2] text-black" : "bg-black text-white hover:bg-[#E5E9F2] hover:text-black"}`}
       >
         <span className={open ? "text-black" : "hover:text-black"}>All categories</span>
