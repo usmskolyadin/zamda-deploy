@@ -115,7 +115,7 @@ else:
             "OPTIONS": {
                 "sslmode": os.getenv("DB_SSLMODE", "require"),
             },
-            "CONN_MAX_AGE": 60,
+            "CONN_MAX_AGE": 0,
         }
     }
 

@@ -50,15 +50,7 @@ export default function TabsExample() {
         return;
       }
 
-      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}/?status=active`;
-
-      if (tabId === "recommendations") {
-        url += "&filter=recommendations";
-      }
-
-      if (tabId === "recent") {
-        url += "&filter=recent";
-      }
+      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}`;
 
       const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
 

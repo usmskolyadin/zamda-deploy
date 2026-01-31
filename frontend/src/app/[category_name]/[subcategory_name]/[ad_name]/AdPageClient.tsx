@@ -22,19 +22,24 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
 
   const { isLiked, likesCount, toggleLike } = useLikeAd(ad.slug, accessToken);
   const rating = Math.min(5, Math.max(0, Math.round(ad?.owner.profile?.rating || 0)));
-
+  const [error, setError] = useState<string | null>(null);
   const { viewsCount } = useViewAd(ad.slug);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
+
     apiFetch<any>(`/api/ads/${ad.slug}/similar/`)
       .then((data) => {
-        setAds(data.results || data);
+        setAds(data?.results ?? []);
       })
-      
-      .catch((err) => console.error("API error:", err))
+      .catch((err) => {
+        console.error("API error:", err);
+        setError("Failed to load similar ads");
+        setAds([]);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [ad.slug]);
 
   return (
     <div className="w-full ">
@@ -140,11 +145,30 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
               <h1 className="text-2xl font-bold text-black mt-24 mb-2">
                 Similar Listings
               </h1>
-              <div className="grid gap-3 lg:grid-cols-3 grid-cols-1 mt-4 ">
-                {ads.map((similarAd: Advertisement) => (
-                  <ProductCard key={similarAd.id} ad={similarAd} />
-                ))}
-              </div>
+                {loading && (
+                  <div className="grid lg:grid-cols-3 gap-4 mt-6">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <ProductCard key={i} loading />
+                    ))}
+                  </div>
+                )}
+
+                {!loading && error && (
+                  <p className="text-gray-500 mt-4">{error}</p>
+                )}
+
+                {!loading && !error && ads.length === 0 && (
+                  <p className="text-gray-500 mt-4">No similar listings</p>
+                )}
+
+                {!loading && !error && ads.length > 0 && (
+                  <div className="grid gap-3 lg:grid-cols-3 grid-cols-1 mt-4">
+                    {ads.map((similarAd) => (
+                      <ProductCard key={similarAd.id} ad={similarAd} />
+                    ))}
+                  </div>
+                )}
+
             </div>
           </div>
 

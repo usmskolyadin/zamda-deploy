@@ -85,7 +85,7 @@ export default function AdActions({ ad }: AdPageProps) {
       ) : (
         <>
           {accessToken ? (
-            <button className="w-full p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">
+            <button disabled className="w-full p-3.5 bg-[#36B731] rounded-3xl  hover:bg-green-500 transition ">
               Show phone
             </button>
           ) : (
