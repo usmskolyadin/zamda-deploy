@@ -8,6 +8,11 @@ export default function CategoryDropdown() {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const canHover =
+    typeof window !== "undefined" &&
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
   useEffect(() => {
     async function load() {
@@ -21,31 +26,59 @@ export default function CategoryDropdown() {
     load();
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleMouseEnter = () => {
-    // Отменяем возможное закрытие
+    if (!canHover) return;
     if (closeTimeout.current) clearTimeout(closeTimeout.current);
     setOpen(true);
   };
 
   const handleMouseLeave = () => {
-    // Даем пользователю время перевести курсор
-    closeTimeout.current = setTimeout(() => setOpen(false), 250);
+    if (!canHover) return;
+    closeTimeout.current = setTimeout(() => setOpen(false), 200);
+  };
+
+  const handleToggle = () => {
+    if (canHover) return;
+    setOpen(prev => !prev);
   };
 
   return (
     <div
+      ref={dropdownRef}
       className="relative inline-block"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <button
         type="button"
-        className={`rounded-3xl cursor-pointer p-4 lg:h-[44px] h-[35px] lg:w-[188px] w-[170px] flex justify-center items-center transition-colors duration-200
-          ${open ? "bg-[#E5E9F2] text-black" : "bg-black text-white hover:bg-[#E5E9F2] hover:text-black"}`}
+        onClick={handleToggle}
+        className={`rounded-3xl cursor-pointer p-4 lg:h-[44px] h-[35px] lg:w-[188px] w-[170px]
+          flex justify-center items-center transition-colors duration-200
+          ${
+            open
+              ? "bg-[#E5E9F2] text-black"
+              : "bg-black text-white hover:bg-[#E5E9F2] hover:text-black"
+          }`}
       >
-        <span className={open ? "text-black" : "hover:text-black"}>All categories</span>
+        <span>All categories</span>
         <svg
-          className={`ml-2 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`ml-2 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
           width="14"
           height="9"
           viewBox="0 0 12 7"
@@ -60,14 +93,19 @@ export default function CategoryDropdown() {
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-2 py-3 w-[188px] bg-white rounded-3xl shadow-lg p-4 z-10 transition-opacity duration-200">
+        <div className="absolute left-0 mt-2 py-3 w-[188px] bg-white rounded-3xl shadow-lg p-4 z-10">
           <ul className="space-y-0.5">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <li
-                key={index}
+                key={category.id ?? category.slug}
                 className="hover:bg-gray-100 p-2 rounded-xl text-black cursor-pointer"
               >
-                <Link href={`/${category.slug}`}>{category.name}</Link>
+                <Link
+                  href={`/${category.slug}`}
+                  onClick={() => setOpen(false)}
+                >
+                  {category.name}
+                </Link>
               </li>
             ))}
           </ul>

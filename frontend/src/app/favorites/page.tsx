@@ -79,7 +79,7 @@ export default function Favorites() {
                             height={192}
                             />
                         </div>
-                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col">
+                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
                             <div className="w-full flex items-center justify-between">
                             <h1 className="text-xl text-black font-bold truncate pr-2">
                                 {ad.title}
@@ -89,8 +89,6 @@ export default function Favorites() {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
                                 })}
                             </span>
                             </div>

@@ -101,7 +101,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
               <div className="flex justify-between w-full">
                 <span className="text-black font-semibold lg:text-xl text-lg flex items-center">${Number(ad.price)}</span>
                 <div className="flex items-center">
-                  <span className="text-sm text-black/80 font-medium mr-1 flex items-center">
+                  <span className="text-sm text-black/80 font-medium mr-1 flex items-center lg:flex hidden">
                     <svg className="mr-1" width="18" height="18" viewBox="0 -4 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                             <g id="Dribbble-Light-Preview" transform="translate(-260.000000, -4563.000000)" fill="#000000">
@@ -115,7 +115,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                     </svg>
                     {ad.views_count}
                   </span> 
-                  <span className="mr-1">•</span>  
+                  <span className="mr-1 lg:flex hidden">•</span>  
                   <span className="text-sm text-black/80 font-medium flex items-center">
                                   <svg
                         width="18"
