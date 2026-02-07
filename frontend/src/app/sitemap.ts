@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const categories = await fetch(`${API_URL}/categories/`, {
+  const categories = await fetch(`${API_URL}/api/categories/`, {
     cache: "no-store",
   }).then(res => res.json());
 
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  const ads = await fetchAllPaginated(`${API_URL}/ads/`);
+  const ads = await fetchAllPaginated(`${API_URL}/api/ads/`);
 
   const adRoutes = ads.map((ad: any) => ({
     url: `${SITE_URL}/ads/${ad.slug}`,
