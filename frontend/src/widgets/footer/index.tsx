@@ -72,16 +72,14 @@ export default function Footer() {
                 </div>
                 
                 <div className='mt-4 text-sm'>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5.5 text-white" href="/about">About</Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5.5 text-white" href="/help">Help</Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5.5 text-white" href="/policy">Privacy Policy </Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5.5 text-white" href="/terms"> Terms of Use</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/about">About</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/help">Help</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/policy">Privacy Policy </Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/terms"> Terms of Use</Link>
                 </div>
               </div>
               </div>
-
-
-          </div>
+         </div>
         </footer>
     </div>
   )

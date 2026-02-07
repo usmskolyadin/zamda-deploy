@@ -13,7 +13,7 @@ export default function ReviewsPage() {
   const params = useParams();
   const profileId = Number(params.id);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   useEffect(() => {
     if (!profileId) return;
@@ -109,7 +109,7 @@ export default function ReviewsPage() {
             ) : (
               <Link 
                 className=" px-4 py-3 mb-4 mt-2 bg-[#36B731] hover:bg-green-500 transition text-white rounded-3xl text-center"
-                href={`/reviews/add/${profile.id}`}>
+                href={accessToken ? (`/reviews/add/${profile.id}`) : ("/login")}>
                 Add review
               </Link>
             )}

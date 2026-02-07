@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, X, AlertCircle } from 'lucide-react';
 
-const MAX_IMAGES = 10;
+const MAX_IMAGES = 15;
 const MAX_FILE_SIZE_MB = 15;
 
 type ExistingImage = { id: number; url: string };

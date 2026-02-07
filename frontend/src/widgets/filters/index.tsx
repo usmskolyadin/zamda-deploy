@@ -264,6 +264,7 @@ function FiltersBody({
             {field.field_type === "int" && (
               <input
                 type="number"
+                min={0}
                 placeholder={field.name}
                 value={extraValues[field.key] || ""}
                 onChange={(e) =>
