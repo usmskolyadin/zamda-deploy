@@ -155,83 +155,7 @@ export default function ListingsClient() {
                 </div>
               ) : (
                 ads.map((ad) => (
-                    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2">
-                      <div className="lg:mr-4 flex-shrink-0">
-                        <img
-                          src={ad.images[0]?.image}
-                          alt={ad.title}
-                          className="rounded-2xl lg:h-48 lg:w-72 h-52 w-full object-cover"
-                          width={288}
-                          height={192}
-                        />
-                      </div>
-
-                      <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
-                        <div className="w-full flex items-center justify-between">
-                        {activeTab === "archived" || activeTab === "rejected" || activeTab === "moderation" ? (
-                          <h1 className="text-xl text-black font-bold truncate pr-2">{ad.title}</h1>
-                        ) : (
-                          <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
-                                  <h1 className="text-xl text-black font-bold truncate pr-2">{ad.title}</h1>
-                          </Link>
-                        )}
-                          <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
-                            {new Date(ad.created_at).toLocaleString("en-US", {
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </span>
-                        </div>
-
-                        <div className="flex w-full items-center mt-1">
-                          <p className="text-lg text-gray-900 font-semibold mr-2">${ad.price}</p>
-                        </div>
-
-                        <p className="text-md text-gray-900 mt-2 line-clamp-3 break-all overflow-hidden">
-                          {ad.description}
-                        </p>
-
-                        <p className="mt-2 text-black font-medium text-sm">
-                          <span
-                            className={`text-sm font-medium mr-2 ${
-                              ad.status === "moderation"
-                                ? "text-yellow-600"
-                                : ad.status === "rejected"
-                                ? "text-red-600"
-                                : ad.status === "active"
-                                ? "text-green-600"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {ad.status === "moderation" && "On moderation"}
-                            {ad.status === "rejected" && "Rejected"}
-                            {ad.status === "active" && "Active"}
-                            {ad.status === "archived" && "Archived"}
-                          </span>
-                          {activeTab === "active" || activeTab === "archived" ? (
-                            <>
-                              Times left: {formatTimeLeft(ad.time_left)}
-                              {ad.status === "archived" && (
-                                <span className="ml-1 text-gray-500">(Archived)</span>
-                              )}
-                            </>
-                          ) : null}
-                        </p>
-
-                        {ad.status === "rejected" && ad.reject_reason && (
-                          <p className="text-sm text-red-500 mt-1">Reason: {ad.reject_reason}</p>
-                        )}
-
-                        {activeTab === "archived" && (
-                          <button
-                            onClick={() => handleRelist(ad.slug)}
-                            className="cursor-pointer px-4 py-1 w-48 my-2 rounded-full bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
-                          >
-                            Renew Listing
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                  <AdListings onRelist={handleRelist} formatTimeLeft={formatTimeLeft} ad={ad} activeTab={activeTab} />
                 ))
               )}
             </div>
@@ -240,4 +164,129 @@ export default function ListingsClient() {
       </section>
     </div>
   );
+}
+
+interface AdListingsProps {
+  ad: Advertisement
+  activeTab: "active" | "archived" | "moderation" | "rejected"
+  onRelist?: (slug: string) => void
+  formatTimeLeft: (seconds: number) => string
+}
+
+export const AdListings = ({
+  ad,
+  activeTab,
+  onRelist,
+  formatTimeLeft,
+}: AdListingsProps) => {
+  const isClickable = activeTab === "active"
+  const CardContent = (
+    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2 cursor-pointer">
+      <div className="lg:mr-4 flex-shrink-0">
+        <img
+          src={ad.images[0]?.image}
+          alt={ad.title}
+          className="rounded-2xl lg:h-48 lg:w-72 h-52 w-full object-cover"
+          width={288}
+          height={192}
+        />
+      </div>
+
+      <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
+        <div className="w-full flex items-center justify-between">
+          <h1 className="text-lg text-black font-bold truncate pr-2">
+            {ad.title}
+          </h1>
+
+          <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
+            {new Date(ad.created_at).toLocaleString("en-US", {
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+        </div>
+
+        <div className="flex w-full items-center mt-1">
+          <p className="text-lg text-gray-900 font-semibold mr-2">
+            ${ad.price}
+          </p>
+        </div>
+
+        <p className="text-sm text-gray-900 mt-2 line-clamp-3 break-all overflow-hidden">
+          {ad.description}
+        </p>
+
+        <p className="mt-2 text-black font-medium text-sm">
+          <span
+            className={`text-sm font-medium mr-2 ${
+              ad.status === "moderation"
+                ? "text-yellow-600"
+                : ad.status === "rejected"
+                ? "text-red-600"
+                : ad.status === "active"
+                ? "text-green-600"
+                : "text-gray-500"
+            }`}
+          >
+            {ad.status === "moderation" && "On moderation"}
+            {ad.status === "rejected" && "Rejected"}
+            {ad.status === "active" && "Active"}
+            {ad.status === "archived" && "Archived"}
+          </span>
+
+          {(ad.status === "active" ||
+            ad.status === "archived" ||
+            ad.status === "rejected") && (
+            <>
+              Time left: {formatTimeLeft(ad.time_left)} <span className="text-xs italic">{ad.status === "active" ? ("(After 30 days this ad will be replaced to archive.)") : ("(After 30 days this ad will be permanently deleted.)")}</span>
+            </>
+          )}
+        </p>
+
+        {ad.status === "rejected" && ad.reject_reason && (
+          <p className="text-sm text-red-500 mt-1">
+            Reason: {ad.reject_reason}
+          </p>
+        )}
+
+        {activeTab === "archived" && (
+          <div className="flex gap-2 mt-2">
+            <Link
+              href={`/edit/${ad.slug}`}
+              className="px-4 py-1 rounded-full bg-gray-300 text-black hover:bg-gray-400 transition"
+            >
+              Edit
+            </Link>
+
+            <button
+              onClick={() => onRelist?.(ad.slug)}
+              className="px-4 py-1 rounded-full bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
+            >
+              Reactivate
+            </button>
+          </div>
+        )}
+
+        {activeTab === "rejected" && (
+          <Link
+            href={`/edit/${ad.slug}`}
+            className="inline-block mt-2 px-4 py-1 w-40 rounded-full bg-gray-300 text-black hover:bg-gray-400 transition"
+          >
+            Fix & Resubmit
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+
+  return isClickable ? (
+    <Link
+      href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}
+      className="block"
+    >
+      {CardContent}
+    </Link>
+  ) : (
+    CardContent
+  )
 }

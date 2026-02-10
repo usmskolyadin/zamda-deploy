@@ -2,7 +2,7 @@ import json
 import uuid
 from rest_framework import serializers
 from .models import (
-    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, Review, SubCategory,
+    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
 )
 from django.contrib.auth.models import User
@@ -230,14 +230,18 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "extra_values",
         )
 
-    # -------------------- computed fields --------------------
-
     def get_time_left(self, obj):
-        if obj.status != AdvertisementStatus.ACTIVE:
-            return 0
-
-        expires_at = obj.created_at + timedelta(days=EXPIRATION_DAYS)
         now = timezone.now()
+
+        if obj.status == AdvertisementStatus.ACTIVE:
+            expires_at = obj.created_at + timedelta(days=30)
+        elif obj.status in (
+            AdvertisementStatus.ARCHIVED,
+            AdvertisementStatus.REJECTED
+        ):
+            expires_at = obj.status_changed_at + timedelta(days=30)
+        else:
+            return 0
 
         if now >= expires_at:
             return 0
@@ -305,8 +309,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
         return prepared
 
-    # -------------------- create / update --------------------
-
     def create(self, validated_data):
         request = self.context["request"]
 
@@ -358,6 +360,13 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
         instance.status = AdvertisementStatus.MODERATION
         instance.reject_reason = None
+
+        if instance.status == AdvertisementStatus.REJECTED:
+            instance.status = AdvertisementStatus.MODERATION
+            instance.reject_reason = None
+
+        elif instance.status == AdvertisementStatus.ARCHIVED:
+            pass
 
         ad = super().update(instance, validated_data)
 
@@ -471,9 +480,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class NotificationSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(source="notification.title")
+    message = serializers.CharField(source="notification.message")
+    created_at = serializers.DateTimeField(source="notification.created_at")
+
     class Meta:
-        model = Notification
-        fields = ["id", "title", "message", "is_read", "created_at", "user"]
+        model = NotificationUserState
+        fields = ("id", "title", "message", "is_read", "created_at")
+
 
 from rest_framework import serializers
 from django.contrib.auth.models import User

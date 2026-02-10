@@ -134,7 +134,17 @@ class Advertisement(models.Model):
         blank=True
     )
 
+    status_changed_at = models.DateTimeField(auto_now_add=True)
+
     def save(self, *args, **kwargs):
+        if self.pk:
+            old_status = Advertisement.objects.filter(pk=self.pk)\
+                .values_list("status", flat=True)\
+                .first()
+
+            if old_status and old_status != self.status:
+                self.status_changed_at = timezone.now()
+
         if not self.slug:
             base_slug = slugify(self.title)
             slug = base_slug
@@ -145,6 +155,7 @@ class Advertisement(models.Model):
             self.slug = slug
 
         super().save(*args, **kwargs)
+
 
     def archive_if_expired(self):
         if self.created_at < timezone.now() - timedelta(days=30):
@@ -201,28 +212,20 @@ class UserProfile(models.Model):
         return f"{self.user.username} Profile"
     
 class Notification(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="notifications",
-        null=True,     
-        blank=True
-    )
     title = models.CharField(max_length=255)
     message = models.TextField()
-
     is_global = models.BooleanField(default=False)
-    is_read = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False) 
-    
     created_at = models.DateTimeField(auto_now_add=True)
 
+class NotificationUserState(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_states")
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name="user_states")
+    is_read = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return self.title
+        unique_together = ("user", "notification")
 
 class Chat(models.Model):
     ad = models.ForeignKey(

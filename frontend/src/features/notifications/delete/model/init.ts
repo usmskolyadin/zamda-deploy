@@ -7,8 +7,10 @@ export const initNotifications = createAsyncThunk(
   async (_, { dispatch }) => {
     const data = await apiFetchAuth("/api/notifications/");
 
-    console.log("API notifications:", data); 
+    const items = Array.isArray(data)
+      ? data
+      : data.results;
 
-    dispatch(setNotifications(data.results));
+    dispatch(setNotifications(items));
   }
 );

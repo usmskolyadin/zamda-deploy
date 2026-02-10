@@ -10,8 +10,7 @@ export function DeleteNotificationButton({ id }: { id: number }) {
 
   const handleDelete = async () => {
     try {
-      await dispatch(deleteNotification(id)).unwrap();
-
+      await dispatch(deleteNotification(id)).unwrap(); 
       dispatch(destroyNotification(id));
     } catch (error) {
       console.error("Failed to delete notification:", error);

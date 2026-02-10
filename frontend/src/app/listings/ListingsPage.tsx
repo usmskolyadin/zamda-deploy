@@ -10,7 +10,7 @@ export default async function ListingsPage() {
       headers: {
         Cookie: cookieStore.toString(),
       },
-      cache: "no-store", // или revalidate: 30
+      cache: "no-store", 
     }
   );
 

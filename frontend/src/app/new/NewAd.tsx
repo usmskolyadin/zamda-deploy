@@ -441,6 +441,7 @@ const handleSubmit = async (e: FormEvent) => {
                   {field.field_type === "int" && (
                     <input
                       type="number"
+                      min={0}
                       placeholder={field.name}
                       className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
                       onChange={e =>

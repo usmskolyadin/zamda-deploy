@@ -39,7 +39,7 @@ export default function Notifications() {
                 <div>
             </div>
             <div className="flex flex-col">
-              <NotificationsList />;
+              <NotificationsList />
             </div>
           </div>
 

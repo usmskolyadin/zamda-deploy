@@ -37,10 +37,12 @@ export interface Advertisement {
   price: string;
   created_at: string;
   is_active: boolean;
+  reject_reason: string;
   category_slug: string
   location: string;
   images: { id: number; image: string }[];
   time_left: number;
+  status: string;
   owner: {
     id: number;
     username: string;

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdvertisementImage, AdvertisementStatus, Category, ExtraFieldOption, Notification, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import AdvertisementImage, AdvertisementStatus, Category, ExtraFieldOption, Notification, NotificationUserState, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -106,13 +106,66 @@ class AdvertisementAdmin(admin.ModelAdmin):
         }),
     )
 
+from django import forms
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
+class NotificationAdminForm(forms.ModelForm):
+    users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        required=False,
+        help_text="Leave empty for global notification",
+    )
+
+    class Meta:
+        model = Notification
+        fields = ("title", "message", "is_global")
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ("title", "is_read", "created_at")
-    list_filter = ("is_read", "created_at")
+    list_display = (
+        "id",
+        "title",
+        "is_global",
+        "created_at",
+        "users_count",
+    )
+    list_filter = ("is_global", "created_at")
     search_fields = ("title", "message")
+    ordering = ("-created_at",)
+
+    readonly_fields = ("created_at",)
+
+    def users_count(self, obj):
+        return obj.user_states.count()
+
+    users_count.short_description = "Recipients"
+
+@admin.register(NotificationUserState)
+class NotificationUserStateAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "notification_title",
+        "is_read",
+        "is_deleted",
+        "created_at",
+    )
+    list_filter = ("is_read", "is_deleted", "created_at")
+    search_fields = (
+        "user__email",
+        "user__username",
+        "notification__title",
+    )
+
+    ordering = ("-created_at",)
+    autocomplete_fields = ("user", "notification")
+
+    def notification_title(self, obj):
+        return obj.notification.title
+
+    notification_title.short_description = "Notification"
+
 
 class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_superuser')

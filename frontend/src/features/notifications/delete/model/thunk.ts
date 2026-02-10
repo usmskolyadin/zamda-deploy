@@ -1,10 +1,19 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { notificationsApi } from "@/src/shared/api/notifications";
+import { apiFetchAuth } from "@/src/shared/api/auth";
 
 export const deleteNotification = createAsyncThunk(
-  "notification/delete",
+  "notifications/delete",
   async (id: number) => {
-    await notificationsApi.delete(id);
+    const res = await apiFetchAuth(`/api/notifications/${id}/`, {
+      method: "DELETE",
+    });
+
+    if (res instanceof Response) {
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status} ${res.statusText}`);
+      }
+    }
+
     return id;
   }
 );

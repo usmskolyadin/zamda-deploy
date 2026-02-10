@@ -8,7 +8,7 @@ from api.services.recommendations import AdvertisementRecommender
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, PasswordResetCode, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
     CategorySerializer, ChatSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
@@ -177,7 +177,7 @@ class AdvertisementFilter(FilterSet):
 from django.db.models import F, ExpressionWrapper, DurationField
 from django.utils.timezone import now
 from django.utils.timezone import now
-from datetime import timedelta
+from datetime import timedelta, timezone
 from django.utils.timezone import now
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -193,6 +193,9 @@ class IsOwner(BasePermission):
         return obj.owner == request.user
     
 EXPIRATION_DAYS = 30
+ACTIVE_LIFETIME_DAYS = 30
+ARCHIVE_LIFETIME_DAYS = 30
+REJECTED_LIFETIME_DAYS = 30
 
 class AdvertisementViewSet(viewsets.ModelViewSet):
     queryset = Advertisement.objects.all()
@@ -241,21 +244,38 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             .prefetch_related("images", "likes", "extra_values__field_definition")
         )
 
-        expiration_border = now() - timedelta(days=EXPIRATION_DAYS)
+        now_ts = now()
+
         qs.filter(
             status=AdvertisementStatus.ACTIVE,
-            created_at__lte=expiration_border
-        ).update(status=AdvertisementStatus.ARCHIVED)
+            created_at__lte=now_ts - timedelta(days=ACTIVE_LIFETIME_DAYS)
+        ).update(
+            status=AdvertisementStatus.ARCHIVED,
+            status_changed_at=now_ts
+        )
 
-        if self.action in ["relist", "update", "partial_update", "destroy"]:
-            if self.request.user.is_authenticated:
-                return qs.filter(owner=self.request.user)
+        qs.filter(
+            status=AdvertisementStatus.ARCHIVED,
+            status_changed_at__lte=now_ts - timedelta(days=ARCHIVE_LIFETIME_DAYS)
+        ).delete()
+
+        qs.filter(
+            status=AdvertisementStatus.REJECTED,
+            status_changed_at__lte=now_ts - timedelta(days=REJECTED_LIFETIME_DAYS)
+        ).delete()
+
+        if self.action in ["update", "partial_update", "destroy", "relist"]:
+            return qs.filter(owner=self.request.user)
 
         if self.action == "retrieve":
+            if self.request.user.is_authenticated:
+                return qs.filter(
+                    Q(status=AdvertisementStatus.ACTIVE) |
+                    Q(owner=self.request.user)
+                )
             return qs.filter(status=AdvertisementStatus.ACTIVE)
 
         return qs.filter(status=AdvertisementStatus.ACTIVE)
-    
 
     @action(
         detail=True,
@@ -380,8 +400,8 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 
         ad.created_at = now()
         ad.status = AdvertisementStatus.MODERATION
-        ad.reject_reason = ""  # очищаем причину отказа, если была
-        ad.save(update_fields=["created_at", "status", "reject_reason"])
+        ad.reject_reason = None
+        ad.save(update_fields=["created_at", "status", "reject_reason", "status_changed_at"])
 
         return Response({"detail": "Sent to moderation"})
 
@@ -619,44 +639,50 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 
-class NotificationViewSet(viewsets.ModelViewSet):
+def ensure_global_notifications(user):
+    global_notifications = Notification.objects.filter(is_global=True)
+
+    existing_ids = NotificationUserState.objects.filter(
+        user=user,
+        notification__in=global_notifications
+    ).values_list("notification_id", flat=True)
+
+    to_create = [
+        NotificationUserState(user=user, notification=n)
+        for n in global_notifications
+        if n.id not in existing_ids
+    ]
+
+    NotificationUserState.objects.bulk_create(to_create)
+
+class NotificationViewSet(viewsets.ModelViewSet):  # <- ModelViewSet вместо ReadOnly
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_qs = Notification.objects.filter(
+        ensure_global_notifications(self.request.user) 
+        return NotificationUserState.objects.select_related("notification").filter(
             user=self.request.user,
             is_deleted=False
-        )
-        global_qs = Notification.objects.filter(
-            is_global=True,
-            is_deleted=False
-        )
-        return (user_qs | global_qs).order_by("-created_at")
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        ).order_by("-created_at")
 
     def destroy(self, request, *args, **kwargs):
-        notification = self.get_object()
-        notification.is_deleted = True
-        notification.save(update_fields=["is_deleted"])
+        state = self.get_object()
+        state.is_deleted = True
+        state.save(update_fields=["is_deleted"])
         return Response(status=204)
 
     @action(detail=False, methods=["get"])
     def unread_count(self, request):
-        user_notifications = Notification.objects.filter(
+        ensure_global_notifications(request.user)
+
+        count = NotificationUserState.objects.filter(
             user=request.user,
             is_read=False,
             is_deleted=False
-        )
-        global_notifications = Notification.objects.filter(
-            is_global=True,
-            is_read=False,
-            is_deleted=False
-        )
-        total_count = (user_notifications | global_notifications).count()
-        return Response({'unread_count': total_count})
+        ).count()
+
+        return Response({"unread_count": count})
 
 
 class MessageViewSet(viewsets.ModelViewSet):

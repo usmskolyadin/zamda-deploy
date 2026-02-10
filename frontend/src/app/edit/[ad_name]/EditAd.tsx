@@ -123,7 +123,7 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
 
     (async () => {
     try {
-      const ad: Advertisement = await apiFetch<Advertisement>(`/api/ads/${params.ad_name}/`);
+      const ad: Advertisement = await apiFetchAuth<Advertisement>(`/api/ads/${params.ad_name}/`);
       
       setTitle(ad.title);
       setPrice(ad.price);
@@ -304,6 +304,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   {field.field_type === "int" && (
                     <input
                       type="number"
+                      min={0}
                       placeholder={field.name}
                       className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900 mb-2"
                       onChange={e =>
