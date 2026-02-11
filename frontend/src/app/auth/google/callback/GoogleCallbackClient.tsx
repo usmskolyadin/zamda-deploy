@@ -14,11 +14,6 @@ export default function GoogleCallbackClient() {
   useEffect(() => {
     const code = params.get("code");
 
-    if (!code) {
-      router.replace("/login");
-      return;
-    }
-
     const handleGoogleLogin = async () => {
       try {
         const tokenRes = await fetch(`${API_URL}/api/auth/google/`, {
@@ -27,21 +22,11 @@ export default function GoogleCallbackClient() {
           body: JSON.stringify({ code }),
         });
 
-        if (!tokenRes.ok) {
-          router.replace("/login");
-          return;
-        }
-
         const { access, refresh } = await tokenRes.json();
 
         const userRes = await fetch(`${API_URL}/api/users/me/`, {
           headers: { Authorization: `Bearer ${access}` },
         });
-
-        if (!userRes.ok) {
-          router.replace("/login");
-          return;
-        }
 
         const userData = await userRes.json();
 

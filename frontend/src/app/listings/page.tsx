@@ -10,6 +10,7 @@ import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
+import { useRouter } from "next/navigation";
 
 type Counts = {
   active: number;
@@ -20,9 +21,9 @@ type Counts = {
 
 export default function ListingsClient() {
   const [activeTab, setActiveTab] = useState<"active" | "archived" | "moderation" | "rejected">("active");
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const profileId = user?.profile.id;
-
+  const router = useRouter()
   const [profile, setProfile] = useState<any>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [counts, setCounts] = useState<Counts>()
@@ -40,7 +41,8 @@ export default function ListingsClient() {
   }, [profileId]);
 
   useEffect(() => {
-    if (!profileId) return;
+    if (!profileId) return router.push("/login");
+    if (!accessToken) return router.push("/login");
 
     const fetchProfile = async () => {
       const res = await apiFetch(`/api/profiles/${profileId}/`);
@@ -253,14 +255,14 @@ export const AdListings = ({
           <div className="flex gap-2 mt-2">
             <Link
               href={`/edit/${ad.slug}`}
-              className="px-4 py-1 rounded-full bg-gray-300 text-black hover:bg-gray-400 transition"
+              className="px-4 py-1 rounded-full bg-green-400 text-white hover:bg-gray-400 transition"
             >
               Edit
             </Link>
 
             <button
               onClick={() => onRelist?.(ad.slug)}
-              className="px-4 py-1 rounded-full bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
+              className="px-4 py-1 rounded-full cursor-pointer bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
             >
               Reactivate
             </button>
@@ -270,7 +272,7 @@ export const AdListings = ({
         {activeTab === "rejected" && (
           <Link
             href={`/edit/${ad.slug}`}
-            className="inline-block mt-2 px-4 py-1 w-40 rounded-full bg-gray-300 text-black hover:bg-gray-400 transition"
+            className="inline-block mt-2 px-4 py-1 w-40 rounded-full bg-yellow-400 text-white hover:bg-gray-400 transition"
           >
             Fix & Resubmit
           </Link>

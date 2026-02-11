@@ -22,7 +22,7 @@ export default function ProfileEdit() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken) return router.push("/login");
 
     const fetchProfile = async () => {
       try {

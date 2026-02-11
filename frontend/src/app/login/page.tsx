@@ -88,7 +88,6 @@ export default function Login() {
 
       console.log("Login successful. Access token:", data.access);
 
-      // Second request: get user info
       const userUrl = `${API_URL}/api/users/me/`;
       console.log("Fetching user info from:", userUrl);
 

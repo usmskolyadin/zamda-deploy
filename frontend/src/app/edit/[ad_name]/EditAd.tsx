@@ -37,7 +37,6 @@ type ExistingImage = { id: number; url: string };
 
 export default function EditAd() {
   const { accessToken } = useAuth();
-  const router = useRouter();
   const params = useParams();
   const adId = params?.ad_name; // URL: /ads/edit/[id]
 
@@ -61,7 +60,7 @@ export default function EditAd() {
   const [extraFields, setExtraFields] = useState<any[]>([]);
   const [extraValues, setExtraValues] = useState<{ [key: string]: any }>({});
   const [newImages, setNewImages] = useState<File[]>([]); // только что выбранные файлы
-
+  const router = useRouter()
   
   useEffect(() => {
     setIsClient(true);
@@ -117,7 +116,7 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (!adId || !accessToken) return;
+    if (!adId || !accessToken) return router.push("/login");
 
     setLoading(true);
 

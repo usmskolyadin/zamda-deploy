@@ -130,7 +130,7 @@ export default function Chat() {
                   </svg>
                 </Link>
                 <img
-                  className="min-w-12 max-w-12 min-h-12 max-h-12 rounded-full"
+                  className="min-w-12 max-w-12 min-h-12 max-h-12 rounded-full object-cover"
                   src={chat.buyer.id === user?.id ? chat.seller.profile.avatar || "/default-avatar.png" : chat.buyer.profile.avatar || "/default-avatar.png"}
                   alt=""
                 />
