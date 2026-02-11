@@ -28,6 +28,7 @@ interface AuthContextType {
   login: (token: string, refresh: string, userData: User) => void;
   logout: () => void;
   updateUser: (userData: User) => void;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,7 +48,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setAccessToken(null);
     setUser(null);
   };
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  
   function safeParseUser(data: string | null): User | null {
     if (!data) return null;
     try {
@@ -67,6 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (token && userData) {
       setAccessToken(token);
       setUser(safeParseUser(userData));
+      setIsInitialized(true);
       return;
     }
 
@@ -83,11 +87,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setAccessToken(data.access);
             setUser(safeParseUser(userData));
           } else {
-            // просто очищаем, БЕЗ редиректа
             clearAuth();
           }
         })
-        .catch(clearAuth);
+        .catch(clearAuth)
+        .finally(() => {
+          setIsInitialized(true);
+        });
+    } else {
+      setIsInitialized(true);
     }
   }, []);
 
@@ -127,7 +135,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, login, logout, updateUser }}
+      value={{ user, accessToken, login, logout, updateUser, isInitialized }}
     >
       {children}
     </AuthContext.Provider>

@@ -10,9 +10,12 @@ export default function GoogleCallbackClient() {
   const router = useRouter();
   const { login } = useAuth();
   const [error, setError] = useState("");
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   useEffect(() => {
     const code = params.get("code");
+
+    if (!params.toString()) return;
 
     if (!code) {
       router.replace("/login");
@@ -49,7 +52,8 @@ export default function GoogleCallbackClient() {
 
         const userData = await userRes.json();
 
-        await login(tokenData.access, tokenData.refresh, userData);
+        login(tokenData.access, tokenData.refresh, userData);
+        setHasProcessed(true);
 
         router.replace("/listings");
       } catch (err) {
