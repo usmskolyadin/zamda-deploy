@@ -21,29 +21,12 @@ type Counts = {
 
 export default function ListingsClient() {
   const [activeTab, setActiveTab] = useState<"active" | "archived" | "moderation" | "rejected">("active");
-  const { user, accessToken, isInitialized } = useAuth();
+  const { user, accessToken } = useAuth();
   const profileId = user?.profile.id;
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [counts, setCounts] = useState<Counts>()
-
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    if (!accessToken) {
-      router.replace("/login");
-    }
-  }, [accessToken, isInitialized]);
-
-
-  if (!isInitialized) {
-    return null; 
-  }
-
-  if (!user) {
-    return null;
-  }
 
   useEffect(() => {
     if (!profileId) return;
@@ -58,6 +41,8 @@ export default function ListingsClient() {
   }, [profileId]);
 
   useEffect(() => {
+    if (!profileId) return router.push("/login");
+    if (!accessToken) return router.push("/login");
 
     const fetchProfile = async () => {
       const res = await apiFetch(`/api/profiles/${profileId}/`);
