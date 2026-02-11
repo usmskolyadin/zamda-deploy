@@ -28,26 +28,32 @@ export default function GoogleCallbackClient() {
         });
 
         if (!tokenRes.ok) {
-          router.replace("/login");
-          return;
+          throw new Error("Google auth failed");
         }
 
-        const { access, refresh } = await tokenRes.json();
+        const tokenData = await tokenRes.json();
+
+        if (!tokenData.access) {
+          throw new Error("No access token");
+        }
 
         const userRes = await fetch(`${API_URL}/api/users/me/`, {
-          headers: { Authorization: `Bearer ${access}` },
+          headers: {
+            Authorization: `Bearer ${tokenData.access}`,
+          },
         });
 
         if (!userRes.ok) {
-          router.replace("/login");
-          return;
+          throw new Error("User fetch failed");
         }
 
         const userData = await userRes.json();
 
-        login(access, refresh, userData);
+        await login(tokenData.access, tokenData.refresh, userData);
+
         router.replace("/listings");
-      } catch {
+      } catch (err) {
+        console.error(err);
         router.replace("/login");
       }
     };
