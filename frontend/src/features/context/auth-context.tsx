@@ -99,13 +99,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  const login = (token: string, refresh: string, userData: User) => {
-    if (typeof window === 'undefined') return;
+  const login = async (token: string, refresh: string, userData: User) => {
     localStorage.setItem('access_token', token);
     localStorage.setItem('refresh_token', refresh);
     localStorage.setItem('user', JSON.stringify(userData));
+
     setAccessToken(token);
     setUser(userData);
+
+    return true;
   };
 
   const handleLogout = () => {

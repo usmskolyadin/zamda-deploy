@@ -31,10 +31,10 @@ export default function ListingsClient() {
   useEffect(() => {
     if (!isInitialized) return;
 
-    if (!user) {
+    if (!accessToken) {
       router.replace("/login");
     }
-  }, [user, isInitialized]);
+  }, [accessToken, isInitialized]);
 
 
   if (!isInitialized) {
