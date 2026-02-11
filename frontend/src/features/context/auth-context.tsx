@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  const login = async (token: string, refresh: string, userData: User) => {
+  const login = (token: string, refresh: string, userData: User) => {
     localStorage.setItem('access_token', token);
     localStorage.setItem('refresh_token', refresh);
     localStorage.setItem('user', JSON.stringify(userData));
