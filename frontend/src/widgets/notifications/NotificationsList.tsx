@@ -22,7 +22,7 @@ export function NotificationsList() {
             <div className="flex justify-between">
               <h3 className="font-bold text-black break-words break-all">{n.title}</h3>
             </div>
-            <p className="text-sm text-gray-900 break-words break-all">
+            <p className="text-sm text-gray-900 whitespace-pre break-words break-all">
               {n.message}
             </p>
           </div>

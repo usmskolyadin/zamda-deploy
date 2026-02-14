@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import { Advertisement } from "../entities/advertisment/model/types";
 import { useViewAd } from "../features/hooks/use-view-ad";

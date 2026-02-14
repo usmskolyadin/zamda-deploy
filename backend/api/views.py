@@ -104,7 +104,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     lookup_field = "slug"
     lookup_value_regex = "[^/]+"
-
+    
 import django_filters
 
 class SubCategoryFilter(django_filters.FilterSet):
@@ -153,6 +153,10 @@ class AdvertisementFilter(FilterSet):
     owner_username = django_filters.CharFilter(field_name="owner__username", lookup_expr="iexact")
     owner_email = django_filters.CharFilter(field_name="owner__email", lookup_expr="iexact")
     extra = django_filters.CharFilter(method="filter_extra")
+    category = django_filters.CharFilter(
+        field_name="subcategory__category__slug",
+        lookup_expr="iexact"
+    )
 
     def filter_extra(self, queryset, name, value):
         """
@@ -172,7 +176,7 @@ class AdvertisementFilter(FilterSet):
 
     class Meta:
         model = Advertisement
-        fields = ["subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email']
+        fields = ["category", "subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email']
 
 from django.db.models import F, ExpressionWrapper, DurationField
 from django.utils.timezone import now

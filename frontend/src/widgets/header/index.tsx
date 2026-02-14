@@ -70,7 +70,6 @@ export default function Header() {
                 {user ? (
                   <>
                 <div className='mr-3 '>
-
                 <Link href="/notifications">
                   <div className="relative lg:w-7 lg:h-7 w-6 h-6 flex-shrink-0">
                     <svg className="w-full h-full block" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -175,17 +174,20 @@ export default function Header() {
                         <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/listings">
                           My Listings
                         </Link>
+                        <Link
+                          className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]"
+                          href={`/reviews/${user?.profile?.id}`}
+                        >
+                          My Reviews
+                        </Link>
                         <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/favorites">
                           Favorites
                         </Link>
                         <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/messages">
                           Messages
                         </Link>
-                        <Link
-                          className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]"
-                          href={`/reviews/${user?.profile?.id}`}
-                        >
-                          My Reviews
+                        <Link className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]" href="/notifications">
+                          Notifications
                         </Link>
                         <Link
                           className="px-6 py-1.5 hover:bg-gray-100 text-[#2AAEF7]"

@@ -61,9 +61,10 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
             <div className="lg:block hidden">
                 <div className="py-3 flex flex-col border-b border-gray-300">
                     <Link className="hover:underline text-[#2AAEF7]" href="/listings"><span className="text-[#2AAEF7] text-md h-12">My Listings</span> </Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href={`/reviews/${user?.profile.id}`}><span className="text-[#2AAEF7] text-md h-12">My Reviews</span> </Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href="/notifications"><span className="text-[#2AAEF7] text-md h-12">Notificaitons</span></Link>
                     <Link className="hover:underline text-[#2AAEF7]" href="/favorites"><span className="text-[#2AAEF7] text-md h-12">Favorites</span></Link>
                     <Link className="hover:underline text-[#2AAEF7]" href="/messages"><span className="text-[#2AAEF7] text-md h-12">Messages</span></Link>
-                    <Link className="hover:underline text-[#2AAEF7]" href={`/reviews/${user?.profile.id}`}><span className="text-[#2AAEF7] text-md h-12">My Reviews</span> </Link>
                 </div>
                 <div className="py-3 flex flex-col border-b border-gray-300">
                     <Link href="favorites"><span className="text-[#2AAEF7] text-md h-12">Paid services</span></Link>
