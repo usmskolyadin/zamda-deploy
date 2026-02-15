@@ -6,7 +6,7 @@ import { useAuth } from "@/src/features/context/auth-context";
 import { API_URL } from "@/src/shared/api/base";
 
 export default function ProfileEdit() {
-  const { accessToken, user, login, updateUser } = useAuth();
+  const { accessToken, user, login, updateUser, isInitialized } = useAuth();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -22,7 +22,12 @@ export default function ProfileEdit() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    if (!accessToken) return router.push("/login");
+    if (!isInitialized) return;
+
+    if (!accessToken) {
+      router.push("/login");
+      return;
+    }
 
     const fetchProfile = async () => {
       try {

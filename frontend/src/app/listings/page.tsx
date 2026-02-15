@@ -21,7 +21,7 @@ type Counts = {
 
 export default function ListingsClient() {
   const [activeTab, setActiveTab] = useState<"active" | "archived" | "moderation" | "rejected">("active");
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isInitialized } = useAuth();
   const profileId = user?.profile.id;
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null);
@@ -41,8 +41,14 @@ export default function ListingsClient() {
   }, [profileId]);
 
   useEffect(() => {
-    if (!profileId) return router.push("/login");
-    if (!accessToken) return router.push("/login");
+    if (!isInitialized) return;
+
+    if (!accessToken) {
+      router.push("/login");
+      return;
+    }
+
+    if (!profileId) return;
 
     const fetchProfile = async () => {
       const res = await apiFetch(`/api/profiles/${profileId}/`);

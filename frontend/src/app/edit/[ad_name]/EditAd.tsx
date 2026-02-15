@@ -36,7 +36,7 @@ interface Ad {
 type ExistingImage = { id: number; url: string };
 
 export default function EditAd() {
-  const { accessToken } = useAuth();
+  const { accessToken, isInitialized } = useAuth();
   const params = useParams();
   const adId = params?.ad_name; // URL: /ads/edit/[id]
 
@@ -116,7 +116,14 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (!adId || !accessToken) return router.push("/login");
+    if (!isInitialized) return;
+
+    if (!accessToken) {
+      router.push("/login");
+      return;
+    }
+
+    if (!adId) return;
 
     setLoading(true);
 
