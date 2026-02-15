@@ -216,7 +216,6 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!accessToken || !adId) return;
 
     const formData = new FormData();
     formData.append('title', title);
