@@ -35,13 +35,15 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
 
   return (
     <Link href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
-      <div className="bg-white rounded-2xl  w-full hover:opacity-70 transition">
+      <div className="bg-white rounded-2xl shadow-xl w-full hover:opacity-70 transition">
         <div className="relative">
           <img
             src={ad.images[0]?.image}
             alt={ad.title}
             className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-2xl mb-2"
           />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-80 group-hover:opacity-100 transition" />
+
           <button
             onClick={(e) => {
               e.preventDefault();

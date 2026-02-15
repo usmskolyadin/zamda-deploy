@@ -168,8 +168,6 @@ export default function Chat() {
               ))}
               <div ref={bottomRef} />
             </div>
-
-            {/* Input */}
             <form onSubmit={sendMessage} className="p-4 border-t border-gray-200 flex gap-2">
               <input
                 value={text}

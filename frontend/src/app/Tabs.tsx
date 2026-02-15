@@ -10,7 +10,7 @@ import { useAuth } from "../features/context/auth-context";
 const tabs = [
   { id: "recommendations", label: "Recommendations" },
   { id: "favorites", label: "Favorites" },
-  { id: "recent", label: "Recently viewed" },
+  { id: "recent", label: "Recently Viewed" },
 ];
 
 export default function TabsExample() {
