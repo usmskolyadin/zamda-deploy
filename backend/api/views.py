@@ -540,6 +540,8 @@ class CurrentUserView(APIView):
         return Response({
             "id": request.user.id,
             "username": request.user.username,
+            "is_staff": request.user.is_staff,
+            "is_superuser": request.user.is_superuser,
             "email": request.user.email,
             "first_name": request.user.first_name,
             "last_name": request.user.last_name,

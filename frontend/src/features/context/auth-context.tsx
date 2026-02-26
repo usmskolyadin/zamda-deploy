@@ -10,6 +10,8 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
+  is_staff: boolean;
+  is_superuser: boolean;
   profile: {
     id: number;
     username: string;
@@ -118,7 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     setAccessToken(null);
     setUser(null);
-    // router.push можно дергать только на клиенте
+
     if (typeof window !== 'undefined') {
       router.push('/login');
     }

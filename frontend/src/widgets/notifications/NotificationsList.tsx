@@ -10,7 +10,7 @@ export function NotificationsList() {
 
   if (!notifications.length)
     return <p className="text-black text-lg">No notifications</p>;
-
+  
   return (
     <div className="flex flex-col gap-4">
       {notifications.map((n) => (
@@ -24,12 +24,10 @@ export function NotificationsList() {
                 {n.title}
               </h3>
             </div>
-
             <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
               {n.message}
             </p>
           </div>
-
           <div className="flex-shrink-0">
             <DeleteNotificationButton id={n.id} />
           </div>
