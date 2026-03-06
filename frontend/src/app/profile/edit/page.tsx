@@ -36,7 +36,7 @@ export default function ProfileEdit() {
 
     const fetchProfile = async () => {
       try {
-        const data: any = await apiFetchAuth("api/users/me/");
+        const data: any = await apiFetchAuth("/api/users/me/");
 
         setProfileData({
           first_name: data.first_name || "",
