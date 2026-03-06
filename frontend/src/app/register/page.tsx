@@ -207,8 +207,26 @@ const handleRegister = async (e: React.FormEvent) => {
                   value={formData.password2}
                   onChange={handleChange}
                   required
-                />
-
+               />
+                <div className="flex items-start mt-4">
+                  <input
+                    type="checkbox"
+                    name="agree"
+                    required
+                    className="mt-1 mr-3 w-4 h-4 accent-black cursor-pointer"
+                  />
+                  <p className="text-black text-sm leading-snug">
+                    By continuing, you agree to the{" "}
+                    <Link href="/privacy" className="underline hover:opacity-70">
+                      Privacy Policy
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/terms" className="underline hover:opacity-70">
+                      Terms of Service
+                    </Link>{" "}
+                    of ZAMDA.
+                  </p>
+                </div>
                 {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
                 {success && <p className="text-green-500 mt-2 text-center">{success}</p>}
 

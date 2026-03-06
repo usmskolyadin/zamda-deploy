@@ -2,7 +2,7 @@ import json
 import uuid
 from rest_framework import serializers
 from .models import (
-    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, SubCategory,
+    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewReply, ReviewReport, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
 )
 from django.contrib.auth.models import User
@@ -25,13 +25,48 @@ class ReportSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewReplySerializer(serializers.ModelSerializer):
+
     author_lastname = serializers.CharField(source='author.last_name', read_only=True)
     author_firstname = serializers.CharField(source='author.first_name', read_only=True)
 
     class Meta:
+        model = ReviewReply
+        fields = [
+            'id',
+            'review',
+            'author',
+            'author_lastname',
+            'author_firstname',
+            'comment',
+            'created_at'
+        ]
+
+        read_only_fields = ['author', 'created_at']
+
+class ReviewReportSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ReviewReport
+        fields = [
+            'id',
+            'review',
+            'reason',
+            'description',
+            'created_at'
+        ]
+
+        read_only_fields = ['created_at']
+
+        
+class ReviewSerializer(serializers.ModelSerializer):
+    author_lastname = serializers.CharField(source='author.last_name', read_only=True)
+    author_firstname = serializers.CharField(source='author.first_name', read_only=True)
+    reply = ReviewReplySerializer(read_only=True)
+
+    class Meta:
         model = Review
-        fields = ['id', 'profile', 'author', 'author_lastname', 'author_firstname', 'rating', 'comment', 'created_at']
+        fields = ['id', 'profile', 'author', 'author_lastname', 'author_firstname', 'rating', 'comment', 'reply', 'created_at']
         read_only_fields = ['author', 'created_at', 'author_lastname', 'author_firstname']
 
     def validate(self, data):
@@ -121,11 +156,21 @@ class AdvertisementImageSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
-    username = serializers.CharField(source="user.username", read_only=True)
-    first_name = serializers.CharField(source="user.first_name", read_only=True)
-    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    username = serializers.CharField(source="user.username")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
     rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+
+        user = instance.user
+        user.first_name = user_data.get("first_name", user.first_name)
+        user.last_name = user_data.get("last_name", user.last_name)
+        user.save()
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = UserProfile

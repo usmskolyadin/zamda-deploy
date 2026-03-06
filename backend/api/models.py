@@ -283,6 +283,58 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
+
+class ReviewReply(models.Model):
+    review = models.OneToOneField(
+        'Review',
+        related_name='reply',
+        on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Reply to review {self.review.id}"
+
+
+class ReviewReport(models.Model):
+    REPORT_REASONS = (
+        ("spam", "Spam"),
+        ("abuse", "Abuse"),
+        ("fake", "Fake review"),
+        ("other", "Other"),
+    )
+
+    review = models.ForeignKey(
+        'Review',
+        related_name='reports',
+        on_delete=models.CASCADE
+    )
+
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    reason = models.CharField(max_length=50, choices=REPORT_REASONS)
+    description = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('review', 'reporter')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Report by {self.reporter}"
+    
 class Review(models.Model):
     profile = models.ForeignKey(
         'UserProfile', related_name='reviews', on_delete=models.CASCADE

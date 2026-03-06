@@ -121,7 +121,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                   </span> 
                   <span className="mr-1 lg:flex hidden">•</span>  
                   <span className="text-sm text-black/80 font-medium flex items-center">
-                                  <svg
+                      <svg
                         width="18"
                         height="18"
                         className="mr-1"

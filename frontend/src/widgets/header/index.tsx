@@ -165,7 +165,7 @@ export default function Header() {
                               {user?.last_name}
                             </h2>
                             <img
-                              className="rounded-full w-10 h-10 object-cover"
+                              className="rounded-full min-w-10 min-h-10 max-w-10 max-h-10 object-cover"
                               src={user?.profile?.avatar}
                               alt=""
                             />

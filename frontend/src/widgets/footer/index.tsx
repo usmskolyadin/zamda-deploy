@@ -23,11 +23,13 @@ export default function Footer() {
                 </div>
                 </Link>
               </div>
-              <div className="mt-2 mb-2 lg:text-lg text-sm lg:mt-0">
-                <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/about">About</Link>
-                <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/help">Help</Link>
-                <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/policy">Privacy Policy </Link>
-                <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-5 text-white" href="/terms"> Terms of Use</Link>
+              <div className="mt-2 mb-2 lg:text-md text-sm lg:mt-0">
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/about">About</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/terms">Terms of Use</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/policy">Privacy Policy</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/guidelines">Community Guidelines</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/items">Prohibited Items</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/help">Help</Link>
               </div>
                 <>
                 <div className="flex gap-4 lg:mt-0 mt-2">
@@ -73,9 +75,11 @@ export default function Footer() {
                 
                 <div className='mt-4 text-sm'>
                   <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/about">About</Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/help">Help</Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/policy">Privacy Policy </Link>
-                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/terms"> Terms of Use</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/terms">Terms of Use</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/policy">Privacy Policy</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/guidelines">Community Guidelines</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/items">Prohibited Items</Link>
+                  <Link className="hover:underline lg:w-48 w-90 lg:mr-12 mr-4 text-white" href="/help">Help Center</Link>
                 </div>
               </div>
               </div>

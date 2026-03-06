@@ -99,7 +99,7 @@ useEffect(() => {
                     />
                   ))}
                 </div>
-                <span className="text-[#2AAEF7] text-lg ml-1">
+                <span className="text-[#2AAEF7] cursor-pointer hover:underline text-lg ml-1">
                   <Link href={`/reviews/${profile.id}`}>All reviews</Link>
                 </span>
               </div>

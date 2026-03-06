@@ -144,8 +144,8 @@ export default function AddReview() {
                   />
                 ))}
               </div>
-              <span className="text-[#2AAEF7] ml-2 text-lg">
-                {profile.reviews_count ?? 0} reviews
+              <span className="text-[#2AAEF7] cursor-pointer hover:underline ml-2 text-lg">
+                <Link href={`/reviews/${profile.id}`}>{profile.reviews_count ?? 0} reviews</Link>
               </span>
             </div>
           </div>

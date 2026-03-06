@@ -73,7 +73,9 @@ export async function apiFetchAuth<T>(endpoint: string, options: RequestInit = {
   }
 
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    const data = await res.json().catch(() => null);
+    console.log("API ERROR RESPONSE:", data);
+    throw new Error(JSON.stringify(data));
   }
 
   return await res.json();

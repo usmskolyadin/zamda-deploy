@@ -8,14 +8,14 @@ from api.services.recommendations import AdvertisementRecommender
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
-    CategorySerializer, ChatSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewSerializer, SubCategorySerializer,
+    CategorySerializer, ChatSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
 )
 from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.views import APIView
+from rest_framework.views import APIView, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
@@ -727,6 +727,32 @@ class MessageViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Internal server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class ReviewReplyViewSet(viewsets.ModelViewSet):
+
+    queryset = ReviewReply.objects.all()
+    serializer_class = ReviewReplySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+
+        review = serializer.validated_data['review']
+        user = self.request.user
+
+        if review.profile.user != user:
+            raise PermissionDenied("Only profile owner can reply")
+
+        serializer.save(author=user)
+
+class ReviewReportViewSet(viewsets.ModelViewSet):
+
+    queryset = ReviewReport.objects.all()
+    serializer_class = ReviewReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+
+        serializer.save(reporter=self.request.user)
+
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -763,12 +789,14 @@ from django.template.loader import render_to_string
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
+from django.utils.html import strip_tags
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from .models import EmailVerification
 from .serializers import RegisterRequestSerializer
+
 
 class RegisterRequestView(generics.GenericAPIView):
     serializer_class = RegisterRequestSerializer
@@ -796,6 +824,7 @@ class RegisterRequestView(generics.GenericAPIView):
                 },
             )
 
+            # Создаем HTML и текстовую версию письма
             html_content = render_to_string(
                 "emails/verify_email.html",
                 {
@@ -804,29 +833,30 @@ class RegisterRequestView(generics.GenericAPIView):
                     "code": code,
                 },
             )
+            text_content = strip_tags(html_content)  # Простая текстовая версия
 
-            message = Mail(
-                from_email="support@zamda.net",
-                to_emails=data["email"],
+            # Отправляем через стандартную Django email систему
+            email = EmailMultiAlternatives(
                 subject="ZAMDA — Confirm your registration",
-                html_content=html_content,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[data["email"]],
             )
+            email.attach_alternative(html_content, "text/html")
+            email.send()
 
-            sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-            response = sg.send(message)
-
-            logger.error("SendGrid response: %s", response.status_code)
+            logger.error("Email sent successfully to %s", data["email"])
 
             return Response(
                 {"detail": "Verification code sent to email."},
                 status=200,
             )
 
-        except Exception:
-            logger.exception("ERROR IN REGISTER REQUEST")
+        except Exception as e:
+            logger.exception("ERROR IN REGISTER REQUEST: %s", str(e))
             return Response({"detail": "Server error"}, status=500)
-        
-        
+
+
 class VerifyCodeView(generics.GenericAPIView):
     serializer_class = VerifyCodeSerializer
     permission_classes = [AllowAny]
@@ -871,7 +901,8 @@ class VerifyCodeView(generics.GenericAPIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }, status=201)
-    
+
+
 class PasswordResetRequestView(generics.GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
@@ -894,19 +925,23 @@ class PasswordResetRequestView(generics.GenericAPIView):
             defaults={"code": code},
         )
 
-        html = render_to_string("emails/reset_password.html", {
+        # Создаем HTML и текстовую версию письма
+        html_content = render_to_string("emails/reset_password.html", {
             "code": code,
             "email": email,
+            "first_name": user.first_name,
         })
+        text_content = strip_tags(html_content)
 
-        message = Mail(
-            from_email="support@zamda.net",
-            to_emails=email,
+        # Отправляем через стандартную Django email систему
+        email_message = EmailMultiAlternatives(
             subject="ZAMDA — Password reset",
-            html_content=html,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[email],
         )
-
-        SendGridAPIClient(os.getenv("SENDGRID_API_KEY")).send(message)
+        email_message.attach_alternative(html_content, "text/html")
+        email_message.send()
 
         return Response({"detail": "Reset code sent"}, status=200)
 

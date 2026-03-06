@@ -206,13 +206,13 @@ SIMPLE_JWT = {
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:3000/auth/google/callback")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "apikey"
-EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_API_KEY")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-DEFAULT_FROM_EMAIL = "support@zamda.net"   
+EMAIL_HOST = os.getenv('AWS_SES_SMTP_HOST', 'email-smtp.us-east-1.amazonaws.com')
+EMAIL_PORT = int(os.getenv('AWS_SES_SMTP_PORT', 587))
+EMAIL_USE_TLS = os.getenv('AWS_SES_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('AWS_SES_SMTP_USERNAME')
+EMAIL_HOST_PASSWORD = os.getenv('AWS_SES_SMTP_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'support@zamda.com')
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
