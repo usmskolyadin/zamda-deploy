@@ -115,7 +115,6 @@ const updateProfile = async (e: React.FormEvent) => {
 
     const updatedProfile = await res.json().catch(() => null);
 
-    // Обновляем локальный user корректно
     if (user) {
       updateUser({
         ...user,
@@ -146,7 +145,7 @@ const updateGeneral = async (e: React.FormEvent) => {
   }
 
   try {
-    await apiFetchAuth("api/users/me/", {
+    await apiFetchAuth("/api/users/me/", {
       method: "PATCH",
       body: JSON.stringify({
         email: generalData.email,
@@ -171,13 +170,14 @@ const updateGeneral = async (e: React.FormEvent) => {
 
           <div className="lg:w-3/4 lg:ml-24">
 
-            {/* <div className="rounded-[50px] w-full bg-[#F2F1F0] h-[200px] flex justify-center items-center mb-6">
-              <h2 className="text-[#333333] text-[50px] font-bold opacity-40">
-                Your Ad Here
-              </h2>
-            </div> */}
+            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px] lg:flex hidden justify-center items-center">
+              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
+            </div>
 
-            <div className="bg-white rounded-[50px] p-6">
+            <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">Profile settings</h1>
+
+
+            <div className="bg-white rounded-[50px] mt-4">
               <div className="grid grid-cols-2 border-b mb-6">
 
                 <button
@@ -204,148 +204,140 @@ const updateGeneral = async (e: React.FormEvent) => {
 
               </div>
 
-{activeTab === "general" && (
-  <form onSubmit={updateGeneral} className="max-w-full mx-auto space-y-6">
+              {activeTab === "general" && (
+                <form onSubmit={updateGeneral} className="max-w-full mx-auto space-y-6">
+                  <label className="w-full flex-col flex">
+                    <p className="font-semibold text-black text-xl">Email</p>
+                    <p className="text-gray-700 text-sm font-medium">
+                      This email will be used for login and notifications
+                    </p>
 
-    {/* Email */}
+                    <input
+                      type="email"
+                      name="email"
+                      value={generalData.email}
+                      onChange={handleGeneralChange}
+                      className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
+                      required
+                    />
+                  </label>
 
-    <label className="w-full flex-col flex">
-      <p className="font-semibold text-black text-xl">Email</p>
-      <p className="text-gray-700 text-sm font-medium">
-        This email will be used for login and notifications
-      </p>
+                  <div className="flex flex-col">
+                    <p className="font-semibold text-black text-xl">Password</p>
+                    <p className="text-gray-700 text-sm font-medium">
+                      For security reasons password is changed separately
+                    </p>
 
-      <input
-        type="email"
-        name="email"
-        value={generalData.email}
-        onChange={handleGeneralChange}
-        className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-        required
-      />
-    </label>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/restorepassword")}
+                      className="cursor-pointer mt-2 border border-black hover:bg-black hover:text-white transition h-[44px] w-[200px] rounded-[50px] flex items-center justify-center text-black font-medium"
+                    >
+                      Change password
+                    </button>
+                  </div>
 
+                  <button
+                    type="submit"
+                    className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"
+                  >
+                    Save changes
+                  </button>
 
-    {/* Change password */}
+                </form>
+              )}
+              {activeTab === "profile" && (
+                <form onSubmit={updateProfile} className="max-w-full mx-auto space-y-6">
 
-    <div className="flex flex-col">
+                  {/* Avatar */}
 
-      <p className="font-semibold text-black text-xl">Password</p>
-      <p className="text-gray-700 text-sm font-medium">
-        For security reasons password is changed separately
-      </p>
+                  <label className="w-full flex-col flex">
+                    <p className="font-semibold text-black text-xl">Avatar</p>
+                    <p className="text-gray-700 text-sm font-medium">
+                      Upload a profile picture (recommended 512x512)
+                    </p>
 
-      <button
-        type="button"
-        onClick={() => router.push("/change-password")}
-        className="cursor-pointer mt-2 border border-black hover:bg-black hover:text-white transition h-[44px] w-[200px] rounded-[50px] flex items-center justify-center text-black font-medium"
-      >
-        Change password
-      </button>
+                    {avatarPreview && (
+                      <div className="flex flex-col items-center py-3">
+                        <img
+                          src={avatarPreview}
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                      </div>
+                    )}
 
-    </div>
-
-    <button
-      type="submit"
-      className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"
-    >
-      Save changes
-    </button>
-
-  </form>
-)}
-{activeTab === "profile" && (
-  <form onSubmit={updateProfile} className="max-w-full mx-auto space-y-6">
-
-    {/* Avatar */}
-
-    <label className="w-full flex-col flex">
-      <p className="font-semibold text-black text-xl">Avatar</p>
-      <p className="text-gray-700 text-sm font-medium">
-        Upload a profile picture (recommended 512x512)
-      </p>
-
-      {avatarPreview && (
-        <div className="flex flex-col items-center py-3">
-          <img
-            src={avatarPreview}
-            className="w-24 h-24 rounded-full object-cover"
-          />
-        </div>
-      )}
-
-      <input
-        type="file"
-        name="avatar"
-        onChange={handleProfileChange}
-        className="cursor-pointer p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-      />
-    </label>
+                    <input
+                      type="file"
+                      name="avatar"
+                      onChange={handleProfileChange}
+                      className="cursor-pointer p-4 border border-black rounded-[50px] mt-1 text-gray-900"
+                    />
+                  </label>
 
 
-    {/* First + Last name */}
+                  {/* First + Last name */}
 
-    <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
 
-      <label className="flex flex-col">
-        <p className="font-semibold text-black text-xl">First name</p>
-        <p className="text-gray-700 text-sm font-medium">
-          Your real first name
-        </p>
+                    <label className="flex flex-col">
+                      <p className="font-semibold text-black text-xl">First name</p>
+                      <p className="text-gray-700 text-sm font-medium">
+                        Your real first name
+                      </p>
 
-        <input
-          name="first_name"
-          value={profileData.first_name}
-          onChange={handleProfileChange}
-          className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-          required
-        />
-      </label>
+                      <input
+                        name="first_name"
+                        value={profileData.first_name}
+                        onChange={handleProfileChange}
+                        className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
+                        required
+                      />
+                    </label>
 
-      <label className="flex flex-col">
-        <p className="font-semibold text-black text-xl">Last name</p>
-        <p className="text-gray-700 text-sm font-medium">
-          Your real last name
-        </p>
+                    <label className="flex flex-col">
+                      <p className="font-semibold text-black text-xl">Last name</p>
+                      <p className="text-gray-700 text-sm font-medium">
+                        Your real last name
+                      </p>
 
-        <input
-          name="last_name"
-          value={profileData.last_name}
-          onChange={handleProfileChange}
-          className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-          required
-        />
-      </label>
+                      <input
+                        name="last_name"
+                        value={profileData.last_name}
+                        onChange={handleProfileChange}
+                        className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
+                        required
+                      />
+                    </label>
 
-    </div>
-
-
-    {/* City */}
-
-    <label className="w-full flex-col flex">
-      <p className="font-semibold text-black text-xl">City</p>
-      <p className="text-gray-700 text-sm font-medium">
-        Your current location
-      </p>
-
-      <input
-        name="city"
-        value={profileData.city}
-        onChange={handleProfileChange}
-        className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-      />
-    </label>
+                  </div>
 
 
-    <button
-      type="submit"
-      className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"
-    >
-      Save profile
-    </button>
+                  {/* City */}
 
-  </form>
-)}
+                  <label className="w-full flex-col flex">
+                    <p className="font-semibold text-black text-xl">City</p>
+                    <p className="text-gray-700 text-sm font-medium">
+                      Your current location
+                    </p>
+
+                    <input
+                      name="city"
+                      value={profileData.city}
+                      onChange={handleProfileChange}
+                      className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
+                    />
+                  </label>
+
+
+                  <button
+                    type="submit"
+                    className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"
+                  >
+                    Save profile
+                  </button>
+
+                </form>
+              )}
 
               {error && (
                 <p className="text-red-500 mt-4">{error}</p>

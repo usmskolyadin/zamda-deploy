@@ -796,6 +796,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .models import EmailVerification
 from .serializers import RegisterRequestSerializer
+from utils.email import send_email
 
 
 class RegisterRequestView(generics.GenericAPIView):
@@ -835,15 +836,13 @@ class RegisterRequestView(generics.GenericAPIView):
             )
             text_content = strip_tags(html_content)  # Простая текстовая версия
 
-            # Отправляем через стандартную Django email систему
-            email = EmailMultiAlternatives(
+
+            send_email(
+                to_email=data["email"],
                 subject="ZAMDA — Confirm your registration",
-                body=text_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[data["email"]],
+                html_content=html_content,
+                text_content=text_content
             )
-            email.attach_alternative(html_content, "text/html")
-            email.send()
 
             logger.error("Email sent successfully to %s", data["email"])
 
@@ -932,16 +931,13 @@ class PasswordResetRequestView(generics.GenericAPIView):
             "first_name": user.first_name,
         })
         text_content = strip_tags(html_content)
-
-        # Отправляем через стандартную Django email систему
-        email_message = EmailMultiAlternatives(
+    
+        send_email(
+            to_email=email,
             subject="ZAMDA — Password reset",
-            body=text_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[email],
+            html_content=html_content,
+            text_content=text_content
         )
-        email_message.attach_alternative(html_content, "text/html")
-        email_message.send()
 
         return Response({"detail": "Reset code sent"}, status=200)
 

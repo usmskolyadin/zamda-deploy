@@ -68,13 +68,9 @@ export default function NewsletterPage() {
           <Sidebar notHideOnPhone={true} />
 
           <div className="lg:w-3/4 lg:ml-24">
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px] flex justify-center items-center mb-8">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Newsletter Banner</h2>
-            </div>
-
             <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">Email Newsletter</h1>
             
-            <div className="bg-white rounded-3xl border border-gray-200 p-6 mb-8">
+            <div className="bg-white rounded-3xl  mb-8">
               <div className="flex gap-4 mb-6">
                 <button
                   className={`cursor-pointer px-6 py-3 rounded-3xl font-bold transition-all ${

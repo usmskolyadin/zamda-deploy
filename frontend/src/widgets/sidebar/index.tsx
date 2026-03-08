@@ -71,13 +71,6 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                         <Link href="/mailing" className="hover:underline text-[#2AAEF7]">
                           <span className="text-md h-12 pt-2">Mailing</span>
                         </Link>
-                        <Link href="/mailing" className="hover:underline text-[#2AAEF7]">
-                          <span className="text-md h-12 pt-2">Mailing</span>
-                        </Link>
-                        <Link href="/mailing" className="hover:underline text-[#2AAEF7]">
-                          <span className="text-md h-12 pt-2">Mailing</span>
-                        </Link>
-
                       </div>
                     )}
                 </div>
@@ -85,7 +78,7 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                     <Link href="favorites"><span className="text-[#2AAEF7] text-md h-12">Paid services</span></Link>
                 </div>
                 <div className="py-3 flex flex-col mb-4">
-                    <Link className="hover:underline text-[#2AAEF7]" href="/profile/edit"><span className="text-[#2AAEF7] text-md h-12">Settings</span> </Link>
+                    <Link className="hover:underline text-[#2AAEF7]" href="/profile/edit"><span className="text-[#2AAEF7] text-md h-12">Profile settings</span> </Link>
                 </div>
             </div>
             <div className="rounded-3xl w-full bg-[#F2F1F0] h-[500px] lg:flex hidden  flex justify-center items-center">

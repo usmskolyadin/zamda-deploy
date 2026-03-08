@@ -82,7 +82,7 @@ export default async function SubCategoriesPage({ params }: Props) {
             <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:p-0">
               <div className="max-w-screen-xl mx-auto mt-12">
                 <h1 className="text-black font-bold text-4xl py-2 lg:pt-8 pt-0 text-center">
-                  Recommend for you
+                  Recommended for you
                 </h1>
                   {ads.length ? (
                     <div className="grid lg:grid-cols-4 grid-cols-2 gap-4 mt-6">

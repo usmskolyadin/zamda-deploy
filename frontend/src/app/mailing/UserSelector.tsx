@@ -78,7 +78,7 @@ export default function UserSelector({ selectedUsers, onSelectionChange }: UserS
           <input
             type="text"
             placeholder="Search users by email or name..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-3xl focus:outline-none focus:border-black"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 text-black rounded-3xl focus:outline-none focus:border-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
