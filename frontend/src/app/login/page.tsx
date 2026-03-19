@@ -91,27 +91,27 @@ export default function Login() {
       const userUrl = `${API_URL}/api/users/me/`;
       console.log("Fetching user info from:", userUrl);
 
-      const userRes = await fetch(userUrl, {
-        headers: { Authorization: `Bearer ${data.access}` },
-      });
+      // const userRes = await fetch(userUrl, {
+      //   headers: { Authorization: `Bearer ${data.access}` },
+      // });
 
-      console.log("Raw userRes:", userRes);
-      console.log("userRes status:", userRes.status);
+      // console.log("Raw userRes:", userRes);
+      // console.log("userRes status:", userRes.status);
 
-      let userData;
-      try {
-        userData = await userRes.json();
-        console.log("Parsed userData:", userData);
-      } catch (err2) {
-        console.error("USER JSON ERROR:", err2);
-        const raw = await userRes.text();
-        console.error("Raw userRes text:", raw);
-        setError("Could not parse user info");
-        return;
-      }
+      // let userData;
+      // try {
+      //   userData = await userRes.json();
+      //   console.log("Parsed userData:", userData);
+      // } catch (err2) {
+      //   console.error("USER JSON ERROR:", err2);
+      //   const raw = await userRes.text();
+      //   console.error("Raw userRes text:", raw);
+      //   setError("Could not parse user info");
+      //   return;
+      // }
 
-      console.log("Calling login() with tokens and user data...");
-      login(data.access, data.refresh, userData);
+      // console.log("Calling login() with tokens and user data...");
+      login(data.access, data.refresh, data.user);
 
       console.log("Redirecting to /listings ...");
       router.push("/listings");
@@ -134,7 +134,7 @@ export default function Login() {
           </div>
         </div>
       </section>
-      <section className="bg-[#ffffff]  pb-16 p-4">
+      <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
             <div className="flex-col items-center mx-auto mt-4 mb-4 lg:mt-0 lg:mb-0">
               <button onClick={googleLogin} className="p-4 hover:opacity-80 transition cursor-pointer border-0.5 border text-gray-900 border-black rounded-3xl h-[44px] w-full flex items-center justify-center mt-2" id="" >

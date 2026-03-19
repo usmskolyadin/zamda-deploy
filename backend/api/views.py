@@ -10,7 +10,7 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
-    CategorySerializer, ChatSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
+    CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
 )
 from .permissions import IsOwnerOrReadOnly
@@ -87,15 +87,18 @@ class GoogleAuthView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
+        from .serializers import FullUserSerializer
+
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.first_name,
-            }
+            "user": FullUserSerializer(
+                user,
+                context={"request": request}
+            ).data
         })
+    
+
 from rest_framework.permissions import AllowAny
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -104,6 +107,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     lookup_field = "slug"
     lookup_value_regex = "[^/]+"
+    
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
     
 import django_filters
 
@@ -825,7 +833,6 @@ class RegisterRequestView(generics.GenericAPIView):
                 },
             )
 
-            # Создаем HTML и текстовую версию письма
             html_content = render_to_string(
                 "emails/verify_email.html",
                 {

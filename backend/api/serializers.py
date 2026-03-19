@@ -154,6 +154,22 @@ class AdvertisementImageSerializer(serializers.ModelSerializer):
         model = AdvertisementImage
         fields = ["id", "image"]
 
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        from .serializers import FullUserSerializer
+
+        data["user"] = FullUserSerializer(
+            self.user,
+            context={"request": self.context.get("request")}
+        ).data
+
+        return data
+
 class ProfileSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
     username = serializers.CharField(source="user.username")
@@ -204,6 +220,23 @@ class OwnerSerializer(serializers.ModelSerializer):
 
 EXPIRATION_DAYS = 30
 
+class FullUserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_superuser",
+            "profile",
+        ]
+
+    
 from datetime import timedelta
 from django.utils import timezone
 
