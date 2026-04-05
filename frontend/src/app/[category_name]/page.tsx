@@ -30,52 +30,23 @@ export default async function SubCategoriesPage({ params }: Props) {
             {category.name}
           </h1>
 <div className="grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-2 gap-4">
-  {subcategories
-    .sort((a, b) => Number(b.priority) - Number(a.priority))
-    .map((subcategory) => (
-      <Link
-        key={subcategory.id}
-        href={`/${category.slug}/${subcategory.slug}`}
-        className="group"
-      >
-        <div className="
-          relative h-[130px] md:h-[150px]
-          rounded-2xl overflow-hidden
-          shadow-[0_4px_12px_rgba(0,0,0,0.06)]
-          hover:shadow-[0_6px_16px_rgba(0,0,0,0.10)]
-          transition
-        ">
+            {subcategories.map((subcategory) => (
+              <Link key={subcategory.id} href={`/${category.slug}/${subcategory.slug}`}>
+                <div className="bg-[#F2F1F0] hover:opacity-70 transition h-[169px] rounded-2xl flex items-center justify-between">
+                  <h2 className="font-semibold  p-4 text-black text-xl lg:max-w-[50%]">
+                    {subcategory.name}
+                  </h2>
+                  <img
+                    src={subcategory.image || "/billie.png"}
+                    width={200}
+                    height={120}
+                    alt={subcategory.name}
+                    className=" object-contain justify-end"
+                  />
+                </div>
 
-          {/* IMAGE CONTAINER */}
-          <div className="absolute inset-0  flex items-center justify-center p-3">
-            <img
-              src={subcategory.image || "/billie.png"}
-              alt={subcategory.name}
-              className="
-                max-h-full max-w-full
-                object-contain
-                transition duration-300
-                group-hover:scale-105
-              "
-            />
-          </div>
-
-          {/* soft overlay */}
-          <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition" />
-
-          {/* bottom gradient */}
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-          {/* text */}
-          <div className="absolute bottom-0 p-3">
-            <h2 className="text-white text-lg md:text-xl font-semibold leading-tight drop-shadow-sm">
-              {subcategory.name}
-            </h2>
-          </div>
-
-        </div>
-      </Link>
-    ))}
+              </Link>
+            ))}
 </div>
 
         </div>

@@ -34,19 +34,21 @@ export default async function Home() {
 
   return (
     <div className="w-full">
-      <section className="bg-[#F5F5F5] pb-16 pt-16 p-4">
-        <div className="max-w-screen-xl mx-auto">
+      <section className="bg-[#F5F5F5] pb-16 pt-14 p-4">
+        <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Everything with No Fees</h1>
+        <h1 className="text-md mt-4 font-bold text-black text-center">Your Simple Local Marketplace. Join Americans Trading Today.</h1>
+        <div className="max-w-screen-xl mx-auto mt-8">
           <div className="grid md:grid-cols-5 grid-cols-2 lg:gap-14 gap-8">
             {cards
             .sort((a, b) => Number(b.priority) - Number(a.priority))
             .map((card, index) => (
               <Link key={index} href={card.href}>
-                <div className={`${card.bg} lg:w-[200px] hover:opacity-70 transition w-full lg:h-[175px] h-[170px] rounded-2xl p-4`}>
+                <div className={`${card.bg} lg:w-[195px] hover:opacity-80  transition w-full lg:h-[170px] h-[170px] rounded-2xl p-4`}>
                   <img
                     src={card.image}
                     width={200}
                     height={300}
-                    className="lg:h-[107px] h-[100px] object-contain"
+                    className="lg:h-[95px] h-[95px] object-contain"
                     alt={card.title}
                   />
                   <h2 className="font-bold text-black lg:text-lg pt-1 truncate">{card.title}</h2>
