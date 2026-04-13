@@ -3,13 +3,14 @@ import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { getSubCategories } from "@/src/entities/sub-category/api/get-subcategories";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
-import SortDropdownForCategory, { mapSortToOrdering } from "@/src/widgets/category-sort-dropdown";
+import SortDropdownForCategory from "@/src/widgets/category-sort-dropdown";
 import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FaArrowRight, FaStar } from "react-icons/fa";
+import AdBannerWithFetch from "./AdBannerWithFetch";
 
 
 interface Props {
@@ -19,7 +20,6 @@ interface Props {
 
 export default async function AdsBySubcategory({ params, searchParams }: Props) {
   const subcategories = await getSubCategories(params.category_name);
-  const advs = useAds("subcategory")
 
   const subcategory = subcategories.find(
     (sub) => sub.slug === params.subcategory_name
@@ -61,7 +61,7 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
             <div>
               <h1 className="text-black font-bold text-3xl py-4">Popular "{subcategory.name}"</h1>
             </div>
-              <AdBanner ads={advs} height={250} />
+              <AdBannerWithFetch slug="subcategory" />
             
               <SortDropdownForCategory />
               <div className="mt-4">

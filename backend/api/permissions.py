@@ -1,11 +1,9 @@
 from rest_framework import permissions
+from rest_framework.permissions import SAFE_METHODS
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Разрешаем безопасные методы всем, а unsafe (PUT, PATCH, DELETE) только владельцу.
-    """
     def has_object_permission(self, request, view, obj):
-        # SAFE_METHODS: GET, HEAD, OPTIONS
-        if request.method in permissions.SAFE_METHODS:
+        if request.method in SAFE_METHODS:
             return True
-        return getattr(obj, 'owner', None) == request.user
+
+        return obj.owner == request.user
