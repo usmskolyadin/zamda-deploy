@@ -1,7 +1,7 @@
 import uuid
 
 from django.contrib import admin
-from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Page, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -52,16 +52,23 @@ class AdvertisementImageInline(admin.TabularInline):
     extra = 1
     fields = ("image",)
 
-    
-from django.contrib import admin
-from .models import Page
+from mdeditor.widgets import MDEditorWidget
+
+class PageAdminForm(forms.ModelForm):
+    class Meta:
+        model = Page
+        fields = "__all__"
+        widgets = {
+            "content": MDEditorWidget,
+        }
 
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
+    form = PageAdminForm
     list_display = ("title", "is_published", "updated_at")
     prepopulated_fields = {"slug": ("title",)}
-
+    
 import random
 from django.db import transaction
 
