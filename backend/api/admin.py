@@ -65,12 +65,12 @@ class PageAdminForm(forms.ModelForm):
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
+    form = PageAdminForm
+
     class Media:
         js = (
-            "https://code.jquery.com/jquery-3.6.0.min.js",
+            "mdeditor/js/editormd.min.js",
         )
-        
-    form = PageAdminForm
     list_display = ("title", "is_published", "updated_at")
     prepopulated_fields = {"slug": ("title",)}
     
