@@ -152,7 +152,7 @@ USE_TZ = True
 
 import os
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = "/var/www/zamda/backend/staticfiles"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
