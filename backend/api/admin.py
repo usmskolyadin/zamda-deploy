@@ -3,7 +3,7 @@ import uuid
 from django.contrib import admin
 from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Page, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-
+from django import forms
 admin.site.register(UserProfile)
 
 @admin.register(Category)
