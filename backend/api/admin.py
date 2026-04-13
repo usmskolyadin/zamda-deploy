@@ -69,7 +69,9 @@ class PageAdmin(admin.ModelAdmin):
 
     class Media:
         js = (
+            "admin/js/jquery.init.js",
             "mdeditor/js/editormd.min.js",
+            "admin/js/jquery.init.js",
         )
     list_display = ("title", "is_published", "updated_at")
     prepopulated_fields = {"slug": ("title",)}
