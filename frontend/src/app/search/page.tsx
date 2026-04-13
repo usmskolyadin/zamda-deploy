@@ -31,10 +31,12 @@ export default async function SearchPage({ searchParams }: Props) {
     if (!value) return;
     if (key === "sort") return;
 
+    const paramKey = key === "query" ? "search" : key;
+
     if (Array.isArray(value)) {
-      value.forEach(v => params.append(key, v));
+      value.forEach(v => params.append(paramKey, v));
     } else {
-      params.append(key, value);
+      params.append(paramKey, value);
     }
   });
 

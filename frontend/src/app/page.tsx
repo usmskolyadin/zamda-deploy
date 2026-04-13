@@ -31,10 +31,10 @@ export default async function Home() {
     bg: bgColors[index % bgColors.length],
     priority: cat.priority
   }));
-
+  // bg-[#F5F5F5]
   return (
     <div className="w-full">
-      <section className="bg-[#F5F5F5] pb-16 pt-14 p-4">
+      <section className="bg-white pb-16 pt-14 p-4">
         <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Everything with No Fees</h1>
         <h1 className="text-md mt-4 font-bold text-black text-center">Your Simple Local Marketplace. Join Americans Trading Today.</h1>
         <div className="max-w-screen-xl mx-auto mt-8">

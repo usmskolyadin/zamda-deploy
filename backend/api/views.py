@@ -8,9 +8,9 @@ from api.services.recommendations import AdvertisementRecommender
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import Ad, AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
-    CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
+    AdSerializer, CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
 )
 from .permissions import IsOwnerOrReadOnly
@@ -752,23 +752,36 @@ class ReviewReplyViewSet(viewsets.ModelViewSet):
         serializer.save(author=user)
 
 class ReviewReportViewSet(viewsets.ModelViewSet):
-
     queryset = ReviewReport.objects.all()
     serializer_class = ReviewReportSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-
         serializer.save(reporter=self.request.user)
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    parser_classes = [MultiPartParser, FormParser]
 
+    def perform_create(self, serializer):
+        review = serializer.save(author=self.request.user)
+
+        images = self.request.FILES.getlist("images")
+        
+        for img in images:
+            ReviewImage.objects.create(review=review, image=img)
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def my(self, request):
+        reviews = Review.objects.filter(author=request.user).select_related("profile__user").prefetch_related("images")
+        serializer = self.get_serializer(reviews, many=True)
+        return Response(serializer.data)
+    
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser
 
@@ -862,7 +875,65 @@ class RegisterRequestView(generics.GenericAPIView):
             logger.exception("ERROR IN REGISTER REQUEST: %s", str(e))
             return Response({"detail": "Server error"}, status=500)
 
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
 
+from .models import User
+from .serializers import NewsletterSerializer
+from .services.newsletter import send_newsletter_to_users
+
+
+class SendNewsletterToAllView(generics.GenericAPIView):
+    serializer_class = NewsletterSerializer
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        subject = serializer.validated_data["subject"]
+        content = serializer.validated_data["content"]
+
+        users = User.objects.all()
+
+        send_newsletter_to_users(users, subject, content)
+
+        return Response({"success": True})
+    
+class AdBySlugView(APIView):
+    def get(self, request, slug):
+        ads = Ad.objects.filter(
+            slug=slug,
+            is_active=True
+        ).order_by("-priority")
+
+        serializer = AdSerializer(
+            ads,
+            many=True,
+            context={"request": request}
+        )
+        return Response(serializer.data)
+    
+    
+class SendNewsletterToSelectedView(generics.GenericAPIView):
+    serializer_class = NewsletterSerializer
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        subject = serializer.validated_data["subject"]
+        content = serializer.validated_data["content"]
+        user_ids = serializer.validated_data.get("userIds", [])
+
+        users = User.objects.filter(id__in=user_ids)
+
+        send_newsletter_to_users(users, subject, content)
+
+        return Response({"success": True})
+    
 class VerifyCodeView(generics.GenericAPIView):
     serializer_class = VerifyCodeSerializer
     permission_classes = [AllowAny]
@@ -993,3 +1064,13 @@ class MyAdsCountsAPIView(APIView):
             "moderation": qs.filter(status="moderation").count(),
             "rejected": qs.filter(status="rejected").count(),
         })
+
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from .models import Page
+from .serializers import PageSerializer
+
+
+class PageViewSet(ReadOnlyModelViewSet):
+    queryset = Page.objects.filter(is_published=True)
+    serializer_class = PageSerializer
+    lookup_field = "slug"

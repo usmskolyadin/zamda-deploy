@@ -99,7 +99,7 @@ export default function RestorePassword() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       <section className="bg-[#ffffff] pt-8 p-4">
         <div className="max-w-screen-xl mx-auto">
           <p className="text-gray-500 pb-2">
@@ -111,7 +111,7 @@ export default function RestorePassword() {
         </div>
       </section>
 
-      <section className="bg-[#ffffff] pb-16 p-4">
+      <section className="bg-[#ffffff] pb-16 p-4 min-h-screen">
         <div className="max-w-screen-xl mx-auto">
           <div className="flex-col items-center mx-auto mt-4 lg:w-96 w-full">
 

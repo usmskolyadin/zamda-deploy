@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useAuth } from "@/src/features/context/auth-context";
 import Sidebar from "@/src/widgets/sidebar";
+import { useAds } from "@/src/features/hooks/use-ad";
+import { AdBanner } from "@/src/widgets/ad";
 
 
 type UserProfile = { avatar?: string | null; city?: string };
@@ -26,6 +28,7 @@ export default function Chats() {
   const { accessToken, user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const { advs } = useAds("category")
 
   useEffect(() => {
     if (!accessToken) return;
@@ -70,13 +73,11 @@ if (loading) {
 
   return (
     <div className=" w-full">
-      <section className="bg-[#ffffff]  pb-16 p-4">
+      <section className="bg-white pb-16 pt-14 px-4 sm:px-6 lg:px-12 xl:px-16">
         <div className="max-w-screen-xl lg:flex mx-auto">
           <Sidebar/>
           <div className=" lg:w-3/4 lg:ml-24">
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px]  flex justify-center items-center hidden lg:flex">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+            <AdBanner ads={advs} height={250} />
             <div className="lg:flex">
                 <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 lg:py-1 py-4">Messages</h1>
             </div>
@@ -94,7 +95,7 @@ if (loading) {
                   <div>
                     <div className="text-black font-semibold">{c.buyer.first_name} {c.buyer.last_name} <span className="text-gray-600 ml-0.5">{c.ad_title}</span></div>
                     <div className="text-gray-600 text-sm truncate max-w-[60ch]">
-                      {c.last ? c.last.text : "No messages yet"}
+                      {c.last ? c.last.text : "Recently you wanted to write"}
                     </div>
                   </div>
                 </div>

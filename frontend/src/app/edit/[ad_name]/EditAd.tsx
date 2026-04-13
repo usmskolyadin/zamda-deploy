@@ -268,9 +268,9 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Title</p>
               <p className="text-gray-700 text-sm font-medium">
-                Minimum length 5 symbols, max. length 30 symbols
+                Minimum length 5 symbols, max. length 100 symbols
               </p>
-              <input type="text" min={5} max={30} value={title} onChange={(e) => setTitle(e.target.value)}
+              <input type="text" min={5} max={100} value={title} onChange={(e) => setTitle(e.target.value)}
                      className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
             </label>
 

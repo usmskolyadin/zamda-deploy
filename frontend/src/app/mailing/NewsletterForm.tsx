@@ -72,26 +72,26 @@ export default function NewsletterForm({ onSubmit, isSending, mode }: Newsletter
 
         {previewMode === "write" ? (
           <textarea
-            className="p-4 border-0.5 border text-gray-900 border-black rounded-3xl w-full min-h-[300px] font-mono"
+            className="p-4 border-0.5 border text-black border-black rounded-3xl w-full min-h-[300px] font-mono"
             placeholder="Write your email content in Markdown...
 
-# Welcome to our newsletter
+              # Welcome to our newsletter
 
-## Highlights
-- Feature 1
-- Feature 2
+              ## Highlights
+              - Feature 1
+              - Feature 2
 
-Check out our [website](https://example.com)"
+              Check out our [website](https://example.com)"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
           />
         ) : (
-          <div className="p-4 border-0.5 border border-black rounded-3xl w-full min-h-[300px] bg-gray-50 prose prose-sm max-w-none">
+          <div className="p-4 border-0.5 border text-black border-black rounded-3xl w-full min-h-[300px] bg-gray-50 prose prose-sm max-w-none">
             {content ? (
               <ReactMarkdown>{content}</ReactMarkdown>
             ) : (
-              <p className="text-gray-400 italic">Nothing to preview yet...</p>
+              <p className="text-black italic">Nothing to preview yet...</p>
             )}
           </div>
         )}

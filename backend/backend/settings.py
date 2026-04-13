@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     'api', 
     'storages',
     'django_filters',
-    'corsheaders'
+    'corsheaders',
+    "mdeditor"
 ]
 
 REST_FRAMEWORK = {

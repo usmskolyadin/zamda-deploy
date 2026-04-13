@@ -10,7 +10,7 @@ export default function Footer() {
     
   return (
     <div>
-        <footer className="lg:h-[236px] bg-[#333333] w-full lg:p-6 p-4 lg:mb-0 mb-18 lg:block hidden">
+        <footer className="lg:h-[125px] bg-[#333333] w-full lg:p-6 p-4 lg:mb-0 mb-18 lg:block hidden">
           <div className="max-w-screen-xl lg:flex justify-between items-center w-full h-full mx-auto">
             <div className="min-w-48 flex justify-center lg:block">
                 <Link href={"/"}>

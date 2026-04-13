@@ -6,6 +6,8 @@ import { useAuth } from "@/src/features/context/auth-context";
 import { API_URL } from "@/src/shared/api/base";
 import Sidebar from "@/src/widgets/sidebar";
 import { apiFetchAuth } from "@/src/shared/api/auth";
+import { AdBanner } from "@/src/widgets/ad";
+import { useAds } from "@/src/features/hooks/use-ad";
 
 export default function ProfileEdit() {
   const { updateUser, isInitialized, accessToken, user } = useAuth();
@@ -30,6 +32,7 @@ export default function ProfileEdit() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const { advs } = useAds("favorites")
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -170,12 +173,10 @@ const updateGeneral = async (e: React.FormEvent) => {
 
           <div className="lg:w-3/4 lg:ml-24">
 
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px] lg:flex hidden justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+            <AdBanner ads={advs} height={250} />
+
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">Profile settings</h1>
-
 
             <div className="bg-white rounded-[50px] mt-4">
               <div className="grid grid-cols-2 border-b mb-6">

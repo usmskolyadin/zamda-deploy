@@ -1,5 +1,7 @@
+import uuid
+
 from django.contrib import admin
-from .models import AdvertisementImage, AdvertisementStatus, Category, ExtraFieldOption, Notification, NotificationUserState, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
+from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 admin.site.register(UserProfile)
@@ -50,6 +52,23 @@ class AdvertisementImageInline(admin.TabularInline):
     extra = 1
     fields = ("image",)
 
+    
+from django.contrib import admin
+from .models import Page
+
+
+@admin.register(Page)
+class PageAdmin(admin.ModelAdmin):
+    list_display = ("title", "is_published", "updated_at")
+    prepopulated_fields = {"slug": ("title",)}
+
+import random
+from django.db import transaction
+
+import random
+import uuid
+
+
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
     list_display = (
@@ -81,6 +100,7 @@ class AdvertisementAdmin(admin.ModelAdmin):
         AdvertisementExtraFieldInline,
     )
 
+
     fieldsets = (
         ("Основное", {
             "fields": (
@@ -90,6 +110,7 @@ class AdvertisementAdmin(admin.ModelAdmin):
                 "price",
                 "subcategory",
                 "location",
+                "views_count"
             )
         }),
         ("Модерация", {
@@ -184,3 +205,4 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Report)
 admin.site.register(Review)
+admin.site.register(Ad)

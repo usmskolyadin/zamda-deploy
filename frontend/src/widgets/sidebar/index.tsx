@@ -1,7 +1,9 @@
 import { useAuth } from '@/src/features/context/auth-context';
+import { useAds } from '@/src/features/hooks/use-ad';
 import Link from 'next/link';
 import React from 'react'
 import { FaStar } from 'react-icons/fa'
+import { AdBanner } from '../ad';
 
 type SidebarProps = {
   notHideOnPhone?: boolean;
@@ -10,7 +12,8 @@ type SidebarProps = {
 export default function Sidebar({notHideOnPhone}: SidebarProps) {
   const { user, logout } = useAuth();
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
-
+  const { advs } = useAds("sidebar");
+  console.log(`ADS: ${advs}`)
   return (
           <div className={`lg:w-1/4 ${notHideOnPhone ? ("") : ("hidden lg:block")}`}>
             <div className="max-w-[712px]">
@@ -81,9 +84,7 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                     <Link className="hover:underline text-[#2AAEF7]" href="/profile/edit"><span className="text-[#2AAEF7] text-md h-12">Profile settings</span> </Link>
                 </div>
             </div>
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[500px] lg:flex hidden  flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+            <AdBanner ads={advs} height={500} />
           </div>
   )
 }

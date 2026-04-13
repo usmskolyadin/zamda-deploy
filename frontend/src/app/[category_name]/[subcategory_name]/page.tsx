@@ -1,6 +1,8 @@
 import { getAdsBySubcategory } from "@/src/entities/advertisment/api/get-ads";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { getSubCategories } from "@/src/entities/sub-category/api/get-subcategories";
+import { useAds } from "@/src/features/hooks/use-ad";
+import { AdBanner } from "@/src/widgets/ad";
 import SortDropdownForCategory, { mapSortToOrdering } from "@/src/widgets/category-sort-dropdown";
 import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
@@ -17,6 +19,7 @@ interface Props {
 
 export default async function AdsBySubcategory({ params, searchParams }: Props) {
   const subcategories = await getSubCategories(params.category_name);
+  const advs = useAds("subcategory")
 
   const subcategory = subcategories.find(
     (sub) => sub.slug === params.subcategory_name
@@ -58,9 +61,8 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
             <div>
               <h1 className="text-black font-bold text-3xl py-4">Popular "{subcategory.name}"</h1>
             </div>
-            <div className="rounded-3xl  w-full bg-[#F2F1F0] h-[200px] mt-6 flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+              <AdBanner ads={advs} height={250} />
+            
               <SortDropdownForCategory />
               <div className="mt-4">
               {ads.length === 0 ? (

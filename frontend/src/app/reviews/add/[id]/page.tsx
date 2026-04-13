@@ -23,6 +23,7 @@ export default function AddReview() {
   const router = useRouter()
   const params = useParams<{ id: string }>();
   const profileId = params?.id;
+  const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
     if (!profileId) return;
@@ -62,41 +63,34 @@ export default function AddReview() {
     fetchAds();
   }, [profile?.username]);
 
-  const submit = async () => {
-    if (!accessToken || !user) {
-      alert("You must be logged in to leave a review");
-      return;
-    }
+const submit = async () => {
+  if (!accessToken || !user) return;
 
-    setLoading(true);
-    try {
-      console.log("Отправляем отзыв:", {
-        profile: profileId,
-        rating,
-        comment,
-      });
+  const formData = new FormData();
+  formData.append("profile", profileId as string);
+  formData.append("rating", String(rating));
+  formData.append("comment", comment);
 
-      await apiFetchAuth(`/api/reviews/`, {
-        method: "POST",
-        body: JSON.stringify({
-          profile: profileId,
-          rating,
-          comment,
-        }),
-      });
+  images.forEach((img) => {
+    formData.append("images", img);
+  });
 
+  try {
+    await apiFetchAuth(`/api/reviews/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: formData,
+    });
 
-      setComment("");
-      setRating(5);
-      alert("✅ Review added successfully!");
-      router.push(`/reviews/${profile?.id}`)
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to submit review");
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert("✅ Review added");
+    router.push(`/reviews/${profile?.id}`);
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed");
+  }
+};
 
   if (loading && !profile)
     return <p className="text-center mt-10 text-gray-500 h-screen bg-white flex items-center justify-center">Загрузка профиля...</p>;
@@ -186,6 +180,72 @@ export default function AddReview() {
                   ))}
                 </div>
               </div>
+<div className="space-y-3">
+  <label className="text-black/80 font-semibold text-lg block">
+    Images
+  </label>
+
+  {/* Upload зона */}
+  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[#2AAEF7] hover:bg-gray-50 transition">
+    <div className="flex flex-col items-center justify-center">
+      <svg
+        className="w-8 h-8 mb-2 text-gray-400"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+      >
+        <path d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" />
+      </svg>
+      <p className="text-sm text-gray-500">
+        Click or drag images here
+      </p>
+      <p className="text-xs text-gray-400">
+        Max 5 images
+      </p>
+    </div>
+
+    <input
+      type="file"
+      multiple
+      accept="image/*"
+      className="hidden"
+      onChange={(e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length + images.length > 5) {
+          alert("Max 5 images");
+          return;
+        }
+        setImages((prev) => [...prev, ...files]);
+      }}
+    />
+  </label>
+
+  {/* Preview */}
+  {images.length > 0 && (
+    <div className="flex gap-2 flex-wrap">
+      {images.map((img, i) => (
+        <div key={i} className="relative">
+          <img
+            src={URL.createObjectURL(img)}
+            className="w-20 h-20 object-cover rounded-xl border"
+          />
+
+          {/* Remove button */}
+          <button
+            type="button"
+            onClick={() =>
+              setImages((prev) => prev.filter((_, idx) => idx !== i))
+            }
+            className="absolute -top-2 -right-2 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
               <label className="text-black/80 font-semibold text-lg block mb-1">Comment</label>
 
               <textarea

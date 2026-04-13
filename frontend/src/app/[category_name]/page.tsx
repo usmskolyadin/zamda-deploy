@@ -6,6 +6,7 @@ import { Category } from "@/src/entities/category/model/types";
 import { getCategoryBySlug } from "@/src/entities/category/api/get-categories";
 import { getAdsByCategory } from "@/src/entities/advertisment/api/get-ads";
 import ProductCard from "../ProductCard";
+import { useAds } from "@/src/features/hooks/use-ad";
 
 interface Props {
   params: { category_name: string };
@@ -30,23 +31,47 @@ export default async function SubCategoriesPage({ params }: Props) {
             {category.name}
           </h1>
 <div className="grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-2 gap-4">
-            {subcategories.map((subcategory) => (
-              <Link key={subcategory.id} href={`/${category.slug}/${subcategory.slug}`}>
-                <div className="bg-[#F2F1F0] hover:opacity-70 transition h-[169px] rounded-2xl flex items-center justify-between">
-                  <h2 className="font-semibold  p-4 text-black text-xl lg:max-w-[50%]">
-                    {subcategory.name}
-                  </h2>
-                  <img
-                    src={subcategory.image || "/billie.png"}
-                    width={200}
-                    height={120}
-                    alt={subcategory.name}
-                    className=" object-contain justify-end"
-                  />
-                </div>
+  {subcategories
+    .sort((a, b) => Number(b.priority) - Number(a.priority))
+    .map((subcategory) => (
+      <Link
+        key={subcategory.id}
+        href={`/${category.slug}/${subcategory.slug}`}
+        className="group"
+      >
+        <div className="
+          h-[160px] md:h-[180px]
+          rounded-2xl overflow-hidden
+          bg-gray-100
+          grid grid-rows-[1fr_auto]
+        ">
 
-              </Link>
-            ))}
+          {/* IMAGE */}
+          <div className="flex items-center justify-center p-3 overflow-hidden">
+            <img
+              src={subcategory.image || "/billie.png"}
+              alt={subcategory.name}
+              className="
+                max-h-full max-w-full
+                object-contain
+                transition duration-300
+                group-hover:scale-105
+              "
+            />
+          </div>
+
+          <div className="px-3 pb-3">
+            <h2 className="
+              text-black text-sm md:text-lg font-semibold leading-tight
+              line-clamp-2
+            ">
+              {subcategory.name}
+            </h2>
+          </div>
+
+        </div>
+      </Link>
+    ))}
 </div>
 
         </div>

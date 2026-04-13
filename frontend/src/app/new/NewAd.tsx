@@ -375,7 +375,7 @@ const handleSubmit = async (e: FormEvent) => {
             <label className="w-full max-w-md flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Listing Title</p>
               <p className="text-gray-700 text-sm font-medium">
-                Minimum length 5 symbols, max. length 30 symbols
+                Minimum length 5 symbols, max. length 100 symbols
               </p>
               <input
                 type="text"
@@ -383,7 +383,7 @@ const handleSubmit = async (e: FormEvent) => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 minLength={5}
-                maxLength={30}
+                maxLength={100}
                 className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900"
                 required
               />

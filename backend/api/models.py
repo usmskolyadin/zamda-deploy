@@ -103,6 +103,26 @@ class AdvertisementStatus(models.TextChoices):
     REJECTED = "rejected", "Отклонено"
     ARCHIVED = "archived", "Архив"
 
+
+class Ad(models.Model):
+    slug = models.SlugField(unique=True)
+
+    title = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to="advertising/", blank=True, null=True, storage=MediaStorage())
+    link = models.URLField()
+
+    is_active = models.BooleanField(default=True)
+
+    priority = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-priority", "-created_at"]
+
+    def __str__(self):
+        return self.slug
+    
 class Advertisement(models.Model):
     owner = models.ForeignKey(User, related_name="ads", on_delete=models.CASCADE)
     subcategory = models.ForeignKey('SubCategory', related_name="ads", on_delete=models.CASCADE)
@@ -334,6 +354,17 @@ class ReviewReport(models.Model):
 
     def __str__(self):
         return f"Report by {self.reporter}"
+
+class ReviewImage(models.Model):
+    review = models.ForeignKey(
+        "Review",
+        related_name="images",
+        on_delete=models.CASCADE
+    )
+    image = models.ImageField(upload_to="reviews/")
+    
+    def __str__(self):
+        return f"Image for review {self.review.id}"
     
 class Review(models.Model):
     profile = models.ForeignKey(
@@ -393,3 +424,28 @@ class PasswordResetCode(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=10)
+
+
+from django.db import models
+from django.utils.text import slugify
+from mdeditor.fields import MDTextField
+
+class Page(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.CharField(max_length=255, blank=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    content = MDTextField()  
+
+    is_published = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title

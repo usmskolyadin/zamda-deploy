@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useAuth } from "@/src/features/context/auth-context";
 import BackButton from "@/src/widgets/back-button";
 import { apiFetchAuth } from "@/src/shared/api/auth";
+import Sidebar from "@/src/widgets/sidebar";
 
 export default function ReviewsPage() {
 
@@ -25,6 +26,30 @@ export default function ReviewsPage() {
   const [reportOpen, setReportOpen] = useState<number | null>(null);
   const [reportReason, setReportReason] = useState("spam");
   const [reportText, setReportText] = useState("");
+  const [activeTab, setActiveTab] = useState<"for_me" | "by_me">("for_me");
+  const [myReviews, setMyReviews] = useState<any[]>([]);
+  
+  const isOwner = profile?.username === user?.username;
+  
+
+  useEffect(() => {
+  if (!accessToken) return;
+
+  const fetchMyReviews = async () => {
+    const res = await apiFetchAuth("/api/reviews/my/");
+    setMyReviews(res);
+  };
+
+  fetchMyReviews();
+}, [accessToken]);
+
+const deleteReview = async (id: number) => {
+  await apiFetchAuth(`/api/reviews/${id}/`, {
+    method: "DELETE",
+  });
+
+  setMyReviews((prev) => prev.filter((r) => r.id !== id));
+};
 
   useEffect(() => {
 
@@ -34,6 +59,7 @@ export default function ReviewsPage() {
       const res = await apiFetch<Profile>(`/api/profiles/${profileId}/`);
       setProfile(res);
     };
+    
 
     fetchProfile();
 
@@ -86,7 +112,7 @@ export default function ReviewsPage() {
   return (
     <div className="w-full ">
 
-      <section className="bg-white h-screen pb-16 p-4">
+      <section className="bg-white min-h-screen pb-16 p-4">
 
         <div className="max-w-screen-xl lg:flex mx-auto">
 
@@ -137,27 +163,53 @@ export default function ReviewsPage() {
               </div>
             </div>
           </div>
-
           <div className="lg:w-3/4 lg:ml-24 mt-2">
 
             <div className="flex">
               <BackButton className="mr-2 px-2 py-0" />
               <h1 className="text-black font-bold text-4xl">Reviews</h1>
-            </div>
 
+            </div>
+<div className={`grid ${isOwner ? "grid-cols-2" : "grid-cols-1"} border-b mb-6 mt-4`}>
+
+  <button
+    className={`cursor-pointer text-lg font-bold pb-2 ${
+      activeTab === "for_me"
+        ? "text-black border-b-4 border-black"
+        : "text-gray-400"
+    }`}
+    onClick={() => setActiveTab("for_me")}
+  >
+    Reviews {isOwner ? "For me" : profile.first_name }
+  </button>
+
+  {isOwner && (
+    <button
+      className={`cursor-pointer text-lg font-bold pb-2 ${
+        activeTab === "by_me"
+          ? "text-black border-b-4 border-black"
+          : "text-gray-400"
+      }`}
+      onClick={() => setActiveTab("by_me")}
+    >
+      Reviews by Me
+    </button>
+  )}
+
+</div>
             <div className="mt-4">
 
-              {profile.username !== user?.username && (
-                <Link
-                  className="px-4 py-3 bg-[#36B731] hover:bg-green-500 cursor-pointer text-white rounded-3xl"
-                  href={accessToken ? `/reviews/add/${profile.id}` : "/login"}
-                >
-                  Add review
-                </Link>
-              )}
+{!isOwner && (
+  <Link
+    className="px-4 py-3 bg-[#36B731] hover:bg-green-500 cursor-pointer text-white rounded-3xl"
+    href={accessToken ? `/reviews/add/${profile.id}` : "/login"}
+  >
+    Add review
+  </Link>
+)}
 
             </div>
-
+            {activeTab === "for_me" && (
             <div className="space-y-4 mt-6">
 
               {profile.reviews?.map((review) => (
@@ -180,11 +232,9 @@ export default function ReviewsPage() {
                   </div>
 
                   <div className="flex items-center text-yellow-400 my-1">
-
                     <p className="mr-2 text-black font-semibold">
                       {review.rating}
                     </p>
-
                     {[...Array(5)].map((_, i) => (
                       <FaStar
                         key={i}
@@ -195,7 +245,17 @@ export default function ReviewsPage() {
                   </div>
 
                   <p className="text-gray-800">{review.comment}</p>
-
+{review.images?.length > 0 && (
+  <div className="flex gap-2 mt-3 flex-wrap">
+    {review.images.map((img: any) => (
+      <img
+        key={img.id}
+        src={img.image}
+        className="w-24 h-24 object-cover rounded-xl"
+      />
+    ))}
+  </div>
+)}
                   <div className="flex gap-4 mt-3 text-sm">
 
                     {profile.username === user?.username && !review.reply && (
@@ -297,29 +357,29 @@ export default function ReviewsPage() {
                   )}
 
                   {review.reply && (
-<div className="mt-4 flex items-start gap-2">
+                  <div className="mt-4 flex items-start gap-2">
 
-  <div className="text-gray-800 text-4xl mt-1">
-    ↳
-  </div>
+                    <div className="text-gray-800 text-4xl mt-1">
+                      ↳
+                    </div>
 
-  <div className="flex-1">
-    <div className="font-semibold text-lg text-black mb-2">
-      Seller's answer:
-    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-lg text-black mb-2">
+                        Seller's answer:
+                      </div>
 
-    <div className="bg-gray-200 p-3 rounded-2xl">
-      <div className="font-semibold text-black">
-        {review.reply.author_firstname} {review.reply.author_lastname}
-      </div>
+                      <div className=" rounded-2xl">
+                        <div className="font-semibold text-black">
+                          {review.reply.author_firstname} {review.reply.author_lastname}
+                        </div>
 
-      <div className="text-gray-700">
-        {review.reply.comment}
-      </div>
-    </div>
-  </div>
+                        <div className="text-gray-700">
+                          {review.reply.comment}
+                        </div>
+                      </div>
+                    </div>
 
-</div>
+                  </div>
 
                   )}
 
@@ -328,7 +388,84 @@ export default function ReviewsPage() {
               ))}
 
             </div>
+            )}
+{isOwner && activeTab === "by_me" && (
+  <div className="space-y-4">
 
+    {myReviews.length === 0 && (
+      <p className="text-gray-500">You haven’t left any reviews yet</p>
+    )}
+
+    {myReviews.map((review) => (
+
+      <div key={review.id} className="bg-gray-100 p-4 rounded-3xl">
+
+        <div className="flex justify-between">
+
+          <span className="font-semibold text-black">
+            <Link
+              href={`/profile/${review.target_profile_id}`}
+              className="font-semibold text-black hover:underline"
+            >
+              {review.target_firstname} {review.target_lastname}
+            </Link>
+          </span>
+
+          <span className="text-gray-500">
+            {new Date(review.created_at).toLocaleDateString()}
+          </span>
+
+        </div>
+
+        <div className="flex items-center text-yellow-400 my-1">
+
+          <p className="mr-2 text-black font-semibold">
+            {review.rating}
+          </p>
+
+          {[...Array(5)].map((_, i) => (
+            <FaStar
+              key={i}
+              className={i < review.rating ? "" : "opacity-30"}
+            />
+          ))}
+
+        </div>
+
+        <p className="text-gray-800">{review.comment}</p>
+          {review.images?.length > 0 && (
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {review.images.map((img: any) => (
+                <img
+                  key={img.id}
+                  src={img.image}
+                  className="w-24 h-24 object-cover rounded-xl"
+                />
+              ))}
+            </div>
+          )}
+        <div className="mt-3 flex justify-between items-center">
+          {review.reply && (
+            <span className="text-sm text-gray-500">
+              Seller replied
+            </span>
+          )}
+
+          <button
+            onClick={() => deleteReview(review.id)}
+            className="text-red-500 hover:underline text-sm cursor-pointer"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+)}
           </div>
 
         </div>

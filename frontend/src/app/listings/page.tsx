@@ -11,6 +11,8 @@ import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import { useRouter } from "next/navigation";
+import { useAds } from "@/src/features/hooks/use-ad";
+import { AdBanner } from "@/src/widgets/ad";
 
 type Counts = {
   active: number;
@@ -27,7 +29,8 @@ export default function ListingsClient() {
   const [profile, setProfile] = useState<any>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [counts, setCounts] = useState<Counts>()
-
+  const { advs } = useAds("listings");
+  
   useEffect(() => {
     if (!profileId) return;
 
@@ -79,7 +82,7 @@ export default function ListingsClient() {
 
     try {
       await apiFetchAuth(`/api/ads/${slug}/relist/`, { method: "POST" });
-      fetchAds(activeTab); // обновляем текущую вкладку
+      fetchAds(activeTab);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to relist the advertisement");
@@ -98,9 +101,7 @@ export default function ListingsClient() {
         <div className="max-w-screen-xl lg:flex mx-auto">
           <Sidebar notHideOnPhone={true} />
           <div className="lg:w-3/4 lg:ml-24">
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px] flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+            <AdBanner ads={advs} height={250} />
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
 

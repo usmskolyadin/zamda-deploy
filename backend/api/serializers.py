@@ -2,7 +2,7 @@ import json
 import uuid
 from rest_framework import serializers
 from .models import (
-    AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewReply, ReviewReport, SubCategory,
+    Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
 )
 from django.contrib.auth.models import User
@@ -24,7 +24,11 @@ class ReportSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
-
+class ReviewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewImage
+        fields = ["id", "image"]
+        
 class ReviewReplySerializer(serializers.ModelSerializer):
 
     author_lastname = serializers.CharField(source='author.last_name', read_only=True)
@@ -62,13 +66,43 @@ class ReviewReportSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     author_lastname = serializers.CharField(source='author.last_name', read_only=True)
     author_firstname = serializers.CharField(source='author.first_name', read_only=True)
+
+    target_firstname = serializers.CharField(source='profile.user.first_name', read_only=True)
+    target_lastname = serializers.CharField(source='profile.user.last_name', read_only=True)
+    target_profile_id = serializers.IntegerField(source='profile.id', read_only=True)
+
     reply = ReviewReplySerializer(read_only=True)
+    images = ReviewImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Review
-        fields = ['id', 'profile', 'author', 'author_lastname', 'author_firstname', 'rating', 'comment', 'reply', 'created_at']
-        read_only_fields = ['author', 'created_at', 'author_lastname', 'author_firstname']
+        fields = [
+            'id',
+            'profile',
+            'author',
+            'author_lastname',
+            'author_firstname',
 
+            'target_firstname',
+            'target_lastname',
+            'target_profile_id',
+            
+            'images',
+            'rating',
+            'comment',
+            'reply',
+            'created_at'
+        ]
+        read_only_fields = [
+            'author',
+            'created_at',
+            'author_lastname',
+            'author_firstname',
+            'target_firstname',
+            'target_lastname',
+            'target_profile_id'
+        ]
+        
     def validate(self, data):
         request = self.context.get('request')
         user = request.user if request else None
@@ -77,7 +111,35 @@ class ReviewSerializer(serializers.ModelSerializer):
         if user and Review.objects.filter(profile=profile, author=user).exists():
             raise serializers.ValidationError("Вы уже оставляли отзыв для этого пользователя.")
         return data
+    
+class NewsletterSerializer(serializers.Serializer):
+    subject = serializers.CharField()
+    content = serializers.CharField()
+    userIds = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False
+    )
 
+    
+class AdSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ad
+        fields = ["id", "slug", "image", "link"]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+
+        url = obj.image.url
+
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(url)
+
+        return url
+    
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -588,3 +650,49 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField(max_length=6)
     new_password = serializers.CharField(min_length=8)
+
+import markdown
+from rest_framework import serializers
+from .models import Page
+import re
+
+def normalize_markdown(text: str) -> str:
+    text = text.replace("\r\n", "\n")
+
+    lines = text.split("\n")
+    result = []
+
+    headings = {
+        "OUR MISSION",
+        "WHY WE CREATED ZAMDA",
+        "WHAT MAKES ZAMDA DIFFERENT",
+        "OUR COMMITMENT TO YOU",
+    }
+
+    for line in lines:
+        stripped = line.strip()
+
+        if stripped in headings:
+            result.append(f"## {stripped}")
+        else:
+            result.append(line)
+
+    return "\n".join(result)
+
+class PageSerializer(serializers.ModelSerializer):
+    html_content = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Page
+        fields = [
+            "id",
+            "title",
+            "subtitle",
+            "slug",
+            "content",
+            "html_content",
+        ]
+
+    def get_html_content(self, obj):
+        clean = normalize_markdown(obj.content)
+        return markdown.markdown(clean, extensions=["fenced_code", "tables"])

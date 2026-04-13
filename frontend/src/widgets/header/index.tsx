@@ -27,7 +27,7 @@ export default function Header() {
     }
 
     fetchUnreadNotifications()
-    const interval = setInterval(fetchUnreadNotifications, 15000) // обновляем каждые 15 секунд
+    const interval = setInterval(fetchUnreadNotifications, 15000)
     return () => clearInterval(interval)
   }, [user])
 
@@ -47,8 +47,17 @@ export default function Header() {
     const interval = setInterval(fetchUnread, 15000)
     return () => clearInterval(interval)
   }, [user])
+  const [scrolled, setScrolled] = useState(false)
+    
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
 
-  
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
         <div className="fixed top-0 w-full z-50">
           <header className="h-[50px] bg-[#333333] w-full p-4 lg:block hidden">
@@ -215,7 +224,13 @@ export default function Header() {
               </div>
             </div>
           </header>
-          <nav className="flex lg:h-[80px] h-[110px] bg-white items-center shadow-lg p-4 ">
+<nav
+  className={`
+    flex lg:h-[80px] h-[110px] bg-white items-center p-4
+    transition-all duration-500
+    ${scrolled ? 'shadow-lg' : 'shadow-none'}
+  `}
+>
             <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>

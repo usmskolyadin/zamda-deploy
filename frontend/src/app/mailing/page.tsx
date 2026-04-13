@@ -12,21 +12,23 @@ export default function NewsletterPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [sendMode, setSendMode] = useState<"all" | "selected">("all");
-
+  const [status, setStatus] = useState<string | null>(null);
+  
   const handleSendToAll = async (subject: string, content: string) => {
     setIsSending(true);
+    setStatus(null);
+
     try {
       const response = await apiFetchAuth("/api/newsletter/send-all/", {
         method: "POST",
         body: JSON.stringify({ subject, content }),
       });
-      
+
       if (response.success) {
-        alert(`Newsletter sent to all users successfully!`);
+        setStatus("✅ Sent to all users");
       }
     } catch (error) {
-      console.error("Error sending newsletter:", error);
-      alert("Failed to send newsletter");
+      setStatus("❌ Failed to send");
     } finally {
       setIsSending(false);
     }
@@ -34,28 +36,29 @@ export default function NewsletterPage() {
 
   const handleSendToSelected = async (subject: string, content: string) => {
     if (selectedUsers.length === 0) {
-      alert("Please select at least one user");
+      setStatus("⚠️ Select users first");
       return;
     }
 
     setIsSending(true);
+    setStatus(null);
+
     try {
       const response = await apiFetchAuth("/api/newsletter/send-selected/", {
         method: "POST",
-        body: JSON.stringify({ 
-          subject, 
+        body: JSON.stringify({
+          subject,
           content,
-          userIds: selectedUsers 
+          userIds: selectedUsers,
         }),
       });
-      
+
       if (response.success) {
-        alert(`Newsletter sent to ${selectedUsers.length} users successfully!`);
+        setStatus(`✅ Sent to ${selectedUsers.length} users`);
         setSelectedUsers([]);
       }
     } catch (error) {
-      console.error("Error sending newsletter:", error);
-      alert("Failed to send newsletter");
+      setStatus("❌ Failed to send");
     } finally {
       setIsSending(false);
     }
@@ -102,7 +105,11 @@ export default function NewsletterPage() {
                   />
                 </div>
               )}
-
+              {status && (
+                <div className="mt-4 text-sm font-medium text-gray-700">
+                  {status}
+                </div>
+              )}
               <NewsletterForm
                 onSubmit={sendMode === "all" ? handleSendToAll : handleSendToSelected}
                 isSending={isSending}

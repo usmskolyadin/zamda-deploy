@@ -10,6 +10,8 @@ import { useViewAd } from "@/src/features/hooks/use-view-ad";
 import { useAuth } from "@/src/features/context/auth-context";
 import { useLikeAd } from "@/src/features/hooks/use-like-ad";
 import dynamic from "next/dynamic";
+import { useAds } from "@/src/features/hooks/use-ad";
+import { AdBanner } from "@/src/widgets/ad";
 
 const AdMap = dynamic(() => import("@/src/widgets/ad-map/ad-map"), {
   ssr: false,
@@ -19,6 +21,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
+  const { advs } = useAds("ad");
 
   const { isLiked, likesCount, toggleLike } = useLikeAd(ad.slug, accessToken);
   const rating = Math.min(5, Math.max(0, Math.round(ad?.owner.profile?.rating || 0)));
@@ -176,16 +179,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
             <div className="hidden lg:block">
               <AdActions ad={ad} />
             </div>
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[300px] mt-6 flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">
-                Your Ad Here
-              </h2>
-            </div>
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[400px] mt-6 flex justify-center items-center">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">
-                Your Ad Here
-              </h2>
-            </div>
+            <AdBanner ads={advs} height={500} />
           </div>
         </div>
       </section>

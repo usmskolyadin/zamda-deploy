@@ -82,7 +82,7 @@ export default function SearchBar() {
           {suggestions.map((ad) => (
             <Link
               key={ad.id}
-              href={`/search?query=${encodeURIComponent(query)}`}
+              href={`/search?query=${encodeURIComponent(ad.title)}`}
               className="block px-4 py-2 rounded-2xl hover:bg-gray-100 text-black"
             >
               {ad.title}

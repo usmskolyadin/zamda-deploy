@@ -41,13 +41,14 @@ export async function apiFetchAuth<T>(endpoint: string, options: RequestInit = {
   let { access, refresh } = getTokens();
 
   if (!access) throw new Error("No access token, user must login");
-  
+  const isFormData = options.body instanceof FormData;
+
   
   let res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${access}`,
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers || {}),
     },
   });

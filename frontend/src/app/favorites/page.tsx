@@ -9,12 +9,15 @@ import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { apiFetch } from "@/src/shared/api/base";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import Sidebar from "@/src/widgets/sidebar";
+import { AdBanner } from "@/src/widgets/ad";
+import { useAds } from "@/src/features/hooks/use-ad";
 
 export default function Favorites() {
   const { user } = useAuth();
   const [adsCount, setAdsCount] = useState(0);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { advs } = useAds("favorites")
 
   useEffect(() => {
     if (!user) return;
@@ -50,9 +53,7 @@ export default function Favorites() {
         <div className="max-w-screen-xl lg:flex mx-auto">
           <Sidebar />
           <div className="lg:w-3/4 lg:ml-24">
-            <div className="rounded-3xl w-full bg-[#F2F1F0] h-[200px] flex justify-center items-center mb-6">
-              <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
-            </div>
+            <AdBanner ads={advs} height={250} />
 
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-black font-bold text-4xl">Favorites</h1>
