@@ -51,7 +51,7 @@ export default function GoogleCallbackClient() {
 
       await login(tokenData.access, tokenData.refresh, userData);
 
-      router.replace("/listings");
+      window.location.replace("/listings");
     } catch (err) {
       console.error(err);
       router.replace("/login");

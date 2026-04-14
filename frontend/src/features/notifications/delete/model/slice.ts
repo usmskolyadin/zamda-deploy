@@ -25,23 +25,21 @@ const notificationsSlice = createSlice({
     },
 
     destroyNotification(state, action: PayloadAction<number>) {
-      state.items = state.items.filter(
-        (notification) => notification.id !== action.payload
-      );
+      state.items = state.items.filter((n) => n.id !== action.payload);
     },
 
     markAsRead(state, action: PayloadAction<number>) {
-      const notification = state.items.find(
-        (n) => n.id === action.payload
-      );
-      if (notification) {
-        notification.is_read = true;
-      }
+      const n = state.items.find((x) => x.id === action.payload);
+      if (n) n.is_read = true;
     },
-  },
+
+    markAllAsRead(state) {
+      state.items.forEach((n) => (n.is_read = true));
+    },
+  }
 });
 
-export const { setNotifications, destroyNotification, markAsRead } =
+export const { setNotifications, destroyNotification, markAsRead, markAllAsRead } =
   notificationsSlice.actions;
 
 export const notificationsReducer = notificationsSlice.reducer;

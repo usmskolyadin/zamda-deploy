@@ -42,6 +42,21 @@ body {
   -webkit-line-clamp: 3;  
 }
 
+/* Chrome, Edge, Safari */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Chrome / Edge password eye */
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
+input[type="password"] {
+  -webkit-text-security: disc;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

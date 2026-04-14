@@ -1,6 +1,7 @@
 'use client'
 
 import { API_URL } from "@/src/shared/api/base";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -141,7 +142,8 @@ const handleRegister = async (e: React.FormEvent) => {
       setError("Network error. Please try again.");
     }
   };
-
+const [showPassword, setShowPassword] = useState(false);
+const [showPassword2, setShowPassword2] = useState(false);
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
@@ -190,24 +192,45 @@ const handleRegister = async (e: React.FormEvent) => {
                   onChange={handleChange}
                   required
                 />
-                <input
-                  className="text-black p-4 border border-black rounded-3xl h-[44px] w-full mt-2"
-                  placeholder="Password"
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  className="text-black p-4 border border-black rounded-3xl h-[44px] w-full mt-2"
-                  placeholder="Confirm password"
-                  type="password"
-                  name="password2"
-                  value={formData.password2}
-                  onChange={handleChange}
-                  required
-               />
+<div className="relative w-full mt-2">
+  <input
+    className="text-black p-4 pr-12 border border-black rounded-3xl h-[44px] w-full"
+    placeholder="Password"
+    type={showPassword ? "text" : "password"}
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    required
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword((p) => !p)}
+    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition"
+  >
+    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
+
+<div className="relative w-full mt-2">
+  <input
+    className="text-black p-4 pr-12 border border-black rounded-3xl h-[44px] w-full"
+    placeholder="Confirm password"
+    type={showPassword2 ? "text" : "password"}
+    name="password2"
+    value={formData.password2}
+    onChange={handleChange}
+    required
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword2((p) => !p)}
+    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black transition"
+  >
+    {showPassword2 ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
                 <div className="flex items-start mt-4">
                   <input
                     type="checkbox"

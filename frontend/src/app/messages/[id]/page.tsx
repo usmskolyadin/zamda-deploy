@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
 import { FaCheck, FaCheckDouble } from "react-icons/fa";
+import BackButton from "@/src/widgets/back-button";
 
 type UserProfile = { avatar?: string | null };
 type Owner = { id: number; first_name: string; last_name: string; profile: UserProfile };
@@ -18,12 +19,26 @@ export default function Chat() {
   const params = useParams<{ id: string }>();
   const chatId = Number(params.id);
   const { accessToken, user } = useAuth();
-
+const didInitScrollRef = useRef(false);
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isFirstLoadRef = useRef(true);
+
+  const handleScroll = () => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const atBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+
+    isAtBottomRef.current = atBottom;
+  };
+
 
   // загрузка самого чата один раз
   const loadChat = async () => {
@@ -59,7 +74,6 @@ export default function Chat() {
           ...filteredTemp
         ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 50);
         return merged;
       });
 
@@ -94,7 +108,6 @@ export default function Chat() {
     };
     setMessages(prev => [...prev, tempMessage]);
     setText("");
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 50);
 
     try {
       const created = await apiFetchAuth<Message>("/api/messages/", {
@@ -112,74 +125,138 @@ export default function Chat() {
     }
   };
 
-  if (!accessToken) return <div className="w-screen h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Login to view messages</p></div>;
-  if (loading) return <div className="w-screen h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Loading…</p></div>;
-  if (!chat) return <div className="bg-white h-screen max-w-screen-xl mx-auto p-4">Чат не найден.</div>;
+const scrollToBottom = (smooth = false) => {
+  const el = containerRef.current;
+  if (!el) return;
+
+  el.scrollTo({
+    top: el.scrollHeight,
+    behavior: smooth ? "smooth" : "auto",
+  });
+};
+
+useEffect(() => {
+  if (!messages.length) return;
+
+  if (isFirstLoadRef.current) {
+    scrollToBottom(false);
+    isFirstLoadRef.current = false;
+  }
+}, [messages]);
+
+  if (!accessToken) return <div className="w-full  h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Login to view messages</p></div>;
+  if (loading) return <div className="w-full h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Loading…</p></div>;
+  if (!chat) return <div className="bg-white h-screen w-full mx-auto p-4">Чат не найден.</div>;
 
   return (
     <div className="w-full">
-      <section className="bg-white pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
-          <Sidebar />
-          <div className="lg:w-3/4 lg:ml-24 flex flex-col">
-            <div className="flex items-center mt-4 min-w-full rounded-2xl p-2">
-              <div className="mr-2 flex items-center">
-                <Link href="/messages">
-                  <svg className="p-0.5 mr-3 ml-2" width="29" height="28" viewBox="0 0 29 28" fill="none">
-                    <path d="M13.4207 25.8094L2.00012 14.3888M13.4207 2.96822L2.00012 14.3888M2.00012 14.3888H14.3887H26.7772" stroke="#333" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-                <img
-                  className="min-w-12 max-w-12 min-h-12 max-h-12 rounded-full object-cover"
-                  src={chat.buyer.id === user?.id ? chat.seller.profile.avatar || "/default-avatar.png" : chat.buyer.profile.avatar || "/default-avatar.png"}
-                  alt=""
-                />
-              </div>
-              <div className="flex justify-between w-full items-center">
-                <div>
-                  <h1 className="text-xl text-black font-bold">
-                    {chat.buyer.id === user?.id
-                      ? `${chat.seller.first_name} ${chat.seller.last_name}`
-                      : `${chat.buyer.first_name} ${chat.buyer.last_name}`}
-                  </h1>
-                  <h2 className="text-sm text-gray-500">{chat.ad_title}</h2>
-                </div>
-                <ThreeDotsDropdown chatId={chatId} accessToken={accessToken} />
-              </div>
-            </div>
+<section className="lg:h-[80dvh] h-[75dvh] flex flex-col overflow-hidden bg-white">
+  <div className="max-w-screen-xl mx-auto flex flex-1 w-full min-h-0">
+    <Sidebar />
 
-            <div className="flex-1 p-4 max-h-[60vh] min-h-[60vh] overflow-y-auto">
-              {messages.map((m, index) => (
-                <div key={m.id ?? m.tempId ?? index} className={`flex mb-2 ${m.isMine ? "justify-end" : "justify-start"}`}>
-                  <div className={`rounded-2xl px-4 py-2 max-w-[75%] ${m.isMine ? "bg-blue-500 text-white" : "bg-gray-100 text-black"}`}>
-                    <div className="whitespace-pre-wrap break-words">{m.text}</div>
-                    <div className="flex justify-between items-end text-[10px] mt-1">
-                      <span className={m.isMine ? "text-blue-100" : "text-gray-500"}>
-                        {m.created_at ? new Date(m.created_at).toLocaleString([], { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}
-                      </span>
-                      {m.isMine && (
-                        <span className="ml-2 text-blue-100">
-                          {m.is_read ? <FaCheckDouble /> : <FaCheck />}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div ref={bottomRef} />
-            </div>
-            <form onSubmit={sendMessage} className="p-4 border-t border-gray-200 flex gap-2">
-              <input
-                value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="Write a message…"
-                className="flex-1 border rounded-3xl py-3 px-4 text-sm text-gray-800"
-              />
-              <button type="submit" className="rounded-3xl px-5 py-3 bg-black text-white">Send</button>
-            </form>
-          </div>
+    <div className="flex flex-col flex-1 lg:ml-24 min-h-0">
+      
+      {/* HEADER */}
+      <div className="flex items-center p-4 border-b border-gray-200 bg-white z-10 shrink-0">
+        <BackButton className="mr-2 p-1 lg:w-12 w-10" />
+
+        <img
+          className="w-12 h-12 rounded-full object-cover"
+          src={
+            chat.buyer.id === user?.id
+              ? chat.seller.profile.avatar || "/default-avatar.png"
+              : chat.buyer.profile.avatar || "/default-avatar.png"
+          }
+        />
+
+        <div className="ml-3 flex-1">
+          <h1 className="text-lg font-bold text-black leading-tight">
+            {chat.buyer.id === user?.id
+              ? `${chat.seller.first_name} ${chat.seller.last_name}`
+              : `${chat.buyer.first_name} ${chat.buyer.last_name}`}
+          </h1>
+
+          <p className="text-xs text-gray-500 truncate">
+            {chat.ad_title}
+          </p>
         </div>
-      </section>
+
+        <ThreeDotsDropdown chatId={chatId} accessToken={accessToken} />
+      </div>
+
+<div
+  ref={containerRef}
+  onScroll={handleScroll}
+  className="flex-1 min-h-0 overflow-y-auto bg-gray-50 px-4 py-4 space-y-3 pb-4"
+>
+        {messages.map((m, index) => (
+          <div
+            key={m.id ?? m.tempId ?? index}
+            className={`flex ${m.isMine ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`
+                max-w-[80%] px-4 py-2 rounded-2xl shadow-sm
+                ${m.isMine
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-black border border-gray-200"}
+              `}
+            >
+              <div className="text-sm whitespace-pre-wrap break-words">
+                {m.text}
+              </div>
+
+              <div className="flex justify-between items-center mt-1">
+                <span className={`text-[10px] ${m.isMine ? "text-blue-100" : "text-gray-400"}`}>
+                  {m.created_at
+                    ? new Date(m.created_at).toLocaleString([], {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
+                </span>
+
+                {m.isMine && (
+                  <span className="text-[10px] text-blue-100 ml-2">
+                    {m.is_read ? <FaCheckDouble /> : <FaCheck />}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div ref={bottomRef} />
+      </div>
+
+      <form
+        onSubmit={sendMessage}
+        className="
+          shrink-0
+          border-t border-gray-200
+          bg-white text-black
+          p-3
+          flex gap-2
+          sticky bottom-0
+        "
+      >
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="Write a message…"
+          className="flex-1 border rounded-full px-4 py-3 text-sm focus:outline-none"
+        />
+
+        <button className="px-5 py-3 rounded-full bg-black text-white">
+          Send
+        </button>
+      </form>
+
+    </div>
+  </div>
+</section>
     </div>
   );
 }

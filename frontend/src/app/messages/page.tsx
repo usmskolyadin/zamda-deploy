@@ -42,18 +42,38 @@ export default function Chats() {
     })();
   }, [accessToken]);
 
-  const items = useMemo(() => {
-    return chats.map((c) => ({
+const items = useMemo(() => {
+  return chats
+    .filter((c) => (c.messages?.length ?? 0) > 0) // ❗ важно
+    .map((c) => ({
       ...c,
       last: c.messages?.[c.messages.length - 1],
-      unread: c.unread_count, 
-    })).sort((a, b) => {
+      unread: c.unread,
+    }))
+    .sort((a, b) => {
       const at = a.last ? new Date(a.last.created_at).getTime() : 0;
       const bt = b.last ? new Date(b.last.created_at).getTime() : 0;
       return bt - at;
     });
-  }, [chats]);
+}, [chats]);
 
+const formatDate = (date?: string) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+  return d.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const getChatPartner = (chat: Chat, userId?: number) => {
+  if (!userId) return chat.buyer;
+
+  return chat.buyer.id === userId ? chat.seller : chat.buyer;
+};
 
 if (!accessToken) {
   return (
@@ -85,32 +105,83 @@ if (loading) {
                 <div>
             </div>
             <div className="flex flex-col min-h-screen">
-            {items.map((c) => (
-            <Link key={c.id} href={`/messages/${c.id}`} className="block mt-3">
-              <div className={`flex items-center justify-between rounded-2xl p-4 transition ${
-                c.unread > 0 ? "bg-blue-100" : "bg-gray-100"
-              } hover:bg-gray-200`}>
-                <div className="flex">
-                  <img src={c.buyer.profile.avatar} className="rounded-full object-cover max-w-12 max-h-12 min-w-12 min-h-12 mr-4" />
-                  <div>
-                    <div className="text-black font-semibold">{c.buyer.first_name} {c.buyer.last_name} <span className="text-gray-600 ml-0.5">{c.ad_title}</span></div>
-                    <div className="text-gray-600 text-sm truncate max-w-[60ch]">
-                      {c.last ? c.last.text : "Recently you wanted to write"}
-                    </div>
-                  </div>
-                </div>
-                {c.unread > 0 && (
-                  <div className="min-w-6 h-6 px-2 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-                    {c.unread}
-                  </div>
-                )}
-              </div>
-            </Link>
-        ))}
+{items.map((c) => {
+  const partner = getChatPartner(c, user?.id);
+  const last = c.last;
 
-        {items.length === 0 && (
-          <div className="text-gray-500">You don't have messages</div>
-        )}
+  return (
+    <Link key={c.id} href={`/messages/${c.id}`} className="block mt-3">
+<div
+  className="
+    flex flex-col sm:flex-row sm:items-center sm:justify-between
+    gap-2 sm:gap-0
+    rounded-2xl sm:rounded-3xl
+    p-3 sm:p-5
+    border border-gray-200
+    bg-gray-100
+    transition
+    hover:bg-gray-200 hover:shadow-md
+  "
+>
+  {/* LEFT */}
+  <div className="flex items-center gap-3 min-w-0 flex-1">
+    <img
+      src={partner.profile.avatar || "/default-avatar.png"}
+      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 flex-shrink-0"
+    />
+
+    <div className="flex flex-col min-w-0 flex-1">
+      
+      {/* NAME + DATE (mobile inline) */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-black font-semibold truncate">
+          {partner.first_name} {partner.last_name}
+        </div>
+
+        <span className="text-[11px] text-gray-400 whitespace-nowrap sm:hidden">
+          {last?.created_at ? formatDate(last.created_at) : ""}
+        </span>
+      </div>
+
+      {/* AD TITLE (weaker, separated color) */}
+      <div className="text-gray-400 text-xs truncate">
+        {c.ad_title}
+      </div>
+
+      {/* MESSAGE */}
+      <div className="text-gray-600 text-sm truncate">
+        {last?.text || "No messages yet"}
+      </div>
+    </div>
+  </div>
+
+  {/* RIGHT (desktop only) */}
+  <div className="hidden sm:flex flex-col items-end gap-2">
+    <span className="text-xs text-gray-400 whitespace-nowrap">
+      {last?.created_at ? formatDate(last.created_at) : ""}
+    </span>
+
+    {c.unread > 0 && (
+      <div className="min-w-6 h-6 px-2 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+        {c.unread}
+      </div>
+    )}
+  </div>
+
+  {/* MOBILE unread (inline right top corner feel) */}
+  {c.unread > 0 && (
+    <div className="sm:hidden absolute right-5 top-4 min-w-5 h-5 px-1.5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
+      {c.unread}
+    </div>
+  )}
+</div>
+    </Link>
+  );
+})}
+
+            {items.length === 0 && (
+              <div className="text-gray-500">You don't have messages</div>
+            )}
 
             </div>
           </div>

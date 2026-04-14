@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/src/features/context/auth-context";
 import { API_URL } from "@/src/shared/api/base";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -123,7 +124,7 @@ export default function Login() {
 
     console.log("=== LOGIN END ===");
   };
-    
+const [showPassword, setShowPassword] = useState(false);
   return (
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
@@ -158,17 +159,33 @@ export default function Login() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
-              />
-              <input
-                className="p-4 border-0.5 border text-gray-900 border-black rounded-3xl h-[44px] w-full mt-2"
-                placeholder="Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+                              required
+                            />
+              <div className="relative w-full mt-2">
+                <input
+                  className="p-4 pr-12 border border-black text-gray-900 rounded-3xl h-[44px] w-full"
+                  placeholder="Password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="
+                    absolute right-4 top-1/2 -translate-y-1/2
+                    text-gray-500 hover:text-black
+                    transition
+                    flex items-center justify-center
+                  "
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
 
               <p className="text-black mt-2 text-center text-sm">
                 Forgot password? <Link className="underline" href="/restorepassword">Reset your Password</Link>

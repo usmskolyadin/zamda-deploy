@@ -31,7 +31,7 @@ export default async function Home() {
     bg: bgColors[index % bgColors.length],
     priority: cat.priority
   }));
-  // bg-[#F5F5F5]
+
   return (
     <div className="w-full">
       <section className="bg-white pb-16 pt-14 p-4">

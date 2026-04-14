@@ -25,51 +25,58 @@ export default function ListingsClient() {
   const [activeTab, setActiveTab] = useState<"active" | "archived" | "moderation" | "rejected">("active");
   const { user, accessToken, isInitialized } = useAuth();
   const profileId = user?.profile.id;
-  const router = useRouter()
-  const [profile, setProfile] = useState<any>(null);
+  const router = useRouter();
+
+  const [profile, setProfile] = useState(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
-  const [counts, setCounts] = useState<Counts>()
+  const [counts, setCounts] = useState<Counts>();
   const { advs } = useAds("listings");
   
-  useEffect(() => {
-    if (!profileId) return;
+useEffect(() => {
+  if (!profileId) return;
 
-    const fetchCounts = async () => {
-      const res = await apiFetchAuth(`/api/ads/my/counts/`);
-      setCounts(res)
-      console.log(res)
-    };
+  const fetchCounts = async () => {
+    const res = await apiFetchAuth(`/api/ads/my/counts/`);
+    setCounts(res);
+  };
 
-    fetchCounts();
-  }, [profileId]);
+  fetchCounts();
+}, [profileId]);
+
+
 
   useEffect(() => {
     if (!isInitialized) return;
 
     if (!accessToken) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
+  }, [isInitialized, accessToken]);
 
-    if (!profileId) return;
+useEffect(() => {
+  if (!isInitialized) return;
+  if (!accessToken) return;
+  if (!profileId) return;
 
-    const fetchProfile = async () => {
-      const res = await apiFetch(`/api/profiles/${profileId}/`);
-      setProfile(res);
-    };
+  const fetchProfile = async () => {
+    const res = await apiFetch(`/api/profiles/${profileId}/`);
+    setProfile(res);
+  };
 
-    fetchProfile();
-  }, [profileId]);
+  fetchProfile();
+}, [isInitialized, accessToken, profileId]);
 
   const fetchAds = async (tab: typeof activeTab) => {
     const res = await apiFetchAuth<{ results: Advertisement[] }>(`/api/ads/my/?tab=${tab}`);
     setAds(res?.results || []);
   };
+useEffect(() => {
+  if (!isInitialized) return;
+  if (!user) return;
 
-  useEffect(() => {
-    if (!user) return;
-    fetchAds(activeTab);
-  }, [user, activeTab]);
+  fetchAds(activeTab);
+}, [isInitialized, user, activeTab]);
 
   const activeCount = activeTab === "active" ? ads.length : 0;
   const archivedCount = activeTab === "archived" ? ads.length : 0;
@@ -94,13 +101,15 @@ export default function ListingsClient() {
     const days = Math.floor(seconds / (3600 * 24));
     return `${days}d`;
   }
-
+if (!isInitialized) {
+  return <div>Loading...</div>;
+}
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto">
-          <Sidebar notHideOnPhone={true} />
-          <div className="lg:w-3/4 lg:ml-24">
+          <Sidebar notHideOnPhone={true}/>
+          <div className="lg:w-3/4 lg:ml-24 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
@@ -189,7 +198,10 @@ export const AdListings = ({
 }: AdListingsProps) => {
   const isClickable = activeTab === "active"
   const CardContent = (
-    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2 cursor-pointer">
+    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition border  border-gray-200
+          shadow-sm
+          transition
+          bg-gray-100 rounded-2xl p-2 cursor-pointer">
       <div className="lg:mr-4 flex-shrink-0">
         <img
           src={ad.images[0]?.image}

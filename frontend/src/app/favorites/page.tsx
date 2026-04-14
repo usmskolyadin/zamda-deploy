@@ -55,7 +55,7 @@ export default function Favorites() {
           <div className="lg:w-3/4 lg:ml-24">
             <AdBanner ads={advs} height={250} />
 
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 mt-4">
               <h1 className="text-black font-bold text-4xl">Favorites</h1>
               <p className="text-gray-600">{adsCount} items</p>
             </div>
@@ -70,7 +70,10 @@ export default function Favorites() {
               <div className="flex flex-col">
                 {ads.map((ad) => (
                 <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
-                    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition bg-gray-100 rounded-2xl p-2">
+                    <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition border  border-gray-200
+          shadow-sm
+          transition
+          bg-gray-100 rounded-2xl p-2">
                         <div className="lg:mr-4 flex-shrink-0">
                             <img
                             src={ad.images[0]?.image}

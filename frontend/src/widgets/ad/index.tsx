@@ -24,7 +24,10 @@ export const AdBanner: React.FC<AdBannerProps> = ({ ads, height = 200 }) => {
   if (!ad) {
     return (
       <div
-        className="rounded-3xl w-full bg-[#F2F1F0] flex justify-center items-center"
+        className="rounded-3xl w-full           border  border-gray-200
+          shadow-sm
+          transition
+          bg-gray-100 flex justify-center items-center"
         style={{ height }}
       >
         <h2 className="text-[#333333] text-3xl font-bold opacity-40">

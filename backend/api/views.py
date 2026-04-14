@@ -652,6 +652,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+
 
 def ensure_global_notifications(user):
     global_notifications = Notification.objects.filter(is_global=True)
@@ -697,7 +701,30 @@ class NotificationViewSet(viewsets.ModelViewSet):  # <- ModelViewSet вмест�
         ).count()
 
         return Response({"unread_count": count})
+    
+    @action(detail=True, methods=["post"])
+    def mark_read(self, request, pk=None):
+        state = self.get_object()
 
+        if state.user != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        state.is_read = True
+        state.save(update_fields=["is_read"])
+
+        return Response({"status": "read"})
+
+    @action(detail=False, methods=["post"])
+    def read_all(self, request):
+        ensure_global_notifications(request.user)
+
+        NotificationUserState.objects.filter(
+            user=request.user,
+            is_deleted=False,
+            is_read=False
+        ).update(is_read=True)
+
+        return Response({"status": "ok"})
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()

@@ -42,6 +42,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const router = useRouter();
   const clearAuth = () => {
     localStorage.removeItem('access_token');
@@ -62,44 +63,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+    useEffect(() => {
+      if (typeof window === 'undefined') return;
 
-    const token = localStorage.getItem('access_token');
-    const refresh = localStorage.getItem('refresh_token');
-    const userData = localStorage.getItem('user');
+      const token = localStorage.getItem('access_token');
+      const refresh = localStorage.getItem('refresh_token');
+      const userData = localStorage.getItem('user');
 
-    if (token && userData) {
-      setAccessToken(token);
-      setUser(safeParseUser(userData));
-      setIsInitialized(true);
-      return;
-    }
+      if (token && userData) {
+        setAccessToken(token);
+        setUser(safeParseUser(userData));
+        setIsInitialized(true);
+        return;
+      }
 
-    if (refresh) {
-      fetch(`${API_URL}/api/token/refresh/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh }),
-      })
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          if (data?.access) {
-            localStorage.setItem('access_token', data.access);
-            setAccessToken(data.access);
-            setUser(safeParseUser(userData));
-          } else {
-            clearAuth();
-          }
+      if (refresh) {
+        fetch(`${API_URL}/api/token/refresh/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh }),
         })
-        .catch(clearAuth)
-        .finally(() => {
-          setIsInitialized(true);
-        });
-    } else {
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data?.access) {
+              localStorage.setItem('access_token', data.access);
+              setAccessToken(data.access);
+              setUser(safeParseUser(userData));
+            } else {
+              clearAuth();
+            }
+          })
+          .catch(clearAuth)
+          .finally(() => {
+            setIsInitialized(true);
+          });
+
+        return;
+      }
+
       setIsInitialized(true);
-    }
-  }, []);
+    }, []);
 
   const login = (token: string, refresh: string, userData: User) => {
     localStorage.setItem('access_token', token);
@@ -108,7 +111,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     setAccessToken(token);
     setUser(userData);
-
+    setRefreshToken(refresh);
     return true;
   };
 
