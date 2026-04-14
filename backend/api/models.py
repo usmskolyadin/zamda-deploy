@@ -435,7 +435,7 @@ class Page(models.Model):
     subtitle = models.CharField(max_length=255, blank=True)
     slug = models.SlugField(unique=True, blank=True)
 
-    content = MDTextField()  
+    content = models.TextField() 
 
     is_published = models.BooleanField(default=True)
 

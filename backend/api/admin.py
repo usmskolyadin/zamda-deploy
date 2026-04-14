@@ -52,31 +52,26 @@ class AdvertisementImageInline(admin.TabularInline):
     extra = 1
     fields = ("image",)
 
-from mdeditor.widgets import MDEditorWidget
-
-
-class PatchedMDEditorWidget(MDEditorWidget):
-    class Media:
-        js = (
-            "js/mdeditor_jquery_patch.js",
-        )
-
-
 class PageAdminForm(forms.ModelForm):
     class Meta:
         model = Page
         fields = "__all__"
-        widgets = {
-            "content": PatchedMDEditorWidget(),
-        }
 
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     form = PageAdminForm
 
-    list_display = ("title", "is_published", "updated_at")
-    prepopulated_fields = {"slug": ("title",)}
+    class Media:
+        css = {
+            "all": [
+                "https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+            ]
+        }
+        js = [
+            "https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js",
+            "js/toast_editor.js",
+        ]
     
 import random
 from django.db import transaction
