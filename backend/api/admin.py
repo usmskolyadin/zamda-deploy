@@ -54,12 +54,20 @@ class AdvertisementImageInline(admin.TabularInline):
 
 from mdeditor.widgets import MDEditorWidget
 
+
+class PatchedMDEditorWidget(MDEditorWidget):
+    class Media:
+        js = (
+            "js/mdeditor_jquery_patch.js",
+        )
+
+
 class PageAdminForm(forms.ModelForm):
     class Meta:
         model = Page
         fields = "__all__"
         widgets = {
-            "content": MDEditorWidget,
+            "content": PatchedMDEditorWidget(),
         }
 
 
