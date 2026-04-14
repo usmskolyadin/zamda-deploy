@@ -160,6 +160,9 @@ STATIC_ROOT = "/var/www/zamda/backend/staticfiles"
 
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv("SPACES_ACCESS_KEY_ID")
