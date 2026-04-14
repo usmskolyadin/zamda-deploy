@@ -67,12 +67,6 @@ class PageAdminForm(forms.ModelForm):
 class PageAdmin(admin.ModelAdmin):
     form = PageAdminForm
 
-    class Media:
-        js = (
-            "admin/js/jquery.init.js",
-            "js/mdeditor_fix.js",
-            "mdeditor/js/editormd.min.js",
-        )
     list_display = ("title", "is_published", "updated_at")
     prepopulated_fields = {"slug": ("title",)}
     

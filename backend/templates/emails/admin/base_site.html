@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+  {{ block.super }}
+
+  <script>
+    window.$ = django.jQuery;
+    window.jQuery = django.jQuery;
+  </script>
+{% endblock %}
