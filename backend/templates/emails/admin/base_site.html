@@ -1,10 +1,19 @@
 {% extends "admin/base_site.html" %}
 
-{% block extrahead %}
+{% block footer %}
   {{ block.super }}
 
   <script>
-    window.$ = django.jQuery;
-    window.jQuery = django.jQuery;
+    (function() {
+      function fixJQuery() {
+        if (window.django && django.jQuery) {
+          window.$ = django.jQuery;
+          window.jQuery = django.jQuery;
+        } else {
+          setTimeout(fixJQuery, 50);
+        }
+      }
+      fixJQuery();
+    })();
   </script>
 {% endblock %}
