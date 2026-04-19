@@ -1,7 +1,9 @@
+
 import Tabs from "./Tabs";
 import Link from "next/link";
 import { getCategories } from "@/src/entities/category/api/get-categories";
 import Image from "next/image";
+import AdsBlock from "../widgets/ad/AdBannerClient";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +62,7 @@ export default async function Home() {
       </section>
       <section className="bg-[#E5E9F2] p-4">
         <div className="max-w-screen-xl mx-auto">
+          <AdsBlock page={"home"} />
           <div className="w-full flex flex-col items-center justify-center">
             <h1 className="text-4xl mt-12 font-bold text-black text-center">Recommended for you</h1>
             <Tabs />

@@ -7,6 +7,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
   },
+  
   images: {
     remotePatterns: [
       {

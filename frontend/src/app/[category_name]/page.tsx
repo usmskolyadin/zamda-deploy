@@ -7,6 +7,7 @@ import { getCategoryBySlug } from "@/src/entities/category/api/get-categories";
 import { getAdsByCategory } from "@/src/entities/advertisment/api/get-ads";
 import ProductCard from "../ProductCard";
 import { useAds } from "@/src/features/hooks/use-ad";
+import AdsBlock from "@/src/widgets/ad/AdBannerClient";
 
 interface Props {
   params: { category_name: string };
@@ -77,6 +78,10 @@ export default async function SubCategoriesPage({ params }: Props) {
         </div>
             <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:p-0">
               <div className="max-w-screen-xl mx-auto mt-12">
+                <div className="pt-4">
+                <AdsBlock page={"category"} />
+
+                </div>
                 <h1 className="text-black font-bold text-4xl py-2 lg:pt-8 pt-0 text-center">
                   Recommended for you
                 </h1>

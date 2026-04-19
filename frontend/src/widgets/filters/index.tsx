@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import LocationMap from "../location-map/LocationMap";
+import AdsBlock from "../ad/AdBannerClient";
 
 interface SubCategory {
   id: number;
@@ -314,9 +315,8 @@ function FiltersBody({
   >
     Show
   </button>
-
-  <div className="rounded-3xl w-full bg-[#F2F1F0] h-48 mt-6 flex justify-center items-center">
-    <h2 className="text-[#333333] text-3xl font-bold opacity-40">Your Ad Here</h2>
+  <div className="mt-8">
+    <AdsBlock page={"filters"} height={500}/>
   </div>
 </div>
 
