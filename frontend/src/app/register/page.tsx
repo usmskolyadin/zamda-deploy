@@ -147,7 +147,7 @@ const [showPassword2, setShowPassword2] = useState(false);
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12 ">
           <p className="text-gray-500 pb-2">
             <Link href="/">Home</Link> / <Link href="/">Register</Link>
           </p>

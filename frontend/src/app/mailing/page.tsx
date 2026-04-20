@@ -49,8 +49,8 @@ export default function NewsletterPage() {
         body: JSON.stringify({
           subject,
           content,
-          userIds: selectedUsers,
-        }),
+          user_ids: selectedUsers, 
+        })
       });
 
       if (response.success) {
@@ -67,7 +67,7 @@ export default function NewsletterPage() {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar notHideOnPhone={true} />
 
           <div className="lg:w-3/4 lg:ml-24">

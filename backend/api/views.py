@@ -953,14 +953,29 @@ class SendNewsletterToSelectedView(generics.GenericAPIView):
 
         subject = serializer.validated_data["subject"]
         content = serializer.validated_data["content"]
-        user_ids = serializer.validated_data.get("userIds", [])
+        user_ids = serializer.validated_data.get("user_ids", [])
 
-        users = User.objects.filter(id__in=user_ids)
+        user_ids = [int(uid) for uid in user_ids]
 
-        send_newsletter_to_users(users, subject, content)
+        users = User.objects.filter(id__in=user_ids).exclude(email="")
 
-        return Response({"success": True})
-    
+        print("USER IDS:", user_ids)
+        print("FOUND USERS:", users.count())
+
+        try:
+            send_newsletter_to_users(users, subject, content)
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response(
+                {"success": False, "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            "success": True,
+            "sent": users.count()
+        })
+            
 class VerifyCodeView(generics.GenericAPIView):
     serializer_class = VerifyCodeSerializer
     permission_classes = [AllowAny]
@@ -1101,3 +1116,41 @@ class PageViewSet(ReadOnlyModelViewSet):
     queryset = Page.objects.filter(is_published=True)
     serializer_class = PageSerializer
     lookup_field = "slug"
+
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAdminUser
+from django.contrib.auth import get_user_model
+
+from .serializers import UserSerializer
+
+User = get_user_model()
+from rest_framework.pagination import PageNumberPagination
+
+class UserPagination(PageNumberPagination):
+    page_size = 50
+
+from rest_framework.filters import SearchFilter
+
+class UserListView(ListAPIView):
+    queryset = (
+        User.objects
+        .select_related("profile")
+        .only(
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_active",
+            "is_staff",
+            "date_joined",
+            "last_login",
+            "profile__avatar",
+            "profile__city",
+        )
+    )
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    filter_backends = [SearchFilter]
+    pagination_class = UserPagination
+    search_fields = ["email", "first_name", "last_name", "username"]

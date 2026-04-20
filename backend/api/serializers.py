@@ -115,7 +115,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class NewsletterSerializer(serializers.Serializer):
     subject = serializers.CharField()
     content = serializers.CharField()
-    userIds = serializers.ListField(
+    user_ids = serializers.ListField(
         child=serializers.IntegerField(),
         required=False
     )
@@ -696,3 +696,31 @@ class PageSerializer(serializers.ModelSerializer):
     def get_html_content(self, obj):
         clean = normalize_markdown(obj.content)
         return markdown.markdown(clean, extensions=["fenced_code", "tables"])
+    
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(source="profile.avatar", read_only=True)
+    city = serializers.CharField(source="profile.city", read_only=True)
+    full_name = serializers.CharField(source="get_full_name", read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "avatar",
+            "city",
+            "is_active",
+            "is_staff",
+            "date_joined",
+            "last_login",
+        ]

@@ -93,8 +93,8 @@ if (loading) {
 
   return (
     <div className=" w-full">
-      <section className="bg-white pb-16 pt-14 px-4 sm:px-6 lg:px-12 xl:px-16">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+      <section className="bg-white pb-16 pt-6 px-4 sm:px-6 lg:px-12 xl:px-16">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar/>
           <div className=" lg:w-3/4 lg:ml-24">
             <AdBanner ads={advs} height={250} />

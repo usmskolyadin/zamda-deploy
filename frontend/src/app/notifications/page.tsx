@@ -29,7 +29,7 @@ export default function Notifications() {
   return (
     <div className="w-full overflow-x-hidden">
       <section className="bg-[#ffffff] pb-16 p-4 min-h-screen">
-        <div className="max-w-screen-xl mx-auto lg:flex">
+        <div className="max-w-screen-xl mx-auto lg:flex px-4 sm:px-6 lg:px-12">
           <Sidebar />
 
           <div className="w-full lg:w-3/4 lg:ml-24 min-w-0">

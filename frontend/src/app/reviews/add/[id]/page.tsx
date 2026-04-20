@@ -107,7 +107,7 @@ const submit = async () => {
   return (
     <div className="w-full">
       <section className="bg-white pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <div className="lg:w-1/4 ">
             <img
               src={profile.avatar || "/default-avatar.png"}

@@ -11,7 +11,7 @@ export default function Footer() {
   return (
     <div>
         <footer className="lg:h-[125px] bg-[#333333] w-full lg:p-6 p-4 lg:mb-0 mb-18 lg:block hidden">
-          <div className="max-w-screen-xl lg:flex justify-between items-center w-full h-full mx-auto">
+          <div className="max-w-screen-xl lg:flex justify-between items-center w-full h-full mx-auto px-4 sm:px-6 lg:px-12">
             <div className="min-w-48 flex justify-center lg:block">
                 <Link href={"/"}>
                 <div className="">
@@ -47,7 +47,7 @@ export default function Footer() {
           </div>
         </footer>
         <footer className="bg-[#333] text-white w-full mb-14 lg:hidden block">
-          <div className="max-w-screen-xl mx-auto px-4 py-10">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12 py-10">
 
             <div className="flex flex-col gap-8">
 

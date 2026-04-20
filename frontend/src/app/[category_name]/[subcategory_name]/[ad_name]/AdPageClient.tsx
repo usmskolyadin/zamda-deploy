@@ -47,7 +47,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
   return (
     <div className="w-full ">
       <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2">
             <Link className="hover:underline" href="/">Home</Link> /{" "}
             <Link className="hover:underline" href={`/${ad.category_slug}`}>{ad.category_slug}</Link> {" / "}
@@ -104,7 +104,8 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
       </section>
 
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+                <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
+
           <div className="lg:w-2/3 lg:pr-36">
 
             <AdSlider ad={ad} />

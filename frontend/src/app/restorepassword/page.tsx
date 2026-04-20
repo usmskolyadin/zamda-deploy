@@ -101,7 +101,7 @@ export default function RestorePassword() {
   return (
     <div className="w-full ">
       <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2">
             <Link href="/">Home</Link> / Restore password
           </p>
@@ -112,7 +112,7 @@ export default function RestorePassword() {
       </section>
 
       <section className="bg-[#ffffff] pb-16 p-4 min-h-screen">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex-col items-center mx-auto mt-4 lg:w-96 w-full">
 
             {/* STEP 1 — EMAIL */}

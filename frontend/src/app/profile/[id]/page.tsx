@@ -57,7 +57,7 @@ useEffect(() => {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <div className="lg:w-1/4">
             <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
               <img
@@ -137,7 +137,7 @@ useEffect(() => {
                       </h1>
 
                       <p className="text-md text-gray-900 font-semibold break-words">
-                        ${ad.price}
+                        ${Number(ad.price)}
                       </p>
 
                       <p

@@ -61,7 +61,8 @@ export default function Header() {
   return (
         <div className="fixed top-0 w-full z-50">
           <header className="h-[50px] bg-[#333333] w-full p-4 lg:block hidden">
-            <div className="max-w-screen-xl flex items-center w-full h-full mx-auto">
+                <div className="max-w-screen-xl flex items-center w-full h-full lg:flex mx-auto px-4 sm:px-6 lg:px-12">
+
               <div className="lg:w-3/4">
                       {/* <div>
                         {user ? (
@@ -231,7 +232,7 @@ export default function Header() {
     ${scrolled ? 'shadow-lg' : 'shadow-none'}
   `}
 >
-            <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between">
+              <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between px-4 sm:px-6 lg:px-12">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>
                   <div className="flex items-center">

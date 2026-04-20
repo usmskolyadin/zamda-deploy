@@ -24,63 +24,62 @@ export default async function SubCategoriesPage({ params }: Props) {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] min-h-screen pt-8">
-        <div className="max-w-screen-xl mx-auto  p-4 lg:p-0">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2">
             <Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={categorySlug}>{category.name}</Link>
           </p>
           <h1 className="text-black font-bold text-4xl py-4">
             {category.name}
           </h1>
-<div className="grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-2 gap-4">
-  {subcategories
-    .sort((a, b) => Number(b.priority) - Number(a.priority))
-    .map((subcategory) => (
-      <Link
-        key={subcategory.id}
-        href={`/${category.slug}/${subcategory.slug}`}
-        className="group"
-      >
-        <div className="
-          h-[160px] md:h-[180px]
-          rounded-2xl overflow-hidden
-          bg-gray-100
-          grid grid-rows-[1fr_auto]
-        ">
+          <div className="grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-2 gap-4">
+            {subcategories
+              .sort((a, b) => Number(b.priority) - Number(a.priority))
+              .map((subcategory) => (
+                <Link
+                  key={subcategory.id}
+                  href={`/${category.slug}/${subcategory.slug}`}
+                  className="group"
+                >
+                  <div className="
+                    h-[160px] md:h-[180px]
+                    rounded-2xl overflow-hidden
+                    bg-gray-100
+                    grid grid-rows-[1fr_auto]
+                  ">
 
-          {/* IMAGE */}
-          <div className="flex items-center justify-center p-3 overflow-hidden">
-            <img
-              src={subcategory.image || "/billie.png"}
-              alt={subcategory.name}
-              className="
-                max-h-full max-w-full
-                object-contain
-                transition duration-300
-                group-hover:scale-105
-              "
-            />
+                    {/* IMAGE */}
+                    <div className="flex items-center justify-center p-3 overflow-hidden">
+                      <img
+                        src={subcategory.image || "/billie.png"}
+                        alt={subcategory.name}
+                        className="
+                          max-h-full max-w-full
+                          object-contain
+                          transition duration-300
+                          group-hover:scale-105
+                        "
+                      />
+                    </div>
+
+                    <div className="px-3 pb-3">
+                      <h2 className="
+                        text-black text-sm md:text-lg font-semibold leading-tight
+                        line-clamp-2
+                      ">
+                        {subcategory.name}
+                      </h2>
+                    </div>
+
+                  </div>
+                </Link>
+              ))}
           </div>
-
-          <div className="px-3 pb-3">
-            <h2 className="
-              text-black text-sm md:text-lg font-semibold leading-tight
-              line-clamp-2
-            ">
-              {subcategory.name}
-            </h2>
-          </div>
-
-        </div>
-      </Link>
-    ))}
-</div>
-
         </div>
             <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:p-0">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
               <div className="max-w-screen-xl mx-auto mt-12">
                 <div className="pt-4">
-                <AdsBlock page={"category"} />
-
+                  <AdsBlock page={"category"} />
                 </div>
                 <h1 className="text-black font-bold text-4xl py-2 lg:pt-8 pt-0 text-center">
                   Recommended for you
@@ -95,6 +94,7 @@ export default async function SubCategoriesPage({ params }: Props) {
                     <p className="text-center text-gray-500 mt-6">No ads found.</p>
                   )}
              </div>
+              </div>
               </div>
       </section>
     </div>

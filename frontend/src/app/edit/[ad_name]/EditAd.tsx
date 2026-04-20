@@ -257,13 +257,13 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   return (
     <div className="w-full">
       <section className="bg-white pt-8 px-4">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <h1 className="text-black text-center font-bold text-4xl py-4">Edit Ad</h1>
         </div>
       </section>
 
       <section className="bg-white min-h-screen flex justify-center px-4">
-        <div className="text-black w-full max-w-screen-xl">
+        <div className="text-black w-full max-w-screen-xl px-4 sm:px-6 lg:px-12">
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 w-full max-w-3xl mx-auto">
             <label className="w-full flex-col flex font-semibold text-gray-800">
               <p className="font-semibold text-black text-xl">Title</p>

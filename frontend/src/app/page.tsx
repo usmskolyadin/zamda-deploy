@@ -37,6 +37,7 @@ export default async function Home() {
   return (
     <div className="w-full">
       <section className="bg-white pb-16 pt-14 p-4">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
         <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Everything with No Fees</h1>
         <h1 className="text-md mt-4 font-bold text-black text-center">Your Simple Local Marketplace. Join Americans Trading Today.</h1>
         <div className="max-w-screen-xl mx-auto mt-8">
@@ -59,8 +60,10 @@ export default async function Home() {
             ))}
           </div>
         </div>
+        </div>
       </section>
       <section className="bg-[#E5E9F2] p-4">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
         <div className="max-w-screen-xl mx-auto">
           <AdsBlock page={"home"} />
           <div className="w-full flex flex-col items-center justify-center">
@@ -70,6 +73,7 @@ export default async function Home() {
           <div className="rounded-3xl w-full bg-[#F2F1F0] h-[136px] mt-12 mb-14 lg:flex hidden flex justify-center items-center">
             <Image src={"/zamdam.png"} width={1250} height={136} alt={""} />
           </div>
+        </div>
         </div>
       </section>
     </div>

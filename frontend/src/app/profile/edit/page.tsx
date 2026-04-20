@@ -167,7 +167,7 @@ const updateGeneral = async (e: React.FormEvent) => {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
 
           <Sidebar notHideOnPhone={true} />
 

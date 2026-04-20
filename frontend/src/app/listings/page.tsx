@@ -107,7 +107,7 @@ if (!isInitialized) {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar notHideOnPhone={true}/>
           <div className="lg:w-3/4 lg:ml-24 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
@@ -228,7 +228,7 @@ export const AdListings = ({
 
         <div className="flex w-full items-center mt-1">
           <p className="text-lg text-gray-900 font-semibold mr-2">
-            ${ad.price}
+            ${Number(ad.price)}
           </p>
         </div>
 

@@ -39,8 +39,8 @@ export default async function Home() {
   })))];
 
   return (
-    <div className="w-full overflow-x-hidden">
-      <section className="relative bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] h-min-content lg:py-38 py-48 flex items-center justify-center overflow-hidden">
+    <div className="w-full overflow-x-hidden ">
+      <section className="relative bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] h-min-content lg:py-38 py-48 px-4 sm:px-6 lg:px-12 flex items-center justify-center overflow-hidden">
         <div className="absolute w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse top-20 left-20"></div>
         <div className="absolute w-96 h-96 bg-green-400/20 rounded-full blur-3xl animate-pulse delay-700 bottom-20 right-20"></div>
         <div className="absolute w-80 h-80 bg-orange-400/20 rounded-full blur-3xl animate-pulse delay-1000 bottom-40 left-40"></div>

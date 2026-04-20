@@ -151,7 +151,7 @@ useEffect(() => {
   return (
     <div className="w-full">
 <section className="lg:h-[80dvh] h-[75dvh] flex flex-col overflow-hidden bg-white">
-  <div className="max-w-screen-xl mx-auto flex flex-1 w-full min-h-0">
+  <div className="max-w-screen-xl mx-auto flex flex-1 w-full min-h-0 px-4 sm:px-6 lg:px-12">
     <Sidebar />
 
     <div className="flex flex-col flex-1 lg:ml-24 min-h-0">

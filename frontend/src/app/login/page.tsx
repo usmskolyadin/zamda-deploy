@@ -128,7 +128,7 @@ const [showPassword, setShowPassword] = useState(false);
   return (
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto w-">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2"><Link href="/">Home</Link> / <Link href="/">Login</Link></p>
           <div className="lg:flex">
             <h1 className="mx-auto text-black font-bold text-4xl py-4 text-center">Sign in for Zamda</h1>
@@ -136,8 +136,8 @@ const [showPassword, setShowPassword] = useState(false);
         </div>
       </section>
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
-            <div className="flex-col items-center mx-auto mt-4 mb-4 lg:mt-0 lg:mb-0">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
+            <div className="flex-col items-center mx-auto mt-4 mb-4 lg:mt-0 lg:mb-0 w-full max-w-md">
               <button onClick={googleLogin} className="p-4 hover:opacity-80 transition cursor-pointer border-0.5 border text-gray-900 border-black rounded-3xl h-[44px] w-full flex items-center justify-center mt-2" id="" >
                 <div className="flex">
                   <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
@@ -146,6 +146,17 @@ const [showPassword, setShowPassword] = useState(false);
                   <span className="ml-2">Continue with Google</span>
                 </div>
               </button>
+                <p className="text-black text-xs leading-snug mt-2">
+                    By continuing, you agree to the{" "}
+                    <Link href="/privacy" className="underline hover:opacity-70">
+                      Privacy Policy
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/terms" className="underline hover:opacity-70">
+                      Terms of Service
+                    </Link>{" "}
+                    of ZAMDA.
+                  </p>
               <div className="flex items-center my-6">
                 <hr className="flex-grow border-t border-black" />
                 <span className="mx-4 text-black">or</span>
@@ -159,7 +170,7 @@ const [showPassword, setShowPassword] = useState(false);
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                              required
+                required
                             />
               <div className="relative w-full mt-2">
                 <input

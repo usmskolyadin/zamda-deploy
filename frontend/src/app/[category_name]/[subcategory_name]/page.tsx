@@ -47,13 +47,14 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
   return (
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2"><Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={`/${params.category_name}`}>{params.category_name}</Link> / <Link className="hover:underline" href={`/${params.category_name}/${params.subcategory_name}`}>{subcategory.name}</Link></p>
           <h1 className="text-black font-bold text-4xl py-4">{subcategory.name}</h1>
         </div>
       </section>
       <section className="bg-[#ffffff]  pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl mx-auto lg:flex px-4 sm:px-6 lg:px-12">
+
           <div className="lg:w-1/3">
             <Filters initialSubcategory={params.subcategory_name} categorySlug={params.category_name}  />
           </div>

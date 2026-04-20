@@ -6,11 +6,15 @@ import { FaSearch, FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
 interface User {
   id: string;
+  username: string;
   email: string;
-  profile?: {
-    first_name?: string;
-    last_name?: string;
-  };
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  avatar?: string;
+  city?: string;
+  is_active?: boolean;
+  is_staff?: boolean;
 }
 
 interface UserSelectorProps {
@@ -29,6 +33,7 @@ export default function UserSelector({ selectedUsers, onSelectionChange }: UserS
       try {
         const response = await apiFetchAuth("/api/users/");
         setUsers(response.results || []);
+        console.log(response.results)
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -39,10 +44,11 @@ export default function UserSelector({ selectedUsers, onSelectionChange }: UserS
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleUser = (userId: string) => {
@@ -102,27 +108,63 @@ export default function UserSelector({ selectedUsers, onSelectionChange }: UserS
           )}
         </div>
 
-        {filteredUsers.map(user => (
-          <div
-            key={user.id}
-            className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-            onClick={() => toggleUser(user.id)}
-          >
-            {selectedUsers.includes(user.id) ? (
-              <FaCheckCircle className="text-black flex-shrink-0" />
-            ) : (
-              <FaRegCircle className="text-gray-400 flex-shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-gray-900 truncate">
-                {user.profile?.first_name && user.profile?.last_name
-                  ? `${user.profile.first_name} ${user.profile.last_name}`
-                  : "No name"}
-              </p>
-              <p className="text-sm text-gray-500 truncate">{user.email}</p>
-            </div>
-          </div>
-        ))}
+{filteredUsers.map(user => (
+  <div
+    key={user.id}
+    className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
+    onClick={() => toggleUser(user.id)}
+  >
+    {/* чекбокс */}
+    {selectedUsers.includes(user.id) ? (
+      <FaCheckCircle className="text-black flex-shrink-0" />
+    ) : (
+      <FaRegCircle className="text-gray-400 flex-shrink-0" />
+    )}
+
+    {/* аватар */}
+    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+      {user.avatar ? (
+        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+      ) : null}
+    </div>
+
+    {/* инфа */}
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2">
+        <p className="font-medium text-gray-900 truncate">
+          {user.full_name || `${user.first_name || ""} ${user.last_name || ""}` || "No name"}
+        </p>
+
+        {user.is_staff && (
+          <span className="text-xs bg-black text-white px-2 py-0.5 rounded-full">
+            Admin
+          </span>
+        )}
+      </div>
+
+      <p className="text-sm text-gray-500 truncate">
+        @{user.username}
+      </p>
+
+      <p className="text-xs text-gray-400 truncate">
+        {user.email}
+      </p>
+
+      {user.city && (
+        <p className="text-xs text-gray-400 truncate">
+          📍 {user.city}
+        </p>
+      )}
+    </div>
+
+    {/* статус */}
+    <div className="flex flex-col items-end text-xs">
+      <span className={user.is_active ? "text-green-600" : "text-red-500"}>
+        {user.is_active ? "Active" : "Disabled"}
+      </span>
+    </div>
+  </div>
+))}
 
         {filteredUsers.length === 0 && (
           <div className="p-8 text-center text-gray-500">

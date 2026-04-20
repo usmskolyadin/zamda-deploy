@@ -100,7 +100,7 @@ export default function NotificationDetailPage() {
   return (
     <div className="w-full bg-white">
       <section className="min-h-screen flex">
-        <div className="max-w-screen-xl mx-auto flex w-full">
+        <div className="max-w-screen-xl mx-auto flex w-full px-4 sm:px-6 lg:px-12">
 
           <Sidebar />
 

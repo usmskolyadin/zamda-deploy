@@ -50,7 +50,7 @@ export default function Favorites() {
   return (
     <div className="w-full">
       <section className="bg-white pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar />
           <div className="lg:w-3/4 lg:ml-24">
             <AdBanner ads={advs} height={250} />
@@ -98,7 +98,7 @@ export default function Favorites() {
                             </div>
 
                             <div className="flex w-full items-center mt-1">
-                            <p className="text-lg text-gray-900 font-semibold mr-2">${ad.price}</p>
+                            <p className="text-lg text-gray-900 font-semibold mr-2">${Number(ad.price)}</p>
 
                             </div>
 
