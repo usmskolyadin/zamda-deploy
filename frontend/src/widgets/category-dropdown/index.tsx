@@ -98,7 +98,7 @@ export default function CategoryDropdown() {
             {categories.map((category) => (
               <li
                 key={category.id ?? category.slug}
-                className="hover:bg-gray-100 p-2 rounded-xl text-black cursor-pointer"
+                className="hover:bg-gray-100 text-sm px-2 py-1.5 rounded-xl text-black cursor-pointer"
               >
                 <Link
                   href={`/${category.slug}`}

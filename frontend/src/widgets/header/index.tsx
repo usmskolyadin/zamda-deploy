@@ -232,7 +232,7 @@ export default function Header() {
     ${scrolled ? 'shadow-lg' : 'shadow-none'}
   `}
 >
-              <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between px-4 sm:px-6 lg:px-12">
+              <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between px-0 sm:px-6 lg:px-12">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>
                   <div className="flex items-center">

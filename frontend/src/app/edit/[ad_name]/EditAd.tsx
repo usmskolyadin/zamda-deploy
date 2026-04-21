@@ -279,8 +279,19 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <p className="text-gray-700 text-sm font-medium">
                 Enter only final price
               </p>
-              <input type="number" min={1} max={9999999} value={price} onChange={(e) => setPrice(e.target.value)}
-                     className="p-4 border border-black rounded-3xl mt-1 text-gray-900" required />
+                            <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="Enter price"
+                value={price}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '') 
+                  setPrice(value)
+                }}
+                className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900"
+                required
+              />
             </label>
 
             <label className="w-full flex-col flex font-semibold text-gray-800 col-span-2">

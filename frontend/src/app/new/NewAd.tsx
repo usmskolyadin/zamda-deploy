@@ -395,12 +395,15 @@ const handleSubmit = async (e: FormEvent) => {
                 Enter only final price
               </p>
               <input
-                type="number"
-                min={1}
-                max={9999999}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="Enter price"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '') 
+                  setPrice(value)
+                }}
                 className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900"
                 required
               />

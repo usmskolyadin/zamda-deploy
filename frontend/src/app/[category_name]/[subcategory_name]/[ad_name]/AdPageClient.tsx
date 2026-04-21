@@ -180,7 +180,9 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
             <div className="hidden lg:block">
               <AdActions ad={ad} />
             </div>
-            <AdBanner ads={advs} height={500} />
+            <div className="mt-4">
+              <AdBanner ads={advs} height={500} />
+            </div>
           </div>
         </div>
       </section>
