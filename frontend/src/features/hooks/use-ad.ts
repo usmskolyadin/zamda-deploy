@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
+import { apiFetch } from "@/src/shared/api/base";
 
 interface Ad {
   id: number;
@@ -34,7 +35,7 @@ export function useAds(adSlug?: string, options?: UseAdsOptions) {
       setError(null);
 
       try {
-        const data = await apiFetchAuth(`/api/advertising/${slugToUse}/`);
+        const data = await apiFetch(`/api/advertising/${slugToUse}/`);
         setAdvs(data);
       } catch (err: any) {
         console.error("Ads fetch error:", err);

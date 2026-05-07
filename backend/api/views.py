@@ -32,7 +32,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Notification
+from .models import Notification, Referral, ReferralConversion
 from .serializers import NotificationSerializer
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 import logging
@@ -940,9 +940,11 @@ class AdBySlugView(APIView):
             many=True,
             context={"request": request}
         )
+
         return Response(serializer.data)
-    
-    
+
+
+
 class SendNewsletterToSelectedView(generics.GenericAPIView):
     serializer_class = NewsletterSerializer
     permission_classes = [IsAdminUser]
@@ -1006,6 +1008,21 @@ class VerifyCodeView(generics.GenericAPIView):
             last_name=record.last_name,
             password=record.password,
         )
+        
+        process_referral(request, user)        
+        
+        ref_code = request.session.get("referral_code")
+
+        if ref_code:
+            try:
+                referral = Referral.objects.get(code=ref_code)
+
+                ReferralConversion.objects.create(
+                    referral=referral,
+                    new_user=user
+                )
+            except Referral.DoesNotExist:
+                pass
 
         record.delete()
 
@@ -1154,3 +1171,49 @@ class UserListView(ListAPIView):
     filter_backends = [SearchFilter]
     pagination_class = UserPagination
     search_fields = ["email", "first_name", "last_name", "username"]
+
+
+from .models import Referral, ReferralConversion
+
+
+def process_referral(request, user):
+    ref_code = request.session.get("ref_code")
+
+    if not ref_code:
+        return
+
+    try:
+        referral = Referral.objects.get(code=ref_code)
+    except Referral.DoesNotExist:
+        return
+
+    if referral.owner_id == user.id:
+        return
+
+    ip = get_client_ip(request)
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
+
+    if ReferralConversion.objects.filter(
+        referral=referral,
+        ip=ip
+    ).exists():
+        return
+
+    if ReferralConversion.objects.filter(
+        referral=referral,
+        new_user=user
+    ).exists():
+        return
+
+    ReferralConversion.objects.create(
+        referral=referral,
+        new_user=user,
+        ip=ip,
+        user_agent=user_agent
+    )
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0]
+    return request.META.get("REMOTE_ADDR")

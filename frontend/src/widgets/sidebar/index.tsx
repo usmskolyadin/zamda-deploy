@@ -84,7 +84,6 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                     <Link className="hover:underline text-[#2AAEF7]" href="/profile/edit"><span className="text-[#2AAEF7] text-md h-12">Profile settings</span> </Link>
                 </div>
             </div>
-            <AdBanner ads={advs} height={500} />
           </div>
   )
 }

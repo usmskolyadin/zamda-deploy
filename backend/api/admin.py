@@ -4,6 +4,8 @@ from django.contrib import admin
 from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Page, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
+from django.utils.html import format_html
+
 admin.site.register(UserProfile)
 
 @admin.register(Category)
@@ -217,3 +219,55 @@ admin.site.register(User, UserAdmin)
 admin.site.register(Report)
 admin.site.register(Review)
 admin.site.register(Ad)
+
+from django.contrib import admin
+from .models import Referral
+from django.db.models import Count
+
+
+@admin.register(Referral)
+class ReferralAdmin(admin.ModelAdmin):
+    list_display = ("code", "owner", "created_at", "converted_count", "copy_link")
+
+    readonly_fields = ("code", "created_at", "converted_count", "copy_link")
+
+
+    def copy_link(self, obj):
+        link = obj.link
+
+        return format_html(
+            """
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input 
+                    type="text" 
+                    value="{}" 
+                    id="ref-link-{}" 
+                    style="width:320px;" 
+                    readonly
+                />
+                <button type="button" onclick="
+                    navigator.clipboard.writeText(document.getElementById('ref-link-{}').value);
+                    this.innerText='Copied!';
+                    setTimeout(() => this.innerText='Copy', 1000);
+                ">
+                    Copy
+                </button>
+            </div>
+            """,
+            link,
+            obj.id,
+            obj.id
+        )
+
+    copy_link.short_description = "Referral link"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(
+            conversions=Count("referralconversion")
+        )
+
+    def converted_count(self, obj):
+        return obj.conversions
+
+    converted_count.short_description = "Referrals"

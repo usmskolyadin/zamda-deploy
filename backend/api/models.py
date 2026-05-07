@@ -108,8 +108,27 @@ class Ad(models.Model):
     slug = models.SlugField(unique=True)
 
     title = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to="advertising/", blank=True, null=True, storage=MediaStorage())
-    link = models.URLField()
+
+    image = models.ImageField(
+        upload_to="advertising/desktop/",
+        blank=True,
+        null=True,
+        storage=MediaStorage()
+    )
+
+    mobile_image = models.ImageField(
+        upload_to="advertising/mobile/",
+        blank=True,
+        null=True,
+        storage=MediaStorage()
+    )
+    iframe_code = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Iframe or custom HTML code for ad embedding"
+    )
+
+    link = models.URLField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
 
@@ -449,3 +468,49 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+    
+from django.conf import settings
+from django.db import models
+import uuid
+
+
+class Referral(models.Model):
+    code = models.CharField(max_length=50, unique=True, blank=True)
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="referrals"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = uuid.uuid4().hex[:10]
+        super().save(*args, **kwargs)
+
+    @property
+    def link(self):
+        return f"https://zamda.com/register?ref={self.code}"
+
+    def __str__(self):
+        return self.code
+
+
+class ReferralConversion(models.Model):
+    referral = models.ForeignKey(Referral, on_delete=models.CASCADE)
+    new_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["referral", "new_user"],
+                name="unique_referral_user"
+            )
+        ]

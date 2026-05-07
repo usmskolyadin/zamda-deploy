@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import LocationMap from "../location-map/LocationMap";
 import AdsBlock from "../ad/AdBannerClient";
+import { StickyAdBlock } from "../ad/StickyBanner";
 
 interface SubCategory {
   id: number;
@@ -315,9 +316,6 @@ function FiltersBody({
   >
     Show
   </button>
-  <div className="mt-8">
-    <AdsBlock page={"filters"} height={500}/>
-  </div>
 </div>
 
 )};

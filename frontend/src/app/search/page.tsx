@@ -1,5 +1,7 @@
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { API_URL } from "@/src/shared/api/base";
+import AdsBlock from "@/src/widgets/ad/AdBannerClient";
+import { StickyAdBlock } from "@/src/widgets/ad/StickyBanner";
 import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
 import Link from "next/link";
@@ -52,16 +54,25 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className=" w-full">
-      <section className="bg-[#ffffff] pt-8 p-4">
-        <div className="max-w-screen-xl mx-auto">
+      <section className="bg-[#ffffff] pt-8 ">
+        <div className="max-w-screen-xl mx-auto mx-auto px-4 sm:px-6 lg:px-12">
           <p className="text-gray-500 pb-2"><Link href="/">Home</Link> / <Link href="/">Search</Link></p>
         </div>
       </section>
-      <section className="bg-[#ffffff]  pb-16  p-4">
-        <div className="max-w-screen-xl  lg:flex mx-auto">
-          <div className="lg:w-1/3">
-            <Filters />
+    <section className="bg-[#ffffff] pb-16 p-4 ">
+      <div className="max-w-screen-xl lg:flex lg:items-start mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="lg:w-1/3 self-start">
+          <Filters />
+
+          <div className="mt-6 mr-10">
+            <StickyAdBlock
+              page="filters"
+              height={500}
+              width="360px"
+            />
           </div>
+
+        </div>
           <div className="lg:w-2/3">
             <div>
               <h1 className="text-black font-bold text-3xl py-4">Search results</h1>

@@ -120,25 +120,39 @@ class NewsletterSerializer(serializers.Serializer):
         required=False
     )
 
-    
 class AdSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    mobile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Ad
-        fields = ["id", "slug", "image", "link"]
+        fields = [
+            "id",
+            "slug",
+            "title",
+            "image",
+            "mobile_image",
+            "iframe_code",
+            "link",
+        ]
 
-    def get_image(self, obj):
-        if not obj.image:
+    def build_media_url(self, file):
+        if not file:
             return None
 
-        url = obj.image.url
+        url = file.url
 
         request = self.context.get("request")
         if request:
             return request.build_absolute_uri(url)
 
         return url
+
+    def get_image(self, obj):
+        return self.build_media_url(obj.image)
+
+    def get_mobile_image(self, obj):
+        return self.build_media_url(obj.mobile_image)
     
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
