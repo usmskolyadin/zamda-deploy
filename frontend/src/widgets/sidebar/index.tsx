@@ -4,18 +4,27 @@ import Link from 'next/link';
 import React from 'react'
 import { FaStar } from 'react-icons/fa'
 import { AdBanner } from '../ad';
+import StickyAdBlock from '../ad/StickyBanner';
 
 type SidebarProps = {
   notHideOnPhone?: boolean;
+  hideBanner?: boolean;
 };
 
-export default function Sidebar({notHideOnPhone}: SidebarProps) {
+export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   const { user, logout } = useAuth();
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
   const { advs } = useAds("sidebar");
   console.log(`ADS: ${advs}`)
   return (
-          <div className={`lg:w-1/4 ${notHideOnPhone ? ("") : ("hidden lg:block")}`}>
+<div
+  className={`
+    lg:w-1/3
+    lg:max-w-[380px]
+    w-full
+    ${notHideOnPhone ? "" : "hidden lg:block"}
+  `}
+>
             <div className="max-w-[712px]">
                   <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
                     <img
@@ -83,6 +92,12 @@ export default function Sidebar({notHideOnPhone}: SidebarProps) {
                 <div className="py-3 flex flex-col mb-4">
                     <Link className="hover:underline text-[#2AAEF7]" href="/profile/edit"><span className="text-[#2AAEF7] text-md h-12">Profile settings</span> </Link>
                 </div>
+                <div className={`hidden lg:block mt-6 ${hideBanner ? "lg:hidden" : ""}`}>
+                <StickyAdBlock
+                  page="ad"
+                  height={500}
+                />
+              </div>
             </div>
           </div>
   )

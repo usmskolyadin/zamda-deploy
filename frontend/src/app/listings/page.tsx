@@ -13,7 +13,7 @@ import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import { useRouter } from "next/navigation";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
-import { StickyAdBlock } from "@/src/widgets/ad/StickyBanner";
+import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
 
 type Counts = {
   active: number;
@@ -109,9 +109,9 @@ if (!isInitialized) {
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
-            <Sidebar notHideOnPhone={true} />
 
-          <div className="lg:w-3/4 lg:ml-24 lg:mt-0 mt-2">
+            <Sidebar notHideOnPhone={true}/>
+          <div className="lg:w-2/3 lg:ml-10 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
@@ -214,11 +214,11 @@ export const AdListings = ({
         />
       </div>
 
-      <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
+<div className="w-full min-w-0 lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
         <div className="w-full flex items-center justify-between">
-          <h1 className="text-lg text-black font-bold truncate pr-2">
-            {ad.title}
-          </h1>
+<h1 className="text-lg text-black font-bold truncate pr-2 min-w-0">
+  {ad.title}
+</h1>
 
           <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
             {new Date(ad.created_at).toLocaleString("en-US", {
@@ -234,7 +234,7 @@ export const AdListings = ({
           </p>
         </div>
 
-        <p className="text-sm text-gray-900 mt-2 line-clamp-3 break-all overflow-hidden">
+        <p className="text-sm text-gray-900 mt-2 break-words overflow-hidden line-clamp-3 min-w-0 overflow-hidden">
           {ad.description}
         </p>
 

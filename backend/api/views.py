@@ -8,7 +8,7 @@ from api.services.recommendations import AdvertisementRecommender
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Ad, AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import Ad, AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, EmailChangeCode, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
     AdSerializer, CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer
@@ -1217,3 +1217,87 @@ def get_client_ip(request):
     if x_forwarded_for:
         return x_forwarded_for.split(",")[0]
     return request.META.get("REMOTE_ADDR")
+
+
+class EmailChangeRequestView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        email = user.email
+
+        code = EmailChangeCode.generate_code()
+
+        EmailChangeCode.objects.filter(user=user).delete()
+
+        EmailChangeCode.objects.create(
+            user=user,
+            code=code
+        )
+
+        html_content = render_to_string("emails/email_change.html", {
+            "code": code,
+            "email": email,
+            "first_name": user.first_name,
+        })
+
+        text_content = strip_tags(html_content)
+
+        send_email(
+            to_email=email,
+            subject="ZAMDA — Email change verification",
+            html_content=html_content,
+            text_content=text_content
+        )
+
+        return Response({"detail": "Code sent to current email"}, status=200)
+    
+
+class EmailChangeVerifyView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get("code")
+
+        try:
+            record = EmailChangeCode.objects.get(user=request.user)
+        except EmailChangeCode.DoesNotExist:
+            return Response({"detail": "No active request"}, status=400)
+
+        if record.is_expired():
+            record.delete()
+            return Response({"detail": "Code expired"}, status=400)
+
+        if record.code != code:
+            return Response({"detail": "Invalid code"}, status=400)
+
+        record.verified = True
+        record.save()
+
+        return Response({"detail": "Code verified"}, status=200)
+    
+class EmailChangeConfirmView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        new_email = request.data.get("new_email")
+
+        try:
+            record = EmailChangeCode.objects.get(user=request.user)
+        except EmailChangeCode.DoesNotExist:
+            return Response({"detail": "No active request"}, status=400)
+
+        if not record.verified:
+            return Response({"detail": "Code not verified"}, status=400)
+
+        if record.is_expired():
+            record.delete()
+            return Response({"detail": "Code expired"}, status=400)
+
+        user = request.user
+        user.email = new_email
+        user.save()
+
+        record.delete()
+
+        return Response({"detail": "Email updated"}, status=200)

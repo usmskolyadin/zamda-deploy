@@ -12,6 +12,7 @@ import { useLikeAd } from "@/src/features/hooks/use-like-ad";
 import dynamic from "next/dynamic";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
+import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
 
 const AdMap = dynamic(() => import("@/src/widgets/ad-map/ad-map"), {
   ssr: false,
@@ -180,9 +181,13 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
             <div className="hidden lg:block">
               <AdActions ad={ad} />
             </div>
-            <div className="mt-4">
-              <AdBanner ads={advs} height={500} />
+            <div className="mt-6 mr-0">
+              <StickyAdBlock
+                page="ad"
+                height={500}
+              />
             </div>
+
           </div>
         </div>
       </section>

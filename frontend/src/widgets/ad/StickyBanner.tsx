@@ -6,98 +6,127 @@ import AdsBlock from "./AdBannerClient";
 interface StickyAdBlockProps {
   page: string;
   height?: number;
-
-  // offset от верха (header + nav)
   top?: number;
-
-  // ширина fixed banner
-  width?: string;
-
-  // footer selector
-  footerSelector?: string;
-
-  // className wrapper
   className?: string;
 }
 
-export function StickyAdBlock({
+export default function StickyAdBlock({
   page,
   height = 500,
   top = 145,
-  width = "380px",
-  footerSelector = "footer",
   className = "",
 }: StickyAdBlockProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const [isSticky, setIsSticky] = useState(false);
-  const [stop, setStop] = useState(false);
+  const [mode, setMode] = useState<
+    "normal" | "fixed" | "bottom"
+  >("normal");
+
+  const [width, setWidth] = useState(360);
+
+  const [bottomOffset, setBottomOffset] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current) return;
+      if (!wrapperRef.current) return;
 
-      const rect = containerRef.current.getBoundingClientRect();
+      const wrapper = wrapperRef.current;
 
-      const footer = document.querySelector(footerSelector);
+      const wrapperTop =
+        wrapper.getBoundingClientRect().top +
+        window.scrollY;
 
-      let footerTop = Infinity;
+      const footer =
+        document.querySelector("footer");
 
-      if (footer) {
-        footerTop = footer.getBoundingClientRect().top;
-      }
+      if (!footer) return;
 
-      // start sticky
-      if (rect.top <= top) {
-        setIsSticky(true);
+      const footerTop =
+        footer.getBoundingClientRect().top +
+        window.scrollY;
+
+      const scrollY = window.scrollY;
+
+      const startSticky = wrapperTop - top;
+
+      const stopSticky =
+        footerTop - height - top - 32;
+
+      if (scrollY < startSticky) {
+        setMode("normal");
+      } else if (scrollY >= stopSticky) {
+        setMode("bottom");
+
+        setBottomOffset(
+          footerTop - wrapperTop - height - 32
+        );
       } else {
-        setIsSticky(false);
+        setMode("fixed");
       }
 
-      // stop before footer
-      if (footerTop <= height + top) {
-        setStop(true);
-      } else {
-        setStop(false);
-      }
+      setWidth(wrapper.offsetWidth);
     };
 
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleScroll);
+    window.addEventListener(
+      "scroll",
+      handleScroll
+    );
+
+    window.addEventListener(
+      "resize",
+      handleScroll
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleScroll
+      );
     };
-  }, [top, height, footerSelector]);
+  }, [height, top]);
 
   return (
     <div
-      ref={containerRef}
+      ref={wrapperRef}
       className={`relative hidden lg:block ${className}`}
-      style={{ height }}
     >
       <div
         className={
-          stop
-            ? "absolute bottom-0 left-0 w-full"
-            : isSticky
+          mode === "fixed"
             ? "fixed"
+            : mode === "bottom"
+            ? "absolute"
             : "relative"
         }
-        style={
-          isSticky && !stop
-            ? {
-                top,
-                width,
-              }
-            : undefined
-        }
+        style={{
+          width: `${width}px`,
+
+          top:
+            mode === "fixed"
+              ? `${top}px`
+              : undefined,
+
+          bottom:
+            mode === "bottom"
+              ? `-${bottomOffset}px`
+              : undefined,
+        }}
       >
-        <AdsBlock page={page} height={height} />
+        <AdsBlock
+          page={page}
+          height={height}
+        />
       </div>
+
+      {/* spacer */}
+      <div style={{ height }} />
     </div>
   );
 }

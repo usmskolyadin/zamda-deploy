@@ -207,21 +207,68 @@ const updateGeneral = async (e: React.FormEvent) => {
 
               {activeTab === "general" && (
                 <form onSubmit={updateGeneral} className="max-w-full mx-auto space-y-6">
-                  <label className="w-full flex-col flex">
-                    <p className="font-semibold text-black text-xl">Email</p>
-                    <p className="text-gray-700 text-sm font-medium">
-                      This email will be used for login and notifications
-                    </p>
+<label className="w-full flex flex-col">
+  <p className="font-semibold text-black text-xl">Email</p>
 
-                    <input
-                      type="email"
-                      name="email"
-                      value={generalData.email}
-                      onChange={handleGeneralChange}
-                      className="p-4 border border-black rounded-[50px] mt-1 text-gray-900"
-                      required
-                    />
-                  </label>
+  <p className="text-gray-700 text-sm font-medium">
+    This email will be used for login and notifications
+  </p>
+
+  <div className="relative mt-1 flex items-center">
+    <input
+      type="email"
+      name="email"
+      value={generalData.email}
+      readOnly
+      className="
+        w-full
+        p-4
+        pr-14
+        border border-black
+        rounded-[50px]
+        text-gray-900
+        bg-gray-100
+        cursor-not-allowed
+        outline-none
+      "
+    />
+
+    <a
+      href="/change/email"
+      className="
+        absolute right-4
+        flex items-center justify-center
+        w-8 h-8
+        rounded-full
+        hover:bg-gray-200
+        transition
+      "
+      title="Change email"
+    >
+      {/* pencil icon */}
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 20h9"
+          stroke="black"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
+          stroke="black"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </a>
+  </div>
+</label>
 
                   <div className="flex flex-col">
                     <p className="font-semibold text-black text-xl">Password</p>

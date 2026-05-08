@@ -1,7 +1,7 @@
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { API_URL } from "@/src/shared/api/base";
 import AdsBlock from "@/src/widgets/ad/AdBannerClient";
-import { StickyAdBlock } from "@/src/widgets/ad/StickyBanner";
+import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
 import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
 import Link from "next/link";
@@ -64,13 +64,12 @@ export default async function SearchPage({ searchParams }: Props) {
         <div className="lg:w-1/3 self-start">
           <Filters />
 
-          <div className="mt-6 mr-10">
-            <StickyAdBlock
-              page="filters"
-              height={500}
-              width="360px"
-            />
-          </div>
+            <div className="mt-6 mr-10">
+              <StickyAdBlock
+                page="filters"
+                height={500}
+              />
+            </div>
 
         </div>
           <div className="lg:w-2/3">

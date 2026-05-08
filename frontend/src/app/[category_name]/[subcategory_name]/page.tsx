@@ -11,7 +11,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FaArrowRight, FaStar } from "react-icons/fa";
 import AdBannerWithFetch from "./AdBannerWithFetch";
-import { StickyAdBlock } from "@/src/widgets/ad/StickyBanner";
+import AdsBlock from "@/src/widgets/ad/AdBannerClient";
+import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
 
 
 interface Props {
@@ -54,17 +55,19 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
         </div>
       </section>
       <section className="bg-[#ffffff]  pb-16 p-4">
-        <div className="max-w-screen-xl mx-auto lg:flex px-4 sm:px-6 lg:px-12">
-
+        <div className="max-w-screen-xl mx-auto lg:flex lg:items-start px-4 sm:px-6 lg:px-12">
           <div className="lg:w-1/3">
-            <Filters initialSubcategory={params.subcategory_name} categorySlug={params.category_name}  />
-                              <div className="mt-6 mr-10">
-                      <StickyAdBlock
-                        page="filters"
-                        height={500}
-                        width="360px"
-                      />
-                    </div>
+            <Filters
+              initialSubcategory={params.subcategory_name}
+              categorySlug={params.category_name}
+            />
+
+            <div className="mt-6 mr-10">
+              <StickyAdBlock
+                page="filters"
+                height={500}
+              />
+            </div>
           </div>
           <div className="lg:w-2/3">
             <div>
