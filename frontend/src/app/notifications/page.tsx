@@ -32,9 +32,9 @@ export default function Notifications() {
         <div className="max-w-screen-xl mx-auto lg:flex px-4 sm:px-6 lg:px-12">
           <Sidebar />
 
-          <div className="w-full lg:w-3/4 lg:ml-24 min-w-0">
+          <div className="w-full lg:w-3/4 lg:ml-10 min-w-0">
             <div className="flex">
-              <h1 className="text-black font-bold text-3xl lg:text-4xl py-4">
+              <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
                 Notifications
               </h1>
             </div>

@@ -83,20 +83,9 @@ class AdvertisementView(models.Model):
     )
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["ad", "user"],
-                condition=Q(user__isnull=False),
-                name="unique_ad_user_view"
-            ),
-            models.UniqueConstraint(
-                fields=["ad", "ip_address"],
-                condition=Q(user__isnull=True),
-                name="unique_ad_ip_view"
-            ),
-        ]
-        
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class AdvertisementStatus(models.TextChoices):
     MODERATION = "moderation", "На модерации"
     ACTIVE = "active", "Активно"

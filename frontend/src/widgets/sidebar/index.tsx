@@ -19,7 +19,7 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   return (
 <div
   className={`
-    lg:w-1/3
+    lg:w-1/4
     lg:max-w-[380px]
     w-full
     ${notHideOnPhone ? "" : "hidden lg:block"}
@@ -58,13 +58,13 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     </div>
                     <div className="lg:hidden block py-4">
                       <Link href={"/new"}>
-                        <button className="w-full p-4 bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
+                        <button className="w-full px-4 py-2.5 bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
                       </Link>
                       <Link href={"/profile/edit"}>
-                        <button className="w-full mt-2 p-4 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
+                        <button className="w-full mt-2 px-4 py-2.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
                       </Link>
                       <div className='pt-4'>
-                          <button onClick={logout} className="w-full mt-2 px-4 py-4 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
+                          <button onClick={logout} className="w-full mt-2 px-4 py-2.5 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
                       </div>
                     </div>
                     </div>

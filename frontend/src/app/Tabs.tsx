@@ -88,7 +88,7 @@ export default function TabsExample() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`lg:m-0 lg:p-3 m-2 text-xl cursor-pointer font-medium ${
+            className={`lg:m-0 lg:p-3 m-2 lg:text-xl text-lg cursor-pointer font-medium ${
               activeTab === tab.id
                 ? "text-blue-600 border-b-2 border-blue-600"
                 : "text-gray-500 hover:text-blue-500"

@@ -28,7 +28,7 @@ export default async function SubCategoriesPage({ params }: Props) {
           <p className="text-gray-500 pb-2">
             <Link className="hover:underline" href="/">Home</Link> / <Link className="hover:underline" href={categorySlug}>{category.name}</Link>
           </p>
-          <h1 className="text-black font-bold text-4xl py-4">
+          <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
             {category.name}
           </h1>
           <div className="grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-2 gap-4">
@@ -77,11 +77,11 @@ export default async function SubCategoriesPage({ params }: Props) {
         </div>
             <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:p-0">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
-              <div className="max-w-screen-xl mx-auto mt-12">
+              <div className="max-w-screen-xl mx-auto lg:mt-12 mt-0">
                 <div className="pt-4">
                   <AdsBlock page={"category"} />
                 </div>
-                <h1 className="text-black font-bold text-4xl py-2 lg:pt-8 pt-0 text-center">
+                <h1 className="text-black font-bold lg:text-4xl text-3xl py-2 lg:pt-8 pt-8 pt-0 text-center">
                   Recommended for you
                 </h1>
                   {ads.length ? (

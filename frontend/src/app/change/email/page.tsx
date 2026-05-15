@@ -27,7 +27,7 @@ export default function ChangeEmailPage() {
     setSuccess("");
 
     try {
-      await apiFetchAuth(`api/email/change/request/`, {
+      await apiFetchAuth(`/api/email/change/request/`, {
         method: "POST",
         body: JSON.stringify({}),
       });
@@ -52,7 +52,7 @@ export default function ChangeEmailPage() {
     setError("");
 
     try {
-      await apiFetchAuth(`api/email/change/verify/`, {
+      await apiFetchAuth(`/api/email/change/verify/`, {
         method: "POST",
         body: JSON.stringify({ code }),
       });
@@ -77,7 +77,7 @@ export default function ChangeEmailPage() {
     setError("");
 
     try {
-      await apiFetchAuth(`api/email/change/confirm/`, {
+      await apiFetchAuth(`/api/email/change/confirm/`, {
         method: "POST",
         body: JSON.stringify({
           new_email: newEmail,

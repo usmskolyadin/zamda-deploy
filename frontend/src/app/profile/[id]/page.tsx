@@ -104,7 +104,7 @@ useEffect(() => {
           </div>
 
           <div className="lg:w-3/4 lg:ml-24">
-            <h1 className="text-black font-bold lg:text-3xl text-3xl py-4">
+            <h1 className="text-black font-bold lg:text-3xl text-2xl py-4">
               {profile.first_name}'s Listings
             </h1>
 

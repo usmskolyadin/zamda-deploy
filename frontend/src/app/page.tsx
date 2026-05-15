@@ -67,7 +67,7 @@ export default async function Home() {
         <div className="max-w-screen-xl mx-auto">
           <AdsBlock page={"home"} />
           <div className="w-full flex flex-col items-center justify-center">
-            <h1 className="text-4xl mt-12 font-bold text-black text-center">Recommended for you</h1>
+            <h1 className="lg:text-4xl text-3xl mt-12 font-bold text-black text-center">Recommended for you</h1>
             <Tabs />
           </div>
           <div className="rounded-3xl w-full bg-[#F2F1F0] h-[136px] mt-12 mb-14 lg:flex hidden flex justify-center items-center">

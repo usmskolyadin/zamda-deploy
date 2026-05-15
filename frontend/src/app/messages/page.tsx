@@ -9,6 +9,7 @@ import { useAuth } from "@/src/features/context/auth-context";
 import Sidebar from "@/src/widgets/sidebar";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
+import { formatDate } from "@/src/features/formatters/format-date";
 
 
 type UserProfile = { avatar?: string | null; city?: string };
@@ -57,17 +58,6 @@ const items = useMemo(() => {
     });
 }, [chats]);
 
-const formatDate = (date?: string) => {
-  if (!date) return "";
-
-  const d = new Date(date);
-  return d.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const getChatPartner = (chat: Chat, userId?: number) => {
   if (!userId) return chat.buyer;
@@ -96,7 +86,7 @@ if (loading) {
       <section className="bg-white pb-16 pt-6 px-4 sm:px-6 lg:px-12 xl:px-16">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar/>
-          <div className=" lg:w-3/4 lg:ml-24">
+          <div className=" lg:w-3/4 lg:ml-10">
             <AdBanner ads={advs} height={250} />
             <div className="lg:flex">
                 <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 lg:py-1 py-4">Messages</h1>

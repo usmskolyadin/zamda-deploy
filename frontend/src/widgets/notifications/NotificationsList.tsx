@@ -111,7 +111,7 @@ export function NotificationsList() {
             <div className="flex gap-3 min-w-0">
               <div
                 className={`
-                  w-10 h-10 rounded-full flex items-center justify-center
+                  min-w-10 min-h-10 rounded-full flex items-center justify-center
                   ${
                     n.is_read
                       ? "bg-gray-200"

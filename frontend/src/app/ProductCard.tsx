@@ -88,7 +88,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
               }}
-              className="text-gray-800 min-h-17 line-clamp-3 break-words overflow-hidden leading-snug"
+              className="text-gray-800 min-h-15 lg:text-sm text-xs line-clamp-3 break-words overflow-hidden leading-snug"
             >
               {ad.description}
             </p>

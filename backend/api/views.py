@@ -443,6 +443,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def view(self, request, slug=None):
         ad = self.get_object()
+
         user = request.user if request.user.is_authenticated else None
 
         ip = (
@@ -450,29 +451,40 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             or request.META.get("REMOTE_ADDR")
         )
 
+        cooldown_time = now() - timedelta(seconds=30)
+
         if user:
-            obj, created = AdvertisementView.objects.get_or_create(
+            recent_view_exists = AdvertisementView.objects.filter(
                 ad=ad,
-                user=user
-            )
+                user=user,
+                created_at__gte=cooldown_time
+            ).exists()
         else:
-            obj, created = AdvertisementView.objects.get_or_create(
+            recent_view_exists = AdvertisementView.objects.filter(
                 ad=ad,
                 ip_address=ip,
-                user=None
+                user=None,
+                created_at__gte=cooldown_time
+            ).exists()
+
+        if not recent_view_exists:
+            AdvertisementView.objects.create(
+                ad=ad,
+                user=user,
+                ip_address=None if user else ip
             )
 
-        if created:
-            ad.views_count = F("views_count") + 1
-            ad.save(update_fields=["views_count"])
+            Advertisement.objects.filter(id=ad.id).update(
+                views_count=F("views_count") + 1
+            )
+
             ad.refresh_from_db(fields=["views_count"])
 
         return Response({
             "detail": "View counted",
             "views_count": ad.views_count
         })
-
-        
+            
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def liked(self, request):
         """

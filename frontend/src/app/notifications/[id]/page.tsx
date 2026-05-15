@@ -104,7 +104,7 @@ export default function NotificationDetailPage() {
 
           <Sidebar />
 
-          <div className="flex-1 lg:ml-10 p-4 lg:p-8">
+          <div className="flex-1 lg:w-3/4 lg:ml-10 p-4 ">
 
             <div className="flex items-center gap-3 mb-6">
 

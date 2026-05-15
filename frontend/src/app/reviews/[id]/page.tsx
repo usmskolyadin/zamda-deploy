@@ -10,6 +10,7 @@ import { useAuth } from "@/src/features/context/auth-context";
 import BackButton from "@/src/widgets/back-button";
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import Sidebar from "@/src/widgets/sidebar";
+import { formatDate } from "@/src/features/formatters/format-date";
 
 export default function ReviewsPage() {
 
@@ -163,11 +164,11 @@ const deleteReview = async (id: number) => {
               </div>
             </div>
           </div>
-          <div className="lg:w-3/4 lg:ml-24 mt-2">
+          <div className="lg:w-3/4 lg:ml-10 mt-2">
 
-            <div className="flex">
-              <BackButton className="mr-2 px-2 py-0" />
-              <h1 className="text-black font-bold text-4xl">Reviews</h1>
+            <div className="flex items-center justify-between w-full">
+              <h1 className="text-black font-bold lg:text-4xl text-3xl">Reviews</h1>
+              <BackButton className="mr-2 px-2 py-2 py-0" />
 
             </div>
 <div className={`grid ${isOwner ? "grid-cols-2" : "grid-cols-1"} border-b mb-6 mt-4`}>
@@ -198,15 +199,14 @@ const deleteReview = async (id: number) => {
 
 </div>
             <div className="mt-4">
-
-{!isOwner && (
-  <Link
-    className="px-4 py-3 bg-[#36B731] hover:bg-green-500 cursor-pointer text-white rounded-3xl"
-    href={accessToken ? `/reviews/add/${profile.id}` : "/login"}
-  >
-    Add review
-  </Link>
-)}
+              {!isOwner && (
+                <Link
+                  className="px-4 py-3 bg-[#36B731] hover:bg-green-500 cursor-pointer text-white rounded-3xl"
+                  href={accessToken ? `/reviews/add/${profile.id}` : "/login"}
+                >
+                  Add review
+                </Link>
+              )}
 
             </div>
             {activeTab === "for_me" && (
@@ -226,7 +226,7 @@ const deleteReview = async (id: number) => {
                     </span>
 
                     <span className="text-gray-500">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {formatDate(review.created_at)}
                     </span>
 
                   </div>
@@ -245,22 +245,22 @@ const deleteReview = async (id: number) => {
                   </div>
 
                   <p className="text-gray-800">{review.comment}</p>
-{review.images?.length > 0 && (
-  <div className="flex gap-2 mt-3 flex-wrap">
-    {review.images.map((img: any) => (
-      <img
-        key={img.id}
-        src={img.image}
-        className="w-24 h-24 object-cover rounded-xl"
-      />
-    ))}
-  </div>
-)}
+                    {review.images?.length > 0 && (
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        {review.images.map((img: any) => (
+                          <img
+                            key={img.id}
+                            src={img.image}
+                            className="w-24 h-24 object-cover rounded-xl"
+                          />
+                        ))}
+                      </div>
+                    )}
                   <div className="flex gap-4 mt-3 text-sm">
 
                     {profile.username === user?.username && !review.reply && (
                       <button
-                        className="text-blue-600 rounded-3xl cursor-pointer hover:underline"
+                        className="text-white px-4 py-1.5 bg-blue-400 rounded-3xl cursor-pointer hover:underline"
                         onClick={() => setReplyOpen(review.id)}
                       >
                         Reply
@@ -270,7 +270,7 @@ const deleteReview = async (id: number) => {
 
                     {review.author !== user?.id && (
                       <button
-                        className="text-red-500 rounded-3xl cursor-pointer hover:underline"
+                        className="text-white px-4 py-1.5 bg-red-400 rounded-3xl cursor-pointer hover:underline"
                         onClick={() => setReportOpen(review.id)}
                       >
                         Report
@@ -294,14 +294,14 @@ const deleteReview = async (id: number) => {
 
                         <button
                           onClick={() => submitReply(review.id)}
-                          className="bg-blue-600 rounded-3xl cursor-pointer text-white px-4 py-2 rounded-xl"
+                          className="text-white px-4 py-1.5 bg-blue-400 rounded-3xl cursor-pointer text-white "
                         >
                           Send
                         </button>
 
                         <button
                           onClick={() => setReplyOpen(null)}
-                          className="px-4 py-2 rounded-3xl cursor-pointer rounded-xl border"
+                          className="px-4 py-1.5 bg-red-400 rounded-3xl cursor-pointer "
                         >
                           Cancel
                         </button>
@@ -338,14 +338,14 @@ const deleteReview = async (id: number) => {
 
                         <button
                           onClick={() => submitReport(review.id)}
-                          className="bg-red-500 cursor-pointer text-white px-4 py-2 rounded-3xl"
+                          className="text-white px-4 py-1.5 bg-blue-400 rounded-3xl cursor-pointer text-white "
                         >
                           Send report
                         </button>
 
                         <button
                           onClick={() => setReportOpen(null)}
-                          className="border cursor-pointer px-4 py-2 rounded-3xl"
+                          className="px-4 py-1.5 bg-red-400 rounded-3xl cursor-pointer text-white"
                         >
                           Cancel
                         </button>

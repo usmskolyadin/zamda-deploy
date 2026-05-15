@@ -52,11 +52,11 @@ export default function Favorites() {
       <section className="bg-white pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar />
-          <div className="lg:w-3/4 lg:ml-24">
+          <div className="lg:w-3/4 lg:ml-10">
             <AdBanner ads={advs} height={250} />
 
             <div className="flex justify-between items-center mb-4 mt-4">
-              <h1 className="text-black font-bold text-4xl">Favorites</h1>
+              <h1 className="text-black font-bold lg:text-4xl text-3xl">Favorites</h1>
               <p className="text-gray-600">{adsCount} items</p>
             </div>
 
@@ -71,19 +71,19 @@ export default function Favorites() {
                 {ads.map((ad) => (
                 <Link key={ad.id} href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
                     <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition border  border-gray-200
-          shadow-sm
-          transition
-          bg-gray-100 rounded-2xl p-2">
+                          shadow-sm
+                          transition
+                          bg-gray-100 rounded-2xl ">
                         <div className="lg:mr-4 flex-shrink-0">
                             <img
                             src={ad.images[0]?.image}
                             alt={ad.title}
-                            className="rounded-2xl lg:h-48 lg:w-72 min-h-52 max-h-52 w-full object-cover"
+                            className="rounded-2xl lg:h-48 lg:w-72 min-h-48 max-h-52 w-full object-cover"
                             width={288}
                             height={192}
                             />
                         </div>
-                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
+                        <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-3">
                             <div className="w-full flex items-center justify-between">
                             <h1 className="text-xl text-black font-bold truncate pr-2">
                                 {ad.title}

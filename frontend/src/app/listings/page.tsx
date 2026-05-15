@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
 import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
+import { formatDate } from "@/src/features/formatters/format-date";
 
 type Counts = {
   active: number;
@@ -111,7 +112,7 @@ if (!isInitialized) {
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
 
             <Sidebar notHideOnPhone={true}/>
-          <div className="lg:w-2/3 lg:ml-10 lg:mt-0 mt-2">
+          <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
@@ -203,28 +204,25 @@ export const AdListings = ({
     <div className="lg:flex mt-4 min-w-full hover:opacity-70 transition border  border-gray-200
           shadow-sm
           transition
-          bg-gray-100 rounded-2xl p-2 cursor-pointer">
+          bg-gray-100 rounded-3xl  cursor-pointer">
       <div className="lg:mr-4 flex-shrink-0">
         <img
           src={ad.images[0]?.image}
           alt={ad.title}
-          className="rounded-2xl lg:h-48 lg:w-72 h-52 w-full object-cover"
+          className="rounded-2xl lg:h-56 lg:w-72 h-52 w-full object-cover"
           width={288}
           height={192}
         />
       </div>
 
-<div className="w-full min-w-0 lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-0 p-2">
+<div className="w-full min-w-0 lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-2">
         <div className="w-full flex items-center justify-between">
-<h1 className="text-lg text-black font-bold truncate pr-2 min-w-0">
-  {ad.title}
-</h1>
+          <h1 className="text-lg text-black font-bold truncate pr-2 min-w-0">
+            {ad.title}
+          </h1>
 
           <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
-            {new Date(ad.created_at).toLocaleString("en-US", {
-              month: "long",
-              day: "numeric",
-            })}
+           {formatDate(ad.created_at)}
           </span>
         </div>
 
@@ -295,8 +293,7 @@ export const AdListings = ({
                             <g id="Dribbble-Light-Preview" transform="translate(-260.000000, -4563.000000)" fill="#000000">
                                 <g id="icons" transform="translate(56.000000, 160.000000)">
                                     <path d="M216,4409.00052 C216,4410.14768 215.105,4411.07682 214,4411.07682 C212.895,4411.07682 212,4410.14768 212,4409.00052 C212,4407.85336 212.895,4406.92421 214,4406.92421 C215.105,4406.92421 216,4407.85336 216,4409.00052 M214,4412.9237 C211.011,4412.9237 208.195,4411.44744 206.399,4409.00052 C208.195,4406.55359 211.011,4405.0763 214,4405.0763 C216.989,4405.0763 219.805,4406.55359 221.601,4409.00052 C219.805,4411.44744 216.989,4412.9237 214,4412.9237 M214,4403 C209.724,4403 205.999,4405.41682 204,4409.00052 C205.999,4412.58422 209.724,4415 214,4415 C218.276,4415 222.001,4412.58422 224,4409.00052 C222.001,4405.41682 218.276,4403 214,4403" id="view_simple-[#815]">
-
-                              </path>
+                                  </path>
                                 </g>
                             </g>
                         </g>

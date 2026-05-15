@@ -11,7 +11,7 @@ export function useViewAd(adSlug?: string) {
 
     const registerView = async () => {
       try {
-        const res = await apiFetchAuth(`/api/ads/${adSlug}/view/`, {
+        const res = await apiFetchAuth(`api/ads/${adSlug}/view/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

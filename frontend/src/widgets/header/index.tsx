@@ -225,13 +225,13 @@ export default function Header() {
               </div>
             </div>
           </header>
-<nav
-  className={`
-    flex lg:h-[80px] h-[110px] bg-white items-center p-4
-    transition-all duration-500
-    ${scrolled ? 'shadow-lg' : 'shadow-none'}
-  `}
->
+            <nav
+              className={`
+                flex lg:h-[80px] h-[110px] bg-white items-center p-4
+                transition-all duration-500
+                ${scrolled ? 'shadow-lg' : 'shadow-none'}
+              `}
+            >
               <div className="max-w-screen-xl mx-auto lg:flex items-center w-full justify-between px-0 sm:px-6 lg:px-12">
               <div className="flex items-center justify-between">
                 <Link href={"/"}>
