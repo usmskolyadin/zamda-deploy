@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { API_URL } from "@/src/shared/api/base";
+import { API_URL, apiFetch } from "@/src/shared/api/base";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 
 export function useViewAd(adSlug?: string) {
@@ -11,7 +11,7 @@ export function useViewAd(adSlug?: string) {
 
     const registerView = async () => {
       try {
-        const res = await apiFetchAuth(`api/ads/${adSlug}/view/`, {
+        const res = await apiFetch(`api/ads/${adSlug}/view/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
