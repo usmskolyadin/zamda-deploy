@@ -239,16 +239,18 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(extra_values__field_definition__key=key, extra_values__value=val)
         return queryset
     
-
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "similar"]:
+        if self.action in ["list", "retrieve", "similar", "view"]:
             return [AllowAny()]
+
         if self.action in ["my_ads", "liked"]:
             return [IsAuthenticated()]
+
         if self.action in ["update", "partial_update", "destroy", "relist"]:
             return [IsAuthenticated(), IsOwner()]
-        return [IsAuthenticated()]
 
+        return [IsAuthenticated()]
+    
     def get_queryset(self):
         qs = (
             Advertisement.objects
