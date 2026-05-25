@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    AdBySlugView, CategoryViewSet, ChatViewSet, CurrentUserView, CustomTokenObtainPairView, EmailChangeConfirmView, EmailChangeRequestView, EmailChangeVerifyView, GoogleAuthView, MessageViewSet, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
+    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, ConnectFacebookView, CurrentUserView, CustomTokenObtainPairView, EmailChangeConfirmView, EmailChangeRequestView, EmailChangeVerifyView, GoogleAuthView, MessageViewSet, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -22,6 +22,9 @@ router.register("pages", PageViewSet, basename="pages")
 
 urlpatterns = [
     path('', include(router.urls)),
+    path("verification/facebook/", ConnectFacebookView.as_view()),
+    path("verification/phone/send/", SendPhoneVerificationView.as_view()),
+    path("verification/phone/check/", CheckPhoneVerificationView.as_view()),
     path("advertising/<slug:slug>/", AdBySlugView.as_view()),
     path("newsletter/send-all/", SendNewsletterToAllView.as_view(), name="send-all"),
     path("newsletter/send-selected/", SendNewsletterToSelectedView.as_view(), name="send-selected"),

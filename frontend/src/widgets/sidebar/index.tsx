@@ -5,6 +5,7 @@ import React from 'react'
 import { FaStar } from 'react-icons/fa'
 import { AdBanner } from '../ad';
 import StickyAdBlock from '../ad/StickyBanner';
+import VerificationIcons from './VerificationIcons';
 
 type SidebarProps = {
   notHideOnPhone?: boolean;
@@ -17,14 +18,14 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   const { advs } = useAds("sidebar");
   console.log(`ADS: ${advs}`)
   return (
-<div
-  className={`
-    lg:w-1/4
-    lg:max-w-[380px]
-    w-full
-    ${notHideOnPhone ? "" : "hidden lg:block"}
-  `}
->
+      <div
+        className={`
+          lg:w-1/4
+          lg:max-w-[380px]
+          w-full
+          ${notHideOnPhone ? "" : "hidden lg:block"}
+        `}
+      >
             <div className="max-w-[712px]">
                   <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
                     <img
@@ -39,7 +40,6 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                         <h2 className="text-black font-bold  lg:text-2xl text-3xl ">{user?.first_name} {user?.last_name}</h2>
                       <h2 className="text-gray-800 font-medium  text-md">{user?.username}</h2>
                     </div>
-
                     <div className="flex items-center text-sm text-gray-700">
                         <span className="mr-1 text-black text-lg font-bold">{user?.profile.rating}</span>
                         <div className="flex text-yellow-400 mr-1">
@@ -56,6 +56,13 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                           </span>
                         </Link> 
                     </div>
+                    <VerificationIcons
+                      user={user}
+                      refreshUser={async () => {
+                        window.location.reload();
+                      }}
+                    />
+
                     <div className="lg:hidden block py-4">
                       <Link href={"/new"}>
                         <button className="w-full px-4 py-2.5 bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>

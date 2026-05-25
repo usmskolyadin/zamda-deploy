@@ -103,6 +103,7 @@ useEffect(() => {
     const days = Math.floor(seconds / (3600 * 24));
     return `${days}d`;
   }
+
 if (!isInitialized) {
   return <div>Loading...</div>;
 }
@@ -110,8 +111,7 @@ if (!isInitialized) {
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
-
-            <Sidebar notHideOnPhone={true}/>
+          <Sidebar notHideOnPhone={true}/>
           <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
 
@@ -215,7 +215,7 @@ export const AdListings = ({
         />
       </div>
 
-<div className="w-full min-w-0 lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-2">
+      <div className="w-full min-w-0 lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-2">
         <div className="w-full flex items-center justify-between">
           <h1 className="text-lg text-black font-bold truncate pr-2 min-w-0">
             {ad.title}

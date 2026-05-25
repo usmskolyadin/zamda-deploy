@@ -234,11 +234,33 @@ class UserProfile(models.Model):
     )
 
     city = models.CharField(max_length=100, blank=True)
-    # reviews = models.ManyToManyField(Review, blank=True)
 
     def __str__(self):
         return f"{self.user.username} Profile"
-    
+
+
+class UserVerification(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="verification"
+    )
+
+    google_verified = models.BooleanField(default=False)
+    google_email = models.EmailField(blank=True, null=True)
+
+    facebook_verified = models.BooleanField(default=False)
+    facebook_id = models.CharField(max_length=255, blank=True, null=True)
+
+    phone_verified = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=30, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Verification {self.user.username}"
+
+
 class Notification(models.Model):
     title = models.CharField(max_length=255)
     message = models.TextField()

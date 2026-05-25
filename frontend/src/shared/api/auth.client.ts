@@ -67,7 +67,19 @@ export async function apiFetchAuth<T>(
   }
 
   if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+    let errorMessage = `API error: ${res.status}`;
+
+    try {
+      const data = await res.json();
+
+      errorMessage =
+        data.detail ||
+        data.error ||
+        errorMessage;
+
+    } catch {}
+
+    throw new Error(errorMessage);
   }
 
   return await res.json();

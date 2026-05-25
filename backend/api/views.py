@@ -1,4 +1,5 @@
 import os
+import re
 from django.forms import ValidationError
 from django.shortcuts import render
 from django.db import IntegrityError
@@ -41,6 +42,23 @@ from django.conf import settings
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+import requests
+
+from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.contrib.auth.models import User
+
+from .models import UserProfile, UserVerification
+from .serializers import FullUserSerializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +69,12 @@ class GoogleAuthView(APIView):
 
     def post(self, request):
         code = request.data.get("code")
+
         if not code:
-            return Response({"detail": "No code provided"}, status=400)
+            return Response(
+                {"detail": "No code provided"},
+                status=400
+            )
 
         token_res = requests.post(
             "https://oauth2.googleapis.com/token",
@@ -66,13 +88,17 @@ class GoogleAuthView(APIView):
         )
 
         token_data = token_res.json()
+
         access_token = token_data.get("access_token")
+
         if not access_token:
             return Response(token_data, status=400)
 
         userinfo = requests.get(
             "https://www.googleapis.com/oauth2/v2/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"},
+            headers={
+                "Authorization": f"Bearer {access_token}"
+            },
         ).json()
 
         email = userinfo["email"]
@@ -80,14 +106,24 @@ class GoogleAuthView(APIView):
 
         user, created = User.objects.get_or_create(
             email=email,
-            defaults={"username": email, "first_name": name},
+            defaults={
+                "username": email,
+                "first_name": name,
+            },
         )
-        if created or not hasattr(user, 'profile'):
-            UserProfile.objects.get_or_create(user=user)
+
+        UserProfile.objects.get_or_create(user=user)
+
+        verification, _ = UserVerification.objects.get_or_create(
+            user=user
+        )
+
+        # AUTO VERIFY GOOGLE
+        verification.google_verified = True
+        verification.google_email = email
+        verification.save()
 
         refresh = RefreshToken.for_user(user)
-
-        from .serializers import FullUserSerializer
 
         return Response({
             "access": str(refresh.access_token),
@@ -98,7 +134,219 @@ class GoogleAuthView(APIView):
             ).data
         })
     
+class ConnectFacebookView(APIView):
 
+    def post(self, request):
+        access_token = request.data.get("access_token")
+
+        if not access_token:
+            return Response(
+                {"detail": "No access token"},
+                status=400
+            )
+
+        fb_user = requests.get(
+            "https://graph.facebook.com/me",
+            params={
+                "fields": "id,name,email",
+                "access_token": access_token
+            }
+        ).json()
+
+        facebook_id = fb_user.get("id")
+
+        if not facebook_id:
+            return Response(
+                {"detail": "Invalid facebook token"},
+                status=400
+            )
+
+        verification, _ = UserVerification.objects.get_or_create(
+            user=request.user
+        )
+
+        verification.facebook_verified = True
+        verification.facebook_id = facebook_id
+        verification.save()
+
+        return Response({
+            "detail": "Facebook connected"
+        })
+
+import re
+
+import phonenumbers
+
+from phonenumbers import NumberParseException
+
+from django.conf import settings
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
+
+from .models import UserVerification
+
+
+def validate_and_format_phone(phone: str):
+    try:
+        parsed = phonenumbers.parse(phone, None)
+
+        if not phonenumbers.is_valid_number(parsed):
+            return None
+
+        return phonenumbers.format_number(
+            parsed,
+            phonenumbers.PhoneNumberFormat.E164
+        )
+
+    except NumberParseException:
+        return None
+
+
+class SendPhoneVerificationView(APIView):
+
+    def post(self, request):
+        phone = request.data.get("phone")
+
+        if not phone:
+            return Response(
+                {"detail": "Phone required"},
+                status=400
+            )
+
+        phone = phone.strip()
+
+        # basic regex check
+        if not re.match(r"^\+\d{8,15}$", phone):
+            return Response(
+                {
+                    "detail": (
+                        "Phone must be in E.164 format "
+                        "example: +19165551234"
+                    )
+                },
+                status=400
+            )
+
+        # real validation
+        phone = validate_and_format_phone(phone)
+
+        if not phone:
+            return Response(
+                {"detail": "Invalid phone number"},
+                status=400
+            )
+
+        client = Client(
+            settings.TWILIO_ACCOUNT_SID,
+            settings.TWILIO_AUTH_TOKEN
+        )
+
+        try:
+            verification = client.verify \
+                .v2 \
+                .services(settings.TWILIO_VERIFY_SERVICE_SID) \
+                .verifications \
+                .create(
+                    to=phone,
+                    channel="sms"
+                )
+
+        except TwilioRestException as e:
+            return Response(
+                {
+                    "detail": "Failed to send verification code",
+                    "twilio_error": str(e)
+                },
+                status=400
+            )
+
+        except Exception:
+            return Response(
+                {"detail": "Internal server error"},
+                status=500
+            )
+
+        return Response({
+            "detail": "Code sent",
+            "status": verification.status
+        })
+
+
+class CheckPhoneVerificationView(APIView):
+
+    def post(self, request):
+        phone = request.data.get("phone")
+        code = request.data.get("code")
+
+        if not phone or not code:
+            return Response(
+                {"detail": "Phone and code required"},
+                status=400
+            )
+
+        phone = validate_and_format_phone(phone)
+
+        if not phone:
+            return Response(
+                {"detail": "Invalid phone number"},
+                status=400
+            )
+
+        if not re.match(r"^\d{4,10}$", str(code)):
+            return Response(
+                {"detail": "Invalid verification code"},
+                status=400
+            )
+
+        client = Client(
+            settings.TWILIO_ACCOUNT_SID,
+            settings.TWILIO_AUTH_TOKEN
+        )
+
+        try:
+            verification_check = client.verify \
+                .v2 \
+                .services(settings.TWILIO_VERIFY_SERVICE_SID) \
+                .verification_checks \
+                .create(
+                    to=phone,
+                    code=code
+                )
+
+        except TwilioRestException:
+            return Response(
+                {"detail": "Verification failed"},
+                status=400
+            )
+
+        except Exception:
+            return Response(
+                {"detail": "Internal server error"},
+                status=500
+            )
+
+        if verification_check.status != "approved":
+            return Response(
+                {"detail": "Invalid code"},
+                status=400
+            )
+
+        verification, _ = UserVerification.objects.get_or_create(
+            user=request.user
+        )
+
+        verification.phone_verified = True
+        verification.phone_number = phone
+        verification.save()
+
+        return Response({
+            "detail": "Phone verified"
+        })
+        
 from rest_framework.permissions import AllowAny
 
 class CategoryViewSet(viewsets.ModelViewSet):

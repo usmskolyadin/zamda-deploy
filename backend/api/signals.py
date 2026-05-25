@@ -3,8 +3,22 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 
 from .models import Message, Chat
+from .models import UserProfile, UserVerification
 from utils.email import send_email
 
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+
+
+
+@receiver(post_save, sender=User)
+def create_user_data(sender, instance, created, **kwargs):
+    print("🔥 CREATE VERIFICATION SIGNAL FIRED")
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+        UserVerification.objects.get_or_create(user=instance)
 
 @receiver(post_save, sender=Message)
 def notify_new_message(sender, instance, created, **kwargs):

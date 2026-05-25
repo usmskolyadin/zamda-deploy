@@ -29,7 +29,7 @@ export default function Chats() {
   const { accessToken, user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
-  const { advs } = useAds("category")
+  const { advs } = useAds("messages")
 
   useEffect(() => {
     if (!accessToken) return;

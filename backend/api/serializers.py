@@ -3,7 +3,7 @@ import uuid
 from rest_framework import serializers
 from .models import (
     Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
-    ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message
+    ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message, UserVerification
 )
 from django.contrib.auth.models import User
 from rest_framework import serializers
@@ -296,8 +296,22 @@ class OwnerSerializer(serializers.ModelSerializer):
 
 EXPIRATION_DAYS = 30
 
+class UserVerificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserVerification
+        fields = [
+            "google_verified",
+            "facebook_verified",
+            "phone_verified",
+            "google_email",
+            "phone_number",
+        ]
+
+
 class FullUserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
+    verification = UserVerificationSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -305,6 +319,7 @@ class FullUserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "verification",
             "first_name",
             "last_name",
             "is_staff",
@@ -554,7 +569,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             )
 
         return ad
-
 
 
 class MessageSerializer(serializers.ModelSerializer):
