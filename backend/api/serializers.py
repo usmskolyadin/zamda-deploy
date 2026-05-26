@@ -266,11 +266,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
 
-    verification = UserVerificationSerializer(
-        source="user.verification",
-        read_only=True
-    )
-    
+
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
 
@@ -293,7 +289,6 @@ class ProfileSerializer(serializers.ModelSerializer):
             "rating",
             "reviews_count",
             "reviews",
-            "verification",
         ]
 
     def get_rating(self, obj):
@@ -346,6 +341,16 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     owner = OwnerSerializer(read_only=True)
     images = AdvertisementImageSerializer(many=True, read_only=True)
     extra_values = serializers.SerializerMethodField(read_only=True)
+
+    price = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        error_messages={
+            'invalid': 'Please enter a valid price like 149.99.',
+            'max_digits': 'Price must be less than 100,000,000 and may include up to 2 decimal places.',
+            'max_whole_digits': 'Price must be less than 100,000,000 with up to 2 decimal places.',
+        }
+    )
 
     extra = serializers.JSONField(write_only=True, required=False)
 

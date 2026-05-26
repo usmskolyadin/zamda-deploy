@@ -10,6 +10,7 @@ import Sidebar from "@/src/widgets/sidebar";
 import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
 import { formatDate } from "@/src/features/formatters/format-date";
+import LoadingScreen from '@/src/components/LoadingScreen';
 
 
 type UserProfile = { avatar?: string | null; city?: string };
@@ -73,13 +74,7 @@ if (!accessToken) {
   );
 }
 
-if (loading) {
-  return (
-    <div className="w-screen h-screen flex items-center justify-center bg-white">
-      <p className="text-xl text-black">Loading…</p>
-    </div>
-  );
-}
+if (loading) return <LoadingScreen />;
 
   return (
     <div className=" w-full">

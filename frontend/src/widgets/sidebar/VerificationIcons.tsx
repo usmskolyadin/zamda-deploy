@@ -87,6 +87,7 @@ export default function VerificationIcons({
   };
 
   const googleLogin = () => {
+    const currentState = window.location.pathname + window.location.search;
 
     const params = new URLSearchParams({
       client_id: `${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}`,
@@ -94,10 +95,10 @@ export default function VerificationIcons({
       response_type: "code",
       scope: "email profile",
       prompt: "select_account",
+      state: currentState,
     });
 
-    window.location.href =
-      `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   };
 
   return (

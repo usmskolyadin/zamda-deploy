@@ -10,7 +10,9 @@ import { API_URL, apiFetch } from '@/src/shared/api/base';
 import { ChevronDown } from "lucide-react";
 import ImageUploader from '@/src/widgets/image-uploader/ImageUploader';
 import { LatLngExpression } from 'leaflet';
+import Image from 'next/image';
 import Link from 'next/link';
+import LoadingScreen from '@/src/components/LoadingScreen';
 import { Advertisement } from '@/src/entities/advertisment/model/types';
 
 const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
@@ -60,6 +62,7 @@ export default function EditAd() {
   const [extraFields, setExtraFields] = useState<any[]>([]);
   const [extraValues, setExtraValues] = useState<{ [key: string]: any }>({});
   const [newImages, setNewImages] = useState<File[]>([]); // только что выбранные файлы
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter()
   
   useEffect(() => {
@@ -116,45 +119,47 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
   }, [selectedCategory]);
 
   useEffect(() => {
-    if (!isInitialized) return;
-
-    if (!accessToken) {
-      router.push("/login");
-      return;
-    }
-
     if (!adId) return;
-
     setLoading(true);
 
     (async () => {
-    try {
-      const ad: Advertisement = await apiFetchAuth<Advertisement>(`/api/ads/${params.ad_name}/`);
-      
-      setTitle(ad.title);
-      setPrice(ad.price);
-      setDescription(ad.description);
-      setLocation(ad.location);
-      setLocationInput(ad.location);
-      setSelectedCategory(ad.category_slug);
-      setSelectedSubcategory(ad.subcategory);
+      try {
+        const token = accessToken || (typeof window !== 'undefined' && localStorage.getItem('access_token'));
+        if (!token) {
+          router.push('/login');
+          return;
+        }
 
-      const extras: { [key: string]: any } = {};
-      ad.extra_values?.forEach((ef) => {
-        extras[ef.field_key] = ef.value;
-      });
-      setExtraValues(extras);
+        const res = await fetch(`${API_URL}/api/ads/${adId}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Failed to fetch ad');
+        const ad: any = await res.json();
 
-      setExistingImages(ad.images.map(img => ({ id: img.id, url: img.image })));
-      if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
+        setTitle(ad.title || '');
+        const priceInt = ad.price != null ? String(Math.trunc(Number(ad.price) || 0)) : '';
+        setPrice(priceInt);
+        setDescription(ad.description || '');
+        setLocation(ad.location || '');
+        setLocationInput(ad.location || '');
+        setSelectedCategory(ad.category_slug || '');
+        setSelectedSubcategory(ad.subcategory || ad.subcategory_slug || '');
 
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  })();
-}, [adId, accessToken, router]);
+        const extras: { [key: string]: any } = {};
+        (ad.extra_values || []).forEach((ef: any) => {
+          extras[ef.field_key] = ef.value;
+        });
+        setExtraValues(extras);
+
+        setExistingImages((ad.images || []).map((img: any) => ({ id: img.id, url: img.image })));
+        if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [adId, accessToken, router]);
 
 useEffect(() => {
   if (!selectedSubcategory) return;
@@ -223,6 +228,8 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append('title', title);
@@ -244,15 +251,17 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
     if (res.ok) {
       router.push('/listings');
+      return;
     } else {
       const data = await res.json();
       console.error(data);
       alert('Error :(');
+      setIsSubmitting(false);
     }
   };
 
 
-  if (loading) return <div className="text-center p-10 text-gray-900 h-screen bg-white flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen message={"Loading ad..."} />;
 
   return (
     <div className="w-full">
@@ -441,13 +450,33 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </button>
               </Link>
               <button type="submit"
-                      className="cursor-pointer bg-black text-white rounded-3xl px-6 py-2 hover:bg-gray-800 transition">
+                      disabled={isSubmitting}
+                      className={`cursor-pointer bg-black text-white rounded-3xl px-6 py-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'} transition`}>
                 Save Changes
               </button>
             </div>
           </form>
         </div>
       </section>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="max-w-md w-full bg-white rounded-[32px] p-8 text-center shadow-2xl">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-28 h-28 rounded-full bg-black/5 flex items-center justify-center mx-auto animate-spin" style={{ animationDuration: '2s' }}>
+                <Image
+                  src="/zamda-white.png"
+                  alt="Zamda logo"
+                  width={96}
+                  height={96}
+                  className="w-20 h-20"
+                />
+              </div>
+            </div>
+            <p className="text-black text-lg font-semibold mb-3">Your listing is uploading and will appear on the site in a couple of minutes.</p>
+            <p className="text-gray-600">Please wait...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

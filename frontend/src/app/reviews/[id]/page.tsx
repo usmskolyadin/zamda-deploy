@@ -10,6 +10,7 @@ import { useAuth } from "@/src/features/context/auth-context";
 import BackButton from "@/src/widgets/back-button";
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import Sidebar from "@/src/widgets/sidebar";
+import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from "@/src/features/formatters/format-date";
 
 export default function ReviewsPage() {
@@ -67,11 +68,7 @@ const deleteReview = async (id: number) => {
   }, [profileId]);
 
   if (!profile)
-    return (
-      <div className="text-black bg-white h-screen flex justify-center items-center">
-        Loading...
-      </div>
-    );
+    return <LoadingScreen message={"Loading profile..."} />;
 
   const refresh = async () => {
     const res = await apiFetch<Profile>(`/api/profiles/${profileId}/`);

@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import Ad, AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, EmailChangeCode, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
     AdSerializer, CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
-    ExtraFieldDefinitionSerializer, AdvertisementSerializer
+    ExtraFieldDefinitionSerializer, AdvertisementSerializer, UserVerificationSerializer
 )
 from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -811,6 +811,12 @@ class CurrentUserView(APIView):
     def get(self, request):
         from .serializers import ProfileSerializer
         profile = request.user.profile
+
+        verification = getattr(
+            request.user,
+            "verification",
+            None
+        )
         return Response({
             "id": request.user.id,
             "username": request.user.username,
@@ -819,7 +825,16 @@ class CurrentUserView(APIView):
             "email": request.user.email,
             "first_name": request.user.first_name,
             "last_name": request.user.last_name,
-            "profile": ProfileSerializer(profile, context={"request": request}).data
+            "verification":
+                UserVerificationSerializer(
+                    verification
+                ).data
+                if verification else None,
+
+            "profile": ProfileSerializer(
+                profile,
+                context={"request": request}
+            ).data
         })
 
     def patch(self, request):

@@ -9,6 +9,7 @@ import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
+import LoadingScreen from '@/src/components/LoadingScreen';
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import { useRouter } from "next/navigation";
 import { useAds } from "@/src/features/hooks/use-ad";
@@ -105,7 +106,7 @@ useEffect(() => {
   }
 
 if (!isInitialized) {
-  return <div>Loading...</div>;
+  return <LoadingScreen message={"Loading..."} />;
 }
   return (
     <div className="w-full">

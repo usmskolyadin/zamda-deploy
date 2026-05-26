@@ -12,10 +12,11 @@ export default function GoogleCallbackClient() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const code = params.get("code");
+    const code = params?.get("code");
+    const state = params?.get("state");
 
     if (!code) {
-      router.replace("/login");
+      router.replace(state || "/login");
       return;
     }
 
@@ -51,10 +52,12 @@ export default function GoogleCallbackClient() {
 
       await login(tokenData.access, tokenData.refresh, userData);
 
-      window.location.replace("/listings");
+      // Redirect back to the originating page if provided via `state`,
+      // otherwise fall back to the listings page.
+      window.location.replace(state || "/listings");
     } catch (err) {
       console.error(err);
-      router.replace("/login");
+      router.replace(state || "/login");
     }
   };
 

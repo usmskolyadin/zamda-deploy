@@ -12,6 +12,15 @@ interface User {
   last_name: string;
   is_staff: boolean;
   is_superuser: boolean;
+
+  verification: {
+    google_verified: boolean;
+    facebook_verified: boolean;
+    phone_verified: boolean;
+    google_email: string | null;
+    phone_number: string | null;
+  } | null;
+
   profile: {
     id: number;
     username: string;
@@ -63,46 +72,92 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }
 
-    useEffect(() => {
-      if (typeof window === 'undefined') return;
+useEffect(() => {
+  if (typeof window === 'undefined') return;
 
-      const token = localStorage.getItem('access_token');
-      const refresh = localStorage.getItem('refresh_token');
-      const userData = localStorage.getItem('user');
+  const token = localStorage.getItem('access_token');
+  const refresh = localStorage.getItem('refresh_token');
 
-      if (token && userData) {
-        setAccessToken(token);
-        setUser(safeParseUser(userData));
+  const loadCurrentUser = async (accessToken: string) => {
+    try {
+      const res = await fetch(
+        `${API_URL}/api/users/me/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error();
+      }
+
+      const userData = await res.json();
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(userData)
+      );
+
+      setUser(userData);
+
+    } catch {
+      clearAuth();
+    }
+  };
+
+  if (token) {
+    setAccessToken(token);
+
+    loadCurrentUser(token)
+      .finally(() => {
         setIsInitialized(true);
-        return;
-      }
+      });
 
-      if (refresh) {
-        fetch(`${API_URL}/api/token/refresh/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh }),
-        })
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data?.access) {
-              localStorage.setItem('access_token', data.access);
-              setAccessToken(data.access);
-              setUser(safeParseUser(userData));
-            } else {
-              clearAuth();
-            }
-          })
-          .catch(clearAuth)
-          .finally(() => {
-            setIsInitialized(true);
-          });
+    return;
+  }
 
-        return;
-      }
+  if (refresh) {
+    fetch(`${API_URL}/api/token/refresh/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refresh }),
+    })
+      .then(res => (
+        res.ok ? res.json() : null
+      ))
+      .then(async data => {
 
-      setIsInitialized(true);
-    }, []);
+        if (data?.access) {
+
+          localStorage.setItem(
+            'access_token',
+            data.access
+          );
+
+          setAccessToken(data.access);
+
+          await loadCurrentUser(data.access);
+
+        } else {
+          clearAuth();
+        }
+
+      })
+      .catch(clearAuth)
+      .finally(() => {
+        setIsInitialized(true);
+      });
+
+    return;
+  }
+
+  setIsInitialized(true);
+
+}, []);
 
   const login = (token: string, refresh: string, userData: User) => {
     localStorage.setItem('access_token', token);

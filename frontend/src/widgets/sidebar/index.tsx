@@ -6,6 +6,7 @@ import { FaStar } from 'react-icons/fa'
 import { AdBanner } from '../ad';
 import StickyAdBlock from '../ad/StickyBanner';
 import VerificationIcons from './VerificationIcons';
+import { apiFetchAuth } from '@/src/shared/api/auth.client';
 
 type SidebarProps = {
   notHideOnPhone?: boolean;
@@ -17,8 +18,8 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
   const { advs } = useAds("sidebar");
   console.log(`ADS: ${advs}`)
+  const { updateUser } = useAuth();
 
-  
   return (
       <div
         className={`
@@ -61,19 +62,23 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     <VerificationIcons
                       user={user}
                       refreshUser={async () => {
-                        window.location.reload();
+                        const freshUser = await apiFetchAuth(
+                          "/api/users/me/"
+                        );
+
+                        updateUser(freshUser);
                       }}
                     />
 
                     <div className="lg:hidden block py-4">
                       <Link href={"/new"}>
-                        <button className="w-full px-4 py-2.5 bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
+                        <button className="w-full px-4 py-2.5 text-white bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
                       </Link>
                       <Link href={"/profile/edit"}>
-                        <button className="w-full mt-2 px-4 py-2.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
+                        <button className="w-full mt-2 px-4 text-white py-2.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
                       </Link>
                       <div className='pt-4'>
-                          <button onClick={logout} className="w-full mt-2 px-4 py-2.5 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
+                          <button onClick={logout} className="w-full text-white mt-2 px-4 py-2.5 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
                       </div>
                     </div>
                     </div>

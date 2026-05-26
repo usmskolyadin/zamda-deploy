@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import BackButton from "../back-button";
+import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useAuth } from "@/src/features/context/auth-context";
 
@@ -76,7 +77,11 @@ export default function SearchBar() {
         placeholder="Find an Ad..."
         type="text"
       />
-      {loading && <p className="absolute top-12 left-4 text-gray-900">Loading...</p>}
+      {loading && (
+        <div className="absolute top-12 left-4">
+          <LoadingSpinner size={18} />
+        </div>
+      )}
       {suggestions.length > 0 && (
         <div className="absolute top-12 left-0 w-full bg-white border border-gray-200 rounded-3xl m-1 z-50">
           {suggestions.map((ad) => (

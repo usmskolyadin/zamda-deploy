@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
+import Image from 'next/image';
 
 import { API_URL, apiFetch } from '@/src/shared/api/base';
 import { ChevronDown } from "lucide-react";
@@ -71,6 +72,7 @@ export default function NewAd() {
   const [locationInput, setLocationInput] = useState<string>('');
   const [suggestions, setSuggestions] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -260,21 +262,26 @@ function formatBackendErrors(err: any): string {
 
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
+  if (isSubmitting) return;
   setErrorMessage(null);
+  setIsSubmitting(true);
 
   const token = localStorage.getItem('access_token');
   if (!token) {
+    setIsSubmitting(false);
     router.push('/login');
     return;
   }
 
   if (!selectedSubcategory) {
     setErrorMessage('Выберите подкатегорию');
+    setIsSubmitting(false);
     return;
   }
 
   if ((existingImages?.length ?? 0) + (newImages?.length ?? 0) < 1) {
     alert("Minimum 1 image!");
+    setIsSubmitting(false);
     return;
   }
 
@@ -304,6 +311,7 @@ const handleSubmit = async (e: FormEvent) => {
       const data = await res.json();
       console.error(data);
       alert('Error :(');
+      setIsSubmitting(false);
       return;
     }
 
@@ -311,6 +319,7 @@ const handleSubmit = async (e: FormEvent) => {
   } catch (networkError) {
     setErrorMessage('Network error. ');
     console.error(networkError);
+    setIsSubmitting(false);
   }
 };
 
@@ -396,13 +405,17 @@ const handleSubmit = async (e: FormEvent) => {
               </p>
               <input
                 type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
+                inputMode="decimal"
+                pattern="^\d{0,8}(\.\d{0,2})?$"
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '') 
-                  setPrice(value)
+                  const value = e.target.value.replace(/,/g, '.');
+                  const filtered = value.replace(/[^0-9.]/g, '');
+                  const parts = filtered.split('.');
+                  const whole = parts[0].slice(0, 8);
+                  const fraction = parts[1] ? parts[1].slice(0, 2) : '';
+                  setPrice(fraction ? `${whole}.${fraction}` : whole);
                 }}
                 className="p-4 border border-black rounded-3xl h-[44px] mt-1 text-gray-900"
                 required
@@ -571,13 +584,33 @@ const handleSubmit = async (e: FormEvent) => {
             
             <button
               type="submit"
-              className="cursor-pointer bg-black text-white rounded-3xl px-6 py-2 mt-4 hover:bg-gray-800 transition mb-4"
+              disabled={isSubmitting}
+              className={`bg-black text-white rounded-3xl px-6 py-2 mt-4 transition mb-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
             >
               Create Ad
             </button>
           </>
         )}
       </form>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="max-w-md w-full bg-white rounded-[32px] p-8 text-center shadow-2xl">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-28 h-28 rounded-full bg-black/5 flex items-center justify-center mx-auto animate-spin" style={{ animationDuration: '2s' }}>
+                <Image
+                  src="/zamda-white.png"
+                  alt="Zamda logo"
+                  width={96}
+                  height={96}
+                  className="w-20 h-20"
+                />
+              </div>
+            </div>
+            <p className="text-black text-lg font-semibold mb-3">Your listing is uploading and will appear on the site in a couple of minutes.</p>
+            <p className="text-gray-600">Please wait...</p>
+          </div>
+        </div>
+      )}
     </div>
   </section>
 </div>

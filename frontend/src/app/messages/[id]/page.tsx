@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
 import { FaCheck, FaCheckDouble } from "react-icons/fa";
 import BackButton from "@/src/widgets/back-button";
+import LoadingScreen from '@/src/components/LoadingScreen';
 
 type UserProfile = { avatar?: string | null };
 type Owner = { id: number; first_name: string; last_name: string; profile: UserProfile };
@@ -145,8 +146,8 @@ useEffect(() => {
 }, [messages]);
 
   if (!accessToken) return <div className="w-full  h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Login to view messages</p></div>;
-  if (loading) return <div className="w-full h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Loading…</p></div>;
-  if (!chat) return <div className="bg-white h-screen w-full mx-auto p-4">Чат не найден.</div>;
+  if (loading) return <LoadingScreen />;
+  if (!chat) return <div className="bg-white h-screen w-full mx-auto p-4">Not defined</div>;
 
   return (
     <div className="w-full">
