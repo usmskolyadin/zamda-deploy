@@ -73,6 +73,7 @@ export async function apiFetchAuth<T>(
       const data = await res.json();
 
       errorMessage =
+        data.twilio_error ||
         data.detail ||
         data.error ||
         errorMessage;

@@ -26,6 +26,7 @@ export default function VerificationIcons({
   const [phoneModal, setPhoneModal] = useState(false);
 
   const verification = user?.verification;
+  console.log("Verification status:", user?.verification);
 
   useEffect(() => {
 
@@ -57,7 +58,6 @@ export default function VerificationIcons({
 
   }, [refreshUser]);
 
-  // FACEBOOK CONNECT
   const connectFacebook = async () => {
 
     try {
@@ -86,7 +86,6 @@ export default function VerificationIcons({
     }
   };
 
-  // GOOGLE LOGIN
   const googleLogin = () => {
 
     const params = new URLSearchParams({
@@ -139,7 +138,6 @@ export default function VerificationIcons({
           )}
         </button>
 
-        {/* FACEBOOK */}
         <button
           onClick={connectFacebook}
           title={

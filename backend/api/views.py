@@ -194,7 +194,7 @@ def validate_and_format_phone(phone: str):
     try:
         parsed = phonenumbers.parse(phone, None)
 
-        if not phonenumbers.is_valid_number(parsed):
+        if not phonenumbers.is_possible_number(parsed):
             return None
 
         return phonenumbers.format_number(
@@ -264,17 +264,21 @@ class SendPhoneVerificationView(APIView):
                 status=400
             )
 
-        except Exception:
+        except Exception as e:
+            print(e)
+
             return Response(
-                {"detail": "Internal server error"},
+                {
+                    "detail": "Internal server error",
+                    "error": str(e)
+                },
                 status=500
             )
-
+        
         return Response({
             "detail": "Code sent",
             "status": verification.status
         })
-
 
 class CheckPhoneVerificationView(APIView):
 

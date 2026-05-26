@@ -17,6 +17,8 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
   const { advs } = useAds("sidebar");
   console.log(`ADS: ${advs}`)
+
+  
   return (
       <div
         className={`

@@ -245,6 +245,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         ).data
 
         return data
+    
+class UserVerificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserVerification
+        fields = [
+            "google_verified",
+            "facebook_verified",
+            "phone_verified",
+            "google_email",
+            "phone_number",
+        ]
 
 class ProfileSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
@@ -254,6 +266,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
 
+    verification = UserVerificationSerializer(
+        source="user.verification",
+        read_only=True
+    )
+    
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
 
@@ -276,6 +293,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "rating",
             "reviews_count",
             "reviews",
+            "verification",
         ]
 
     def get_rating(self, obj):
@@ -296,17 +314,6 @@ class OwnerSerializer(serializers.ModelSerializer):
 
 EXPIRATION_DAYS = 30
 
-class UserVerificationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = UserVerification
-        fields = [
-            "google_verified",
-            "facebook_verified",
-            "phone_verified",
-            "google_email",
-            "phone_number",
-        ]
 
 
 class FullUserSerializer(serializers.ModelSerializer):
