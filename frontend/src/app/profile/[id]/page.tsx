@@ -5,6 +5,7 @@ import { FaStar } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
+import VerificationBadges from "@/src/widgets/VerificationBadges";
 import { apiFetch } from "@/src/shared/api/base";
 
 export interface Profile {
@@ -16,6 +17,11 @@ export interface Profile {
   rating: number;
   reviews_count: number;
   city: string;
+  verification?: {
+    google_verified: boolean;
+    facebook_verified: boolean;
+    phone_verified: boolean;
+  } | null;
 }
 
 export default function Profile() {
@@ -68,9 +74,12 @@ useEffect(() => {
                 className="lg:w-18 w-22 lg:h-18 h-22 rounded-full object-cover border border-gray-500"
               />
               <div className="py-2">
-                <h2 className="text-black font-bold lg:text-2xl text-3xl">
-                  {profile.first_name} {profile.last_name}
-                </h2>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-black font-bold lg:text-2xl text-3xl">
+                    {profile.first_name} {profile.last_name}
+                  </h2>
+                  <VerificationBadges verification={profile.verification} />
+                </div>
                   {profile.city ? (
                 <p className=" flex text-gray-700 font-medium items-center text-lg py-2">
                 <svg className="mr-1 min-h-5 min-w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

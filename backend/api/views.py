@@ -339,13 +339,16 @@ class CheckPhoneVerificationView(APIView):
                 status=400
             )
 
-        verification, _ = UserVerification.objects.get_or_create(
-            user=request.user
-        )
-
-        verification.phone_verified = True
-        verification.phone_number = phone
-        verification.save()
+        if request.user.is_authenticated:
+            verification, _ = UserVerification.objects.get_or_create(
+                user=request.user
+            )
+            verification.phone_verified = True
+            verification.phone_number = phone
+            verification.save()
+        else:
+            request.session["verified_phone"] = phone
+            request.session.modified = True
 
         return Response({
             "detail": "Phone verified"
@@ -1289,6 +1292,22 @@ class VerifyCodeView(generics.GenericAPIView):
             last_name=record.last_name,
             password=record.password,
         )
+
+        phone = serializer.validated_data.get("phone")
+        if phone:
+            phone = validate_and_format_phone(phone)
+            if not phone:
+                return Response({"detail": "Invalid phone."}, status=400)
+
+            verified_phone = request.session.get("verified_phone")
+            if verified_phone != phone:
+                return Response({"detail": "Phone verification is required for this number."}, status=400)
+
+            verification, _ = UserVerification.objects.get_or_create(user=user)
+            verification.phone_verified = True
+            verification.phone_number = phone
+            verification.save()
+            request.session.pop("verified_phone", None)
         
         process_referral(request, user)        
         

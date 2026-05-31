@@ -58,6 +58,12 @@ export interface Advertisement {
       reviews_count: number;
       city: string;
     } | null;
+    verification?: {
+      google_verified: boolean;
+      facebook_verified: boolean;
+      phone_verified: boolean;
+      phone_number?: string | null;
+    } | null;
   };
   extra_values: ExtraValue[];
   subcategory: SubCategory;

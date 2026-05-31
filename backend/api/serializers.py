@@ -263,6 +263,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
+    verification = UserVerificationSerializer(source="user.verification", read_only=True)
     rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
 
@@ -286,6 +287,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "verification",
             "rating",
             "reviews_count",
             "reviews",
@@ -302,10 +304,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         
 class OwnerSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
+    verification = UserVerificationSerializer(read_only=True)
     
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "profile"]
+        fields = ["id", "username", "first_name", "last_name", "email", "profile", "verification"]
 
 EXPIRATION_DAYS = 30
 
@@ -678,10 +681,12 @@ class RegisterRequestSerializer(serializers.Serializer):
     last_name = serializers.CharField()
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
 
 class VerifyCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField()
+    phone = serializers.CharField(required=False, allow_blank=True)
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()

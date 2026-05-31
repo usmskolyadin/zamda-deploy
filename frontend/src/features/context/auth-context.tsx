@@ -39,6 +39,7 @@ interface AuthContextType {
   login: (token: string, refresh: string, userData: User) => void;
   logout: () => void;
   updateUser: (userData: User) => void;
+  refreshUser: () => Promise<void>;
   isInitialized: boolean;
 }
 
@@ -58,8 +59,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     setAccessToken(null);
+    setRefreshToken(null);
     setUser(null);
   };
+
+  const refreshUser = async (): Promise<void> => {
+    if (typeof window === 'undefined') return;
+
+    const access = localStorage.getItem('access_token');
+    if (!access) {
+      clearAuth();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/users/me/`, {
+        headers: {
+          Authorization: `Bearer ${access}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch user');
+      }
+
+      const userData = await res.json();
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch {
+      clearAuth();
+    }
+  };
+
   const [isInitialized, setIsInitialized] = useState(false);
 
   
@@ -78,42 +109,12 @@ useEffect(() => {
   const token = localStorage.getItem('access_token');
   const refresh = localStorage.getItem('refresh_token');
 
-  const loadCurrentUser = async (accessToken: string) => {
-    try {
-      const res = await fetch(
-        `${API_URL}/api/users/me/`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error();
-      }
-
-      const userData = await res.json();
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify(userData)
-      );
-
-      setUser(userData);
-
-    } catch {
-      clearAuth();
-    }
-  };
-
   if (token) {
     setAccessToken(token);
 
-    loadCurrentUser(token)
-      .finally(() => {
-        setIsInitialized(true);
-      });
+    refreshUser().finally(() => {
+      setIsInitialized(true);
+    });
 
     return;
   }
@@ -132,16 +133,9 @@ useEffect(() => {
       .then(async data => {
 
         if (data?.access) {
-
-          localStorage.setItem(
-            'access_token',
-            data.access
-          );
-
+          localStorage.setItem('access_token', data.access);
           setAccessToken(data.access);
-
-          await loadCurrentUser(data.access);
-
+          await refreshUser();
         } else {
           clearAuth();
         }
@@ -165,8 +159,8 @@ useEffect(() => {
     localStorage.setItem('user', JSON.stringify(userData));
 
     setAccessToken(token);
-    setUser(userData);
     setRefreshToken(refresh);
+    setUser(userData);
     return true;
   };
 
@@ -197,7 +191,7 @@ useEffect(() => {
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, login, logout, updateUser, isInitialized }}
+      value={{ user, accessToken, login, logout, updateUser, refreshUser, isInitialized }}
     >
       {children}
     </AuthContext.Provider>

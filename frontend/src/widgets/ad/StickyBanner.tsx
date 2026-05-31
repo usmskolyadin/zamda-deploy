@@ -22,23 +22,35 @@ export default function StickyAdBlock({
     "normal" | "fixed" | "bottom"
   >("normal");
 
-  const [width, setWidth] = useState(360);
+  const [rect, setRect] = useState({
+    width: 360,
+    left: 0,
+  });
 
   const [bottomOffset, setBottomOffset] = useState(0);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (!wrapperRef.current) return;
+
+      const wrapper = wrapperRef.current;
+      const rect = wrapper.getBoundingClientRect();
+
+      setRect({
+        width: rect.width,
+        left: rect.left,
+      });
+    };
+
     const handleScroll = () => {
       if (!wrapperRef.current) return;
 
       const wrapper = wrapperRef.current;
-
       const wrapperTop =
         wrapper.getBoundingClientRect().top +
         window.scrollY;
 
-      const footer =
-        document.querySelector("footer");
-
+      const footer = document.querySelector("footer");
       if (!footer) return;
 
       const footerTop =
@@ -46,38 +58,26 @@ export default function StickyAdBlock({
         window.scrollY;
 
       const scrollY = window.scrollY;
-
       const startSticky = wrapperTop - top;
-
-      const stopSticky =
-        footerTop - height - top - 32;
+      const stopSticky = footerTop - height - top - 32;
 
       if (scrollY < startSticky) {
         setMode("normal");
       } else if (scrollY >= stopSticky) {
         setMode("bottom");
-
         setBottomOffset(
           footerTop - wrapperTop - height - 32
         );
       } else {
         setMode("fixed");
       }
-
-      setWidth(wrapper.offsetWidth);
     };
 
+    handleResize();
     handleScroll();
 
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    );
-
-    window.addEventListener(
-      "resize",
-      handleScroll
-    );
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener(
@@ -87,7 +87,7 @@ export default function StickyAdBlock({
 
       window.removeEventListener(
         "resize",
-        handleScroll
+        handleResize
       );
     };
   }, [height, top]);
@@ -98,16 +98,16 @@ export default function StickyAdBlock({
       className={`relative hidden lg:block ${className}`}
     >
       <div
-        className={
+        className={`transition-all duration-300 ${
           mode === "fixed"
             ? "fixed"
             : mode === "bottom"
             ? "absolute"
             : "relative"
-        }
+        }`}
         style={{
-          width: `${width}px`,
-
+          width: mode === "fixed" ? `${rect.width}px` : undefined,
+          left: mode === "fixed" ? `${rect.left}px` : undefined,
           top:
             mode === "fixed"
               ? `${top}px`

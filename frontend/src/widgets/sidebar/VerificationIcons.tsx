@@ -214,6 +214,7 @@ export default function VerificationIcons({
         open={phoneModal}
         onClose={() => setPhoneModal(false)}
         refreshUser={refreshUser}
+        onVerified={() => setPhoneModal(false)}
       />
     </>
   );

@@ -113,10 +113,11 @@ if (!isInitialized) {
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar notHideOnPhone={true}/>
+          
           <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
             <AdBanner ads={advs} height={250} />
 
-            <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
+            <h1 className="w-3/4 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
 
             <div className="grid lg:grid-cols-4 grid-cols-2 border-b mb-4">
               <button

@@ -3,7 +3,7 @@
 import { API_URL } from "@/src/shared/api/base";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function Register() {
@@ -19,6 +19,8 @@ export default function Register() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verifiedPhone = searchParams?.get("phone") ?? "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,7 +100,10 @@ const handleRegister = async (e: React.FormEvent) => {
       const res = await fetch(`${API_URL}/api/register/request/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          phone: verifiedPhone || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -125,7 +130,11 @@ const handleRegister = async (e: React.FormEvent) => {
       const res = await fetch(`${API_URL}/api/register/verify/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, code }),
+        body: JSON.stringify({
+          email: formData.email,
+          code,
+          phone: verifiedPhone || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -133,8 +142,8 @@ const handleRegister = async (e: React.FormEvent) => {
         setError(data.detail || "Invalid code");
       } else {
         setSuccess("Registration complete!");
-        localStorage.setItem("access", data.access);
-        localStorage.setItem("refresh", data.refresh);
+        localStorage.setItem("access_token", data.access);
+        localStorage.setItem("refresh_token", data.refresh);
 
         setTimeout(() => router.push("/login"), 1500);
       }
@@ -163,6 +172,11 @@ const [showPassword2, setShowPassword2] = useState(false);
             
             {step === "form" && (
               <form onSubmit={handleRegister}>
+              {verifiedPhone && (
+                <div className="rounded-3xl bg-green-50 border border-green-200 p-4 text-sm text-green-800 mb-4">
+                  Phone verified: <strong>{verifiedPhone}</strong>. Your account will be linked to this number.
+                </div>
+              )}
                 <div className="flex">
                   <input
                     className="text-black p-4 border border-black rounded-3xl h-[44px] w-1/2 mr-2 mt-2"

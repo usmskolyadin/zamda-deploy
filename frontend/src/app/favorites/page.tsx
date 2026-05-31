@@ -11,6 +11,7 @@ import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import Sidebar from "@/src/widgets/sidebar";
 import { AdBanner } from "@/src/widgets/ad";
 import { useAds } from "@/src/features/hooks/use-ad";
+import LoadingScreen from "@/src/components/LoadingScreen";
 
 export default function Favorites() {
   const { user } = useAuth();
@@ -41,9 +42,7 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <div className="text-center text-gray-700 p-10">
-        <h2 className="text-2xl font-bold">Please, login to continue</h2>
-      </div>
+      <LoadingScreen message="Please, login to continue" />
     );
   }
 

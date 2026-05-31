@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 
-import { apiFetchAuth } from "@/src/shared/api/auth.client";
+import { apiFetch } from "@/src/shared/api/base";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  refreshUser: () => Promise<void>;
+  onVerified: (phone: string) => void;
+  refreshUser?: () => Promise<void>;
 };
 
 export default function PhoneVerificationModal({
   open,
   onClose,
+  onVerified,
   refreshUser,
 }: Props) {
 
@@ -72,7 +74,7 @@ export default function PhoneVerificationModal({
 
       setLoading(true);
 
-      await apiFetchAuth(
+      await apiFetch(
         "/api/verification/phone/send/",
         {
           method: "POST",
@@ -106,7 +108,7 @@ export default function PhoneVerificationModal({
 
       setLoading(true);
 
-      await apiFetchAuth(
+      await apiFetch(
         "/api/verification/phone/check/",
         {
           method: "POST",
@@ -117,8 +119,11 @@ export default function PhoneVerificationModal({
         }
       );
 
-      await refreshUser();
+      if (refreshUser) {
+        await refreshUser();
+      }
 
+      onVerified(fullPhone);
       onClose();
 
     } catch (err: any) {
