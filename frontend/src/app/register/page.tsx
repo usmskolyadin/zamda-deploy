@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export default function Register() {
+export default function Register({searchParams}: { searchParams: URLSearchParams }) {
   const [step, setStep] = useState<"form" | "verify">("form");
   const [formData, setFormData] = useState({
     first_name: "",
@@ -19,7 +19,6 @@ export default function Register() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
   const verifiedPhone = searchParams?.get("phone") ?? "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
