@@ -29,12 +29,26 @@ export default function FacebookCallbackPage() {
           body: JSON.stringify({ code }),
         });
 
-        const data = await res.json();
+        const raw = await res.text();
 
-        if (!res.ok || !data.access) {
+        console.log("RAW FB RESPONSE:", raw);
+
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          console.error("NOT JSON RESPONSE:", raw);
           router.replace(state || "/login");
           return;
-      }
+        }
+
+        console.log("PARSED DATA:", data);
+
+        if (!res.ok) {
+          console.error("FB BACKEND ERROR:", data);
+          router.replace(state || "/login");
+          return;
+        }
           console.log("FB LOGIN RESPONSE:", data);
           console.log("ACCESS TOKEN:", data.access);
         await login(data.access, data.refresh, data.user);
