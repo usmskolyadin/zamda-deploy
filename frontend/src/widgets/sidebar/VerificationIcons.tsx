@@ -28,62 +28,16 @@ export default function VerificationIcons({
   const verification = user?.verification;
   console.log("Verification status:", user?.verification);
 
-  useEffect(() => {
+  const connectFacebook = () => {
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID!,
+      redirect_uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/auth/facebook/callback`,
+      response_type: "code",
+      scope: "email,public_profile",
+    });
 
-    const handler = async (event: MessageEvent) => {
-
-      if (event.data?.type !== "facebook-auth") return;
-
-      try {
-
-        await apiFetchAuth("/api/verification/facebook/", {
-          method: "POST",
-          body: JSON.stringify({
-            access_token: event.data.access_token,
-          }),
-        });
-
-        await refreshUser();
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    window.addEventListener("message", handler);
-
-    return () => {
-      window.removeEventListener("message", handler);
-    };
-
-  }, [refreshUser]);
-
-  const connectFacebook = async () => {
-
-    try {
-
-      const width = 600;
-      const height = 700;
-
-      const left = window.innerWidth / 2 - width / 2;
-      const top = window.innerHeight / 2 - height / 2;
-
-      const url =
-        `https://www.facebook.com/v19.0/dialog/oauth?` +
-        `client_id=${process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID}` +
-        `&redirect_uri=${process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI}` +
-        `&response_type=token` +
-        `&scope=email,public_profile`;
-
-      window.open(
-        url,
-        "facebook-login",
-        `width=${width},height=${height},top=${top},left=${left}`
-      );
-
-    } catch (err) {
-      console.error(err);
-    }
+    window.location.href =
+      `https://www.facebook.com/v19.0/dialog/oauth?${params}`;
   };
 
   const googleLogin = () => {

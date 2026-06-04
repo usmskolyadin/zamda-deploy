@@ -1,37 +1,14 @@
-"use client";
+import { Suspense } from "react";
+import FacebookCallbackClient from "./FacebookCallbackClient";
 
-import { useEffect } from "react";
-
-export default function FacebookCallbackPage() {
-
-  useEffect(() => {
-
-    const hash = window.location.hash;
-
-    const params = new URLSearchParams(
-      hash.replace("#", "")
-    );
-
-    const accessToken = params.get("access_token");
-
-    if (accessToken && window.opener) {
-
-      window.opener.postMessage(
-        {
-          type: "facebook-auth",
-          access_token: accessToken,
-        },
-        window.location.origin
-      );
-
-      window.close();
-    }
-
-  }, []);
-
+export default function Page() {
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-black text-white">
-      Facebook verification...
-    </div>
+    <Suspense fallback={
+      <p className="bg-white h-screen flex items-center justify-center text-black">
+        Signing in with Facebook…
+      </p>
+    }>
+      <FacebookCallbackClient />
+    </Suspense>
   );
 }

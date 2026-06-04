@@ -45,6 +45,9 @@ export default function Favorites() {
       <LoadingScreen message="Please, login to continue" />
     );
   }
+  if (isLoading) {
+    return <LoadingScreen message={"Loading..."} />;
+  }
 
   return (
     <div className="w-full">
