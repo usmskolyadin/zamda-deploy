@@ -10,6 +10,8 @@ interface StickyAdBlockProps {
   className?: string;
 }
 
+const FALLBACK_WIDTH = 300;
+
 export default function StickyAdBlock({
   page,
   height = 500,
@@ -33,12 +35,17 @@ export default function StickyAdBlock({
     const handleResize = () => {
       if (!wrapperRef.current) return;
 
-      const wrapper = wrapperRef.current;
-      const rect = wrapper.getBoundingClientRect();
+      const rect = wrapperRef.current.getBoundingClientRect();
+
+      console.log("=== RESIZE ===", rect.width, rect.left);
+
+      // ❗️КРИТИЧНО
+      const safeWidth = rect.width > 50 ? rect.width : FALLBACK_WIDTH;
+      const safeLeft = rect.left !== 0 ? rect.left : undefined;
 
       setRect({
-        width: rect.width,
-        left: rect.left,
+        width: safeWidth,
+        left: safeLeft ?? 0,
       });
     };
 

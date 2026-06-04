@@ -19,7 +19,7 @@ export default function Footer() {
                     <Image src={"/zamda-white.png"} width={1000} height={1000} className="w-10 h-10" alt={""} />
                     <h1 className="mr-12 font-bold text-4xl text-white">Zamda</h1>
                   </div>
-                  <p className="text-gray-300 ml-2 text-sm">© Copyright ZAMDA 2025</p>
+                  <p className="text-gray-300 ml-2 text-sm">© Copyright ZAMDA {new Date().getFullYear()}</p>
                 </div>
                 </Link>
               </div>
@@ -72,7 +72,7 @@ export default function Footer() {
                 </Link>
 
                 <p className="text-gray-400 text-sm">
-                  © 2025 Zamda. All rights reserved.
+                  © {new Date().getFullYear()} Zamda. All rights reserved.
                 </p>
 
                 <div className="flex items-center gap-4 lg:mt-0 mt-2">
@@ -128,7 +128,7 @@ export default function Footer() {
             </div>
 
             <div className="mt-10 border-t border-gray-500 pt-4 text-xs text-gray-400 text-center">
-              © 2025 Zamda. All rights reserved.
+              © {new Date().getFullYear()} Zamda. All rights reserved.
             </div>
 
           </div>

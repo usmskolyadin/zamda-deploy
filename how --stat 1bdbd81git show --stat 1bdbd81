@@ -1,0 +1,20 @@
+[33m1bdbd81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m HEAD@{Thu Jun 4 20:04:55 2026}: reset: moving to 1bdbd81
+[33m3108b4d[m[33m ([m[1;31morigin/master[m[33m)[m HEAD@{Thu Jun 4 20:01:23 2026}: reset: moving to HEAD~1
+[33m1bdbd81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m HEAD@{Thu Jun 4 19:59:54 2026}: commit: Add automatic moderation & Fix jumped sidebar 3
+[33m3108b4d[m[33m ([m[1;31morigin/master[m[33m)[m HEAD@{Thu Jun 4 19:59:02 2026}: rebase (finish): returning to refs/heads/master
+[33m3108b4d[m[33m ([m[1;31morigin/master[m[33m)[m HEAD@{Thu Jun 4 19:58:34 2026}: rebase (start): checkout f5aeb05e3a^
+[33maa12b7b[m HEAD@{Thu Jun 4 19:55:42 2026}: reset: moving to HEAD
+[33maa12b7b[m HEAD@{Thu Jun 4 19:51:06 2026}: commit: Add automatic moderation & Fix jumped sidebar 2
+[33mf5aeb05[m HEAD@{Thu Jun 4 19:49:42 2026}: commit: Add automatic moderation & Fix jumped sidebar
+[33m3108b4d[m[33m ([m[1;31morigin/master[m[33m)[m HEAD@{Mon Jun 1 15:27:34 2026}: commit: fix fb
+[33m4c0e0f6[m HEAD@{Sun May 31 15:06:13 2026}: commit: add verification in admin & start fix fb
+[33mbb69fec[m HEAD@{Sun May 31 14:48:09 2026}: commit: fix phone modal
+[33mb5d6d69[m HEAD@{Sun May 31 14:40:08 2026}: commit: add verification icons & update linkgs
+[33m2552fd4[m HEAD@{Wed May 27 00:08:29 2026}: commit: update verification & add loaders
+[33m9fd8414[m HEAD@{Tue May 26 15:11:54 2026}: commit: update verification logic
+[33m896820b[m HEAD@{Mon May 25 21:57:00 2026}: commit: update requirements.txt
+[33m56e4d51[m HEAD@{Mon May 25 21:49:48 2026}: commit: add relations & some updates
+[33m753d6d5[m HEAD@{Fri May 15 23:50:06 2026}: commit: fix header
+[33m3ab43ad[m HEAD@{Fri May 15 23:25:39 2026}: commit: fix permissions
+[33m6346a43[m HEAD@{Fri May 15 17:01:58 2026}: commit: counter
+[33m3c59937[m HEAD@{Fri May 15 15:48:29 2026}: commit: redesign

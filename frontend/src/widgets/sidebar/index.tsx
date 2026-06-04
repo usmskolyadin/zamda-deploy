@@ -23,8 +23,8 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
   return (
       <div
         className={`
-          lg:w-1/4
-          lg:max-w-[380px]
+          lg:w-[300px]
+          lg:flex-none
           w-full
           ${notHideOnPhone ? "" : "hidden lg:block"}
         `}

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export default function Register({searchParams}: { searchParams: URLSearchParams }) {
+export default function Register() {
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<"form" | "verify">("form");
   const [formData, setFormData] = useState({
     first_name: "",

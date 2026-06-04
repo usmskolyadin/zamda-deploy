@@ -152,8 +152,8 @@ export default async function SearchPage({ searchParams }: Props) {
                 text-xl
                 lg:text-xl
                 font-bold
-                text-black
-                line-clamp-2
+                
+                line-clamp-2 text-[#2AAEF7]
                 group-hover:text-[#2AAEF7]
                 transition
               "
@@ -163,7 +163,7 @@ export default async function SearchPage({ searchParams }: Props) {
           </Link>
 
           <div className="flex-shrink-0 text-right">
-            <p className="text-2xl font-bold text-[#2AAEF7]">
+            <p className="text-2xl font-bold text-black ">
               ${Number(ad.price)}
             </p>
           </div>

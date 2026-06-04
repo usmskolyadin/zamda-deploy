@@ -63,7 +63,7 @@ useEffect(() => {
   return (
     <div className="w-full">
       <section className="bg-[#ffffff] pb-16 p-4">
-        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="max-w-screen-xl h-screen lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <div className="lg:w-1/4">
             <div className="flex-col items-center justify-between lg:border-b border-gray-300 py-3">
               <img

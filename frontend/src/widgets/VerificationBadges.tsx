@@ -9,7 +9,13 @@ import {
 } from "react-icons/fa";
 
 
-const GoogleIcon = ({ size = 28 }: { size?: number }) => {
+const GoogleIcon = ({
+  size = 28,
+  verified = false,
+}: {
+  size?: number;
+  verified?: boolean;
+}) => {
   const id = useId();
 
   const pathId = `${id}-path`;
@@ -21,6 +27,7 @@ const GoogleIcon = ({ size = 28 }: { size?: number }) => {
       viewBox="0 0 48 48"
       width={size}
       height={size}
+      className={!verified ? "grayscale opacity-70" : ""}
     >
       <defs>
         <path
@@ -144,15 +151,22 @@ export default function VerificationBadges({
                   : "cursor-default"
               }
             `}
-          >
-            <Icon
-              size={28}
-              className={
-                verified
-                  ? badge.colorClass
-                  : "text-gray-400"
-              }
-            />
+                      >
+            {badge.key === "google" ? (
+              <GoogleIcon
+                size={28}
+                verified={verified}
+              />
+            ) : (
+              <Icon
+                size={28}
+                className={
+                  verified
+                    ? badge.colorClass
+                    : "text-gray-400"
+                }
+              />
+            )}
 
             {verified && (
               <FaCheckCircle

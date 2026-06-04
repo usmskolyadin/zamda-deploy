@@ -19,7 +19,8 @@ export default function AdActions({ ad }: AdPageProps) {
   const { user, accessToken, refreshUser } = useAuth();
   const router = useRouter();
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
-
+  const [showPhone, setShowPhone] = useState(false);
+  
   const isOwner = user?.username === ad.owner.username;
   const userPhoneVerified = user?.verification?.phone_verified;
   const sellerPhone = ad.owner.verification?.phone_number;
@@ -92,17 +93,68 @@ export default function AdActions({ ad }: AdPageProps) {
         <>
           {accessToken ? (
             userPhoneVerified ? (
-              sellerPhone ? (
-                <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
-                  <div className="font-semibold text-black">Seller phone</div>
-                  <a href={`tel:${sellerPhone}`} className="underline">
-                    {sellerPhone}
-                  </a>
-                </div>
-              ) : (
-                <div className="rounded-3xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-900">
-                  Seller has not provided a phone number.
-                </div>
+sellerPhone ? (
+  <div className="overflow-hidden">
+    {!showPhone ? (
+      <button
+        onClick={() => setShowPhone(true)}
+        className="
+          w-full
+          p-3.5
+          bg-[#36B731]
+          rounded-3xl
+          text-white
+          cursor-pointer
+          transition-all
+          duration-300
+          hover:bg-green-500
+          active:scale-[0.98]
+        "
+      >
+        Show phone
+      </button>
+    ) : (
+      <div
+        className="
+          rounded-3xl
+          border
+          border-green-200
+          bg-green-50
+          p-4
+          text-center
+          animate-in
+          fade-in
+          zoom-in-95
+          duration-300
+        "
+      >
+        <div className="text-xs uppercase tracking-wider text-green-700 mb-1">
+          Seller phone
+        </div>
+
+        <a
+          href={`tel:${sellerPhone}`}
+          className="
+            block
+            text-xl
+            font-bold
+            text-black
+            hover:text-[#36B731]
+            transition
+          "
+        >
+          {sellerPhone}
+        </a>
+      </div>
+    )}
+  </div>
+) : (
+              <button
+                disabled
+                className="w-full p-3.5 bg-[#36B731] opacity-50 rounded-3xl hover:bg-green-500 transition text-white"
+              >
+               Show phone (No provided)
+              </button>
               )
             ) : (
               <button
@@ -115,7 +167,7 @@ export default function AdActions({ ad }: AdPageProps) {
           ) : (
             <button
               onClick={() => setPhoneModalOpen(true)}
-              className="w-full p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition text-white"
+              className="w-full text-center p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition text-white"
             >
               Verify phone to view seller number
             </button>
@@ -140,7 +192,6 @@ export default function AdActions({ ad }: AdPageProps) {
               <h2 className="text-[#2AAEF7] font-semibold text-lg">
                 {ad.owner.last_name} {ad.owner.first_name}
               </h2>
-              <VerificationBadges verification={ad.owner.verification} />
             </div>
             <div className="flex items-center text-sm text-gray-700">
               <span className="mr-1">{ad.owner.profile?.rating ?? 0}</span>
@@ -156,6 +207,7 @@ export default function AdActions({ ad }: AdPageProps) {
             </div>
           </div>
         </Link>
+        <VerificationBadges verification={ad.owner.verification} />
         <img
           src={`${ad.owner.profile?.avatar}`}
           width={200}

@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.db import IntegrityError
 
 from api.services.recommendations import AdvertisementRecommender
+from api.services.ad_moderation import AdModerationService
 
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
@@ -463,6 +464,8 @@ EXPIRATION_DAYS = 30
 ACTIVE_LIFETIME_DAYS = 30
 ARCHIVE_LIFETIME_DAYS = 30
 REJECTED_LIFETIME_DAYS = 30
+ENABLE_LIFECYCLE_CLEANUP = False
+
 
 class AdvertisementViewSet(viewsets.ModelViewSet):
     queryset = Advertisement.objects.all()
@@ -505,7 +508,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsOwner()]
 
         return [IsAuthenticated()]
-    
+        
     def get_queryset(self):
         qs = (
             Advertisement.objects
@@ -515,23 +518,24 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 
         now_ts = now()
 
-        qs.filter(
-            status=AdvertisementStatus.ACTIVE,
-            created_at__lte=now_ts - timedelta(days=ACTIVE_LIFETIME_DAYS)
-        ).update(
-            status=AdvertisementStatus.ARCHIVED,
-            status_changed_at=now_ts
-        )
+        if ENABLE_LIFECYCLE_CLEANUP:
+            qs.filter(
+                status=AdvertisementStatus.ACTIVE,
+                created_at__lte=now_ts - timedelta(days=ACTIVE_LIFETIME_DAYS)
+            ).update(
+                status=AdvertisementStatus.ARCHIVED,
+                status_changed_at=now_ts
+            )
 
-        qs.filter(
-            status=AdvertisementStatus.ARCHIVED,
-            status_changed_at__lte=now_ts - timedelta(days=ARCHIVE_LIFETIME_DAYS)
-        ).delete()
+            qs.filter(
+                status=AdvertisementStatus.ARCHIVED,
+                status_changed_at__lte=now_ts - timedelta(days=ARCHIVE_LIFETIME_DAYS)
+            ).delete()
 
-        qs.filter(
-            status=AdvertisementStatus.REJECTED,
-            status_changed_at__lte=now_ts - timedelta(days=REJECTED_LIFETIME_DAYS)
-        ).delete()
+            qs.filter(
+                status=AdvertisementStatus.REJECTED,
+                status_changed_at__lte=now_ts - timedelta(days=REJECTED_LIFETIME_DAYS)
+            ).delete()
 
         if self.action in ["update", "partial_update", "destroy", "relist"]:
             return qs.filter(owner=self.request.user)
@@ -660,6 +664,8 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             "likes_count": ad.likes.count()
         })
 
+
+
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def relist(self, request, slug=None):
         ad = self.get_object()
@@ -670,10 +676,44 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         ad.created_at = now()
         ad.status = AdvertisementStatus.MODERATION
         ad.reject_reason = None
+        service = AdModerationService()
+
+        is_safe, reasons = service.moderate(ad)
+
+        if is_safe:
+            ad.status = AdvertisementStatus.ACTIVE
+            ad.reject_reason = None
+        else:
+            ad.status = AdvertisementStatus.REJECTED
+            ad.reject_reason = "; ".join(reasons)
+
+
         ad.save(update_fields=["created_at", "status", "reject_reason", "status_changed_at"])
 
         return Response({"detail": "Sent to moderation"})
+    
+    def moderate_ad(self, ad):
+        service = AdModerationService()
 
+        is_safe, reasons = service.moderate(ad)
+
+        if is_safe:
+            ad.status = AdvertisementStatus.ACTIVE
+            ad.reject_reason = None
+        else:
+            ad.status = AdvertisementStatus.REJECTED
+            ad.reject_reason = "; ".join(reasons)
+
+        ad.status_changed_at = now()
+
+        ad.save(
+            update_fields=[
+                "status",
+                "reject_reason",
+                "status_changed_at"
+            ]
+        )
+        
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["request"] = self.request
@@ -685,8 +725,13 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-        
+        ad = serializer.save(owner=self.request.user)
+        self.moderate_ad(ad)
+
+    def perform_update(self, serializer):
+        ad = serializer.save()
+        self.moderate_ad(ad)
+
     import logging
     logger = logging.getLogger(__name__)
 
