@@ -202,13 +202,14 @@ class FacebookAuthView(APIView):
             )
 
         # 4. user creation
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "username": email,
-                "first_name": name,
-            },
-        )
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            user = User.objects.create(
+                email=email,
+                username=email,
+                first_name=name,
+            )
 
         # 5. verification sync
         verification, _ = UserVerification.objects.get_or_create(user=user)
