@@ -13,7 +13,9 @@ export default function FacebookCallbackPage() {
   useEffect(() => {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
-
+    
+    console.log("FACEBOOK CODE:", code);
+    
     if (!code) {
       router.replace(state || "/login");
       return;
