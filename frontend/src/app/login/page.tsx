@@ -31,7 +31,7 @@ const facebookLogin = () => {
 
   const params = new URLSearchParams({
     client_id: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID!,
-    redirect_uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/auth/facebook/callback`,
+    redirect_uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/facebook-callback`,
     response_type: "code",
     scope: "email,public_profile",
     state: currentState,
