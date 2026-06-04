@@ -12,9 +12,10 @@ export default function FacebookCallbackPage() {
 
   useEffect(() => {
     const code = searchParams.get("code");
+    const state = searchParams.get("state");
 
     if (!code) {
-      router.push("/login");
+      router.replace(state || "/login");
       return;
     }
 
@@ -28,16 +29,19 @@ export default function FacebookCallbackPage() {
 
         const data = await res.json();
 
-        if (!res.ok) {
-          router.push("/login");
+        if (!res.ok || !data.access) {
+          router.replace(state || "/login");
           return;
         }
 
-        login(data.access, data.refresh, data.user);
-        router.push("/listings");
+        await login(data.access, data.refresh, data.user);
+
+        // ⚡ важно: replace, не push
+        window.location.replace(state || "/listings");
+
       } catch (err) {
         console.error(err);
-        router.push("/login");
+        router.replace(state || "/login");
       }
     };
 

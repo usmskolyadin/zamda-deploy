@@ -27,17 +27,19 @@ const googleLogin = () => {
 };
 
 const facebookLogin = () => {
+  const currentState = window.location.pathname + window.location.search;
+
   const params = new URLSearchParams({
     client_id: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID!,
-    redirect_uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/facebook-callback`,
+    redirect_uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/auth/facebook/callback`,
     response_type: "code",
     scope: "email,public_profile",
+    state: currentState,
   });
 
   window.location.href =
     `https://www.facebook.com/v19.0/dialog/oauth?${params}`;
 };
-
 
 export default function Login() {
   const { login } = useAuth();
