@@ -143,7 +143,9 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()class FacebookAuthView(APIView):
+User = get_user_model()
+
+class FacebookAuthView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
