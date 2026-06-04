@@ -1,129 +1,167 @@
-from google.cloud import vision
+from google.cloud import vision, language_v1
 from difflib import SequenceMatcher
 import re
 
 
 class AdModerationService:
     def __init__(self):
-        self.vision_client = vision.ImageAnnotatorClient()
+        self.vision = vision.ImageAnnotatorClient()
+        self.nlp = language_v1.LanguageServiceClient()
 
-        # -----------------------------
-        # TOBACCO BRANDS (CRITICAL)
-        # -----------------------------
-        self.tobacco_brands = {
-            "marlboro", "malboro", "camel", "parliament",
-            "lucky strike", "chesterfield", "davidoff",
-            "ld", "winston", "kent", "rothmans",
-            "pall mall", "dunhill",
-            "iqos", "glo", "heets", "veev",
-            "juul", "elf bar", "lost mary", "vuse",
-            "smok", "vaporesso", "geekvape", "voopoo"
-        }
+        # =========================
+        # HARD POLICY CATEGORIES
+        # =========================
 
-        # -----------------------------
-        # KEYWORDS
-        # -----------------------------
-        self.rules = {
-            "drugs": [
+        self.illegal_entities = {
+            "drugs": {
                 "weed", "marijuana", "cocaine", "meth", "heroin",
                 "fentanyl", "xanax", "oxy", "oxycodone",
                 "adderall", "molly", "ecstasy", "crack",
-                "drug", "drugs", "lsd", "shrooms", "cbd", "thc"
-            ],
-            "weapons": [
+                "lsd", "acid", "shrooms", "dope"
+            },
+            "weapons": {
                 "gun", "pistol", "rifle", "shotgun",
                 "ammo", "ammunition", "firearm",
-                "ar-15", "ak-47", "grenade", "bomb"
-            ],
-            "adult": [
-                "escort", "onlyfans", "nude", "porn",
-                "sex", "xxx", "prostitute", "hookup"
-            ],
-            "fraud": [
+                "ar-15", "ak-47", "grenade", "bomb",
+                "explosives", "silencer", "suppressor"
+            },
+            "adult": {
+                "porn", "xxx", "escort", "prostitute",
+                "nude", "naked", "onlyfans", "hookup",
+                "sugar daddy", "sugar baby"
+            },
+            "fraud": {
                 "wire transfer", "western union",
                 "bitcoin only", "crypto only",
-                "guaranteed returns"
-            ]
+                "guaranteed returns", "investment opportunity",
+                "money order", "cash app only", "venmo only"
+            },
+            "stolen": {
+                "stolen", "no receipt", "no title", "hot item", "lifted"
+            },
+            "tobacco": {
+                "cigarette", "cigarettes", "tobacco",
+                "vape", "e-cigarette", "nicotine",
+                "juul", "elf bar", "disposable vape"
+            }
         }
 
-        # -----------------------------
-        # OCR BLACKLIST
-        # -----------------------------
-        self.ocr_blacklist = {
-            "marlboro", "malboro", "elf bar", "lost mary",
-            "juul", "vuse", "iqos", "glo",
-            "nicotine", "thc", "cbd", "cocaine",
-            "heroin", "xanax", "weed"
+        # =========================
+        # SAFE WORLD OBJECTS
+        # =========================
+
+        self.safe_objects = {
+            "car", "vehicle", "automobile",
+            "house", "home", "building",
+            "apartment", "street", "road",
+            "furniture", "phone", "computer",
+            "food", "restaurant", "coffee"
         }
 
-        # -----------------------------
-        # VISION LABEL BLOCKLIST
-        # -----------------------------
-        self.banned_labels = {
-            "electronic cigarette",
-            "vape",
-            "cigarette",
-            "tobacco product",
-            "smoking",
-            "firearm",
-            "gun",
-            "weapon",
-            "rifle",
-            "ammunition"
+        # =========================
+        # DRUG SCENE DETECTION
+        # =========================
+
+        self.drug_scene_objects = {
+            "syringe", "needle", "pill", "tablet",
+            "powder", "white powder", "bong", "pipe",
+            "cannabis", "marijuana plant"
         }
 
-    # -----------------------------
+        # =========================
+        # WEIGHTS (BALANCED)
+        # =========================
+
+        self.weights = {
+            "text_match": 0.7,
+            "nlp_entity": 1.0,
+            "vision_label": 1.0,
+            "ocr_match": 0.9,
+            "scene_match": 1.6,
+            "safe_search": 1.2
+        }
+
+    # =========================
     # NORMALIZATION
-    # -----------------------------
-    def normalize(self, text: str) -> str:
+    # =========================
+
+    def normalize(self, text):
         return text.lower().strip()
 
-    # -----------------------------
-    # FUZZY MATCH
-    # -----------------------------
-    def fuzzy_match(self, word, blacklist, threshold=0.86):
-        for item in blacklist:
-            if SequenceMatcher(None, word, item).ratio() >= threshold:
-                return item
-        return None
+    # =========================
+    # TEXT SCAN (STRICT BUT SAFE)
+    # =========================
 
-    # -----------------------------
-    # TEXT CHECK
-    # -----------------------------
-    def check_keywords(self, text: str):
+    def analyze_text(self, text):
         text = self.normalize(text)
-        reasons = set()
+        score = 0
+        reasons = []
 
-        words = re.findall(r"[a-zA-Z0-9']+", text)
+        for cat, items in self.illegal_entities.items():
+            for item in items:
+                if item in text:
+                    score += self.weights["text_match"]
+                    reasons.append(f"TEXT:{cat}:{item}")
 
-        # keyword scan
-        for category, keywords in self.rules.items():
-            for kw in keywords:
-                if kw in text:
-                    if category == "tobacco":
-                        reasons.add("TOBACCO_PRODUCT")
-                    else:
-                        reasons.add(f"{category.upper()}:{kw}")
+        return score, reasons
 
-        # brand detection
-        for w in words:
-            w = w.lower()
+    # =========================
+    # NLP (ONLY ENTITIES, NO FUZZY)
+    # =========================
 
-            if w in self.tobacco_brands:
-                reasons.add("TOBACCO_PRODUCT")
-                continue
+    def analyze_nlp(self, text):
+        document = language_v1.Document(
+            content=text,
+            type_=language_v1.Document.Type.PLAIN_TEXT
+        )
 
-            match = self.fuzzy_match(w, self.tobacco_brands)
-            if match:
-                reasons.add("TOBACCO_PRODUCT")
+        response = self.nlp.analyze_entities(document=document)
 
-        return list(reasons), len(reasons) == 0
+        score = 0
+        reasons = []
 
-    # -----------------------------
-    # IMAGE CHECK
-    # -----------------------------
-    def check_images(self, images):
-        reasons = set()
+        for entity in response.entities:
+            name = entity.name.lower()
+            salience = entity.salience
+
+            for cat, items in self.illegal_entities.items():
+                if name in items:
+                    score += self.weights["nlp_entity"] * salience
+                    reasons.append(f"NLP:{cat}:{name}")
+
+        return score, reasons
+
+    # =========================
+    # DRUG SCENE DETECTION
+    # =========================
+
+    def detect_drug_scene(self, labels):
+        labels = [l.lower() for l in labels]
+
+        score = 0
+        reasons = []
+
+        has_person = any("person" in l or "man" in l or "woman" in l for l in labels)
+        has_drug_objects = any(l in self.drug_scene_objects for l in labels)
+        has_injection = "syringe" in labels or "needle" in labels
+
+        if has_person and has_injection:
+            score += self.weights["scene_match"]
+            reasons.append("SCENE:INJECTION")
+
+        if has_person and has_drug_objects:
+            score += self.weights["scene_match"]
+            reasons.append("SCENE:DRUG_USE")
+
+        return score, reasons
+
+    # =========================
+    # IMAGE ANALYSIS
+    # =========================
+
+    def analyze_images(self, images):
+        score = 0
+        reasons = []
 
         for img in images:
             try:
@@ -132,7 +170,7 @@ class AdModerationService:
 
                 image = vision.Image(content=content)
 
-                response = self.vision_client.annotate_image({
+                response = self.vision.annotate_image({
                     "image": image,
                     "features": [
                         {"type_": vision.Feature.Type.SAFE_SEARCH_DETECTION},
@@ -141,60 +179,78 @@ class AdModerationService:
                     ],
                 })
 
-                # ---------------- SAFESEARCH ----------------
                 safe = response.safe_search_annotation
 
-                if safe.adult >= vision.Likelihood.POSSIBLE:
-                    reasons.add("NSFW:ADULT")
-                if safe.violence >= vision.Likelihood.POSSIBLE:
-                    reasons.add("NSFW:VIOLENCE")
+                # SAFE SEARCH (ONLY HIGH CONFIDENCE)
+                if safe.adult >= vision.Likelihood.LIKELY:
+                    score += self.weights["safe_search"]
+                    reasons.append("VISION:ADULT")
 
-                # ---------------- LABELS ----------------
-                labels = [
-                    l.description.lower()
-                    for l in response.label_annotations
-                ]
+                if safe.violence >= vision.Likelihood.LIKELY:
+                    score += self.weights["safe_search"]
+                    reasons.append("VISION:VIOLENCE")
 
+                # LABELS
+                labels = [l.description.lower() for l in response.label_annotations]
+
+                # scene detection
+                scene_score, scene_reasons = self.detect_drug_scene(labels)
+                score += scene_score
+                reasons.extend(scene_reasons)
+
+                # hard labels only
                 for l in labels:
-                    if l in self.banned_labels:
-                        reasons.add("VISUAL:PROHIBITED_OBJECT")
+                    for cat, items in self.illegal_entities.items():
+                        if l in items:
+                            score += self.weights["vision_label"]
+                            reasons.append(f"VISION:{cat}:{l}")
 
-                # ---------------- OCR ----------------
+                # SAFE OBJECT FILTER (important anti-false-positive layer)
+                labels = [l for l in labels if l not in self.safe_objects]
+
+                # OCR (STRICT WORD MATCH ONLY)
                 if response.text_annotations:
                     text = response.text_annotations[0].description.lower()
+                    words = set(re.findall(r"\b[a-zA-Z0-9']+\b", text))
 
-                    for bad in self.ocr_blacklist:
-                        if bad in text:
-                            reasons.add("TOBACCO_PRODUCT")
+                    for cat, items in self.illegal_entities.items():
+                        for item in items:
+                            if item in words:
+                                score += self.weights["ocr_match"]
+                                reasons.append(f"OCR:{cat}:{item}")
 
             except Exception:
-                reasons.add("IMAGE_PROCESSING_ERROR")
+                score += 0.2
+                reasons.append("VISION_ERROR")
 
-            if len(reasons) > 5:
-                break
+        return score, reasons
 
-        return list(reasons), len(reasons) == 0
+    # =========================
+    # MAIN DECISION ENGINE
+    # =========================
 
-    # -----------------------------
-    # MAIN MODERATION
-    # -----------------------------
     def moderate(self, ad):
         text = f"{ad.title} {ad.description}"
 
-        text_reasons, text_ok = self.check_keywords(text)
-        img_reasons, img_ok = self.check_images(ad.images.all())
+        text_score, text_reasons = self.analyze_text(text)
+        nlp_score, nlp_reasons = self.analyze_nlp(text)
+        img_score, img_reasons = self.analyze_images(ad.images.all())
 
-        reasons = set(text_reasons + img_reasons)
+        total = text_score + nlp_score + img_score
+        reasons = text_reasons + nlp_reasons + img_reasons
 
-        # final normalization (optional safety layer)
-        final_reasons = []
+        # =========================
+        # THRESHOLDS (TUNED)
+        # =========================
 
-        for r in reasons:
-            if "tobacco" in r.lower():
-                final_reasons.append("TOBACCO PRODUCT")
-            else:
-                final_reasons.append(r)
+        BLOCK = 2.0
+        REVIEW = 1.2
 
-        final_reasons = list(set(final_reasons))
+        # safety rule: never block on text alone
+        if total >= BLOCK and (img_score > 0.8 or nlp_score > 0.8):
+            return False, list(set(reasons))
 
-        return len(final_reasons) == 0, final_reasons
+        if total >= REVIEW:
+            return None, list(set(reasons))
+
+        return True, []
