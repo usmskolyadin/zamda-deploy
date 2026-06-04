@@ -143,17 +143,21 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()
-class FacebookAuthView(APIView):
+User = get_user_model()class FacebookAuthView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         code = request.data.get("code")
 
         if not code:
-            return Response({"detail": "No code provided"}, status=400)
+            return Response({
+                "stage": "input_validation",
+                "error": "No code provided"
+            }, status=400)
 
-        # 1. exchange code
+        # ======================
+        # 1. TOKEN EXCHANGE
+        # ======================
         token_res = requests.get(
             "https://graph.facebook.com/v19.0/oauth/access_token",
             params={
@@ -164,12 +168,18 @@ class FacebookAuthView(APIView):
             },
         ).json()
 
-        access_token = token_res.get("access_token")
+        if "access_token" not in token_res:
+            return Response({
+                "stage": "token_exchange_failed",
+                "facebook_response": token_res,
+                "hint": token_res.get("error", {}),
+            }, status=400)
 
-        if not access_token:
-            return Response(token_res, status=400)
+        access_token = token_res["access_token"]
 
-        # 2. get user info
+        # ======================
+        # 2. USER INFO
+        # ======================
         userinfo = requests.get(
             "https://graph.facebook.com/me",
             params={
@@ -178,17 +188,32 @@ class FacebookAuthView(APIView):
             },
         ).json()
 
+        if "error" in userinfo:
+            return Response({
+                "stage": "userinfo_failed",
+                "facebook_response": userinfo,
+            }, status=400)
+
         facebook_id = userinfo.get("id")
         email = userinfo.get("email")
         name = userinfo.get("name", "")
 
         if not facebook_id:
-            return Response({"detail": "Invalid Facebook response"}, status=400)
+            return Response({
+                "stage": "missing_facebook_id",
+                "facebook_response": userinfo,
+            }, status=400)
 
         if not email:
-            return Response({"detail": "Facebook did not return email"}, status=400)
+            return Response({
+                "stage": "missing_email",
+                "facebook_response": userinfo,
+                "hint": "User likely has no email permission or account type"
+            }, status=400)
 
-        # 3. NOW we can safely check linking conflict
+        # ======================
+        # 3. LINK CHECK
+        # ======================
         existing = UserVerification.objects.filter(
             facebook_id=facebook_id
         ).exclude(
@@ -196,11 +221,14 @@ class FacebookAuthView(APIView):
         ).first()
 
         if existing:
-            return Response(
-                {"detail": "Facebook already linked to another account"},
-                status=400
-            )
+            return Response({
+                "stage": "account_link_conflict",
+                "detail": "Facebook already linked to another account"
+            }, status=400)
 
+        # ======================
+        # 4. USER CREATION
+        # ======================
         user = User.objects.filter(email=email).first()
 
         if user:
@@ -217,7 +245,9 @@ class FacebookAuthView(APIView):
         verification.facebook_id = facebook_id
         verification.save()
 
-        # 6. JWT
+        # ======================
+        # 5. JWT
+        # ======================
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -231,6 +261,7 @@ class FacebookAuthView(APIView):
                 }
             },
         })
+    
 import re
 
 import phonenumbers
