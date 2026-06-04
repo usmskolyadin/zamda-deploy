@@ -32,12 +32,12 @@ export default function FacebookCallbackPage() {
         if (!res.ok || !data.access) {
           router.replace(state || "/login");
           return;
-        }
-
+      }
+          console.log("FB LOGIN RESPONSE:", data);
+          console.log("ACCESS TOKEN:", data.access);
         await login(data.access, data.refresh, data.user);
 
-        // ⚡ важно: replace, не push
-        window.location.replace(state || "/listings");
+        router.replace(state || "/listings");
 
       } catch (err) {
         console.error(err);
