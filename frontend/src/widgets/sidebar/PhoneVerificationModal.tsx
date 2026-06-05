@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { apiFetch } from "@/src/shared/api/base";
+import { apiFetchAuth } from "@/src/shared/api/auth";
 
 type Props = {
   open: boolean;
@@ -74,7 +75,7 @@ export default function PhoneVerificationModal({
 
       setLoading(true);
 
-      await apiFetch(
+      await apiFetchAuth(
         "/api/verification/phone/send/",
         {
           method: "POST",
@@ -108,7 +109,7 @@ export default function PhoneVerificationModal({
 
       setLoading(true);
 
-      await apiFetch(
+      await apiFetchAuth(
         "/api/verification/phone/check/",
         {
           method: "POST",
