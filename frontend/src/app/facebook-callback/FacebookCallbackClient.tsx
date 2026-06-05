@@ -49,7 +49,7 @@ export default function FacebookCallbackPage() {
           // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
           if (data.stage === "need_email") {
             // Перенаправляем на страницу завершения регистрации, передавая facebook_id и name
-            const redirectPath = `/auth/facebook/complete-registration?facebook_id=${data.facebook_id}&name=${encodeURIComponent(data.name || '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+            const redirectPath = `/facebook-callback/complete-registration?facebook_id=${data.facebook_id}&name=${encodeURIComponent(data.name || '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
             router.replace(redirectPath);
           } else {
             router.replace(state || "/login");
