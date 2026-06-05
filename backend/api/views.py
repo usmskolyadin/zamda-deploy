@@ -221,16 +221,25 @@ class FacebookAuthView(APIView):
         # ======================
         # 4. USER CREATION
         # ======================
-        user = User.objects.filter(email=email).first()
-        if user:
-            verification, _ = UserVerification.objects.get_or_create(user=user)
-        else:
-            user = User.objects.create(
-                email=email,
-                username=email,
-                first_name=name,
-            )
+        user, user_created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': email,
+                'first_name': name,
+            }
+        )
+
+        # Update user name if needed
+        if not user_created and name and not user.first_name:
+            user.first_name = name
+            user.save(update_fields=['first_name'])
+
+        # Get or create verification
+        try:
+            verification = UserVerification.objects.get(user=user)
+        except UserVerification.DoesNotExist:
             verification = UserVerification.objects.create(user=user)
+
         verification.facebook_verified = True
         verification.facebook_id = facebook_id
         verification.save()
@@ -270,27 +279,34 @@ class FacebookCompleteRegistrationView(APIView):
                 status=400
             )
 
-        existing = User.objects.filter(email=email).first()
+        # Get or create user
+        user, user_created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': email,
+                'first_name': name or "",
+            }
+        )
+        
+        # If user already existed but name is empty and we have name from Facebook, update it
+        if not user_created and name and not user.first_name:
+            user.first_name = name
+            user.save(update_fields=['first_name'])
 
-        if existing:
-            user = existing
-            verification, _ = UserVerification.objects.get_or_create(
-                user=user
-            )
-        else:
-            user = User.objects.create(
-                username=email,
-                email=email,
-                first_name=name or "",
-            )
-
+        # Get or create verification - FIXED: properly handle existing verification
+        try:
+            verification = UserVerification.objects.get(user=user)
+            # Update existing verification
+            verification.facebook_verified = True
+            verification.facebook_id = facebook_id
+            verification.save()
+        except UserVerification.DoesNotExist:
+            # Create new verification
             verification = UserVerification.objects.create(
-                user=user
+                user=user,
+                facebook_verified=True,
+                facebook_id=facebook_id
             )
-
-        verification.facebook_verified = True
-        verification.facebook_id = facebook_id
-        verification.save()
 
         refresh = RefreshToken.for_user(user)
 
