@@ -3,7 +3,11 @@ import FacebookCompleteRegistrationPage from "./CompleteFacebookClient";
 
 export default function Page() {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <p className="bg-white h-screen flex items-center justify-center text-black">
+        Signing in with Facebook…
+      </p>
+    }>
       <FacebookCompleteRegistrationPage />
     </Suspense>
   );
