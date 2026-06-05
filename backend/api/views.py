@@ -147,6 +147,7 @@ User = get_user_model()
 
 class FacebookAuthView(APIView):
     permission_classes = [AllowAny]
+    
     def post(self, request):
         code = request.data.get("code")
         if not code:
@@ -154,6 +155,7 @@ class FacebookAuthView(APIView):
                 "stage": "input_validation",
                 "error": "No code provided"
             }, status=400)
+        
         # ======================
         # 1. TOKEN EXCHANGE
         # ======================
@@ -166,13 +168,16 @@ class FacebookAuthView(APIView):
                 "code": code,
             },
         ).json()
+        
         if "access_token" not in token_res:
             return Response({
                 "stage": "token_exchange_failed",
                 "facebook_response": token_res,
                 "hint": token_res.get("error", {}),
             }, status=400)
+        
         access_token = token_res["access_token"]
+        
         # ======================
         # 2. USER INFO
         # ======================
@@ -183,43 +188,77 @@ class FacebookAuthView(APIView):
                 "access_token": access_token,
             },
         ).json()
+        
         if "error" in userinfo:
             return Response({
                 "stage": "userinfo_failed",
                 "facebook_response": userinfo,
             }, status=400)
+        
         facebook_id = userinfo.get("id")
         email = userinfo.get("email")
         name = userinfo.get("name", "")
+        
         if not facebook_id:
             return Response({
                 "stage": "missing_facebook_id",
                 "facebook_response": userinfo,
             }, status=400)
-        # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+        
+        # ======================
+        # 3. CHECK EXISTING FACEBOOK LINK FIRST
+        # ======================
+        # Проверяем, есть ли уже пользователь с таким facebook_id
+        existing_verification = UserVerification.objects.filter(facebook_id=facebook_id).first()
+        
+        if existing_verification:
+            # Пользователь уже привязал этот Facebook аккаунт
+            user = existing_verification.user
+            
+            # Обновляем токены
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "email": user.email,
+                    "name": user.first_name,
+                    "verification": {
+                        "facebook_verified": True,
+                    }
+                },
+            })
+        
+        # ======================
+        # 4. CHECK IF EMAIL EXISTS (FOR NEW LINK)
+        # ======================
+        # Если email не получен от Facebook, но у нас есть пользователь с таким email в БД?
+        # Нет, нужно запросить email у пользователя
         if not email:
             return Response({
-                "stage": "need_email", # Новый статус
-                "facebook_id": facebook_id, # Важно передать facebook_id
-                "name": name, # Передаем имя, если есть
-                "hint": "User likely has no email permission or account type, please provide email."
-            }, status=400) # Используем 400, так как это все еще неполные данные для регистрации
-        # ----------------------
+                "stage": "need_email",
+                "facebook_id": facebook_id,
+                "name": name,
+                "hint": "Please provide your email to complete registration"
+            }, status=400)
+        
         # ======================
-        # 3. LINK CHECK
+        # 5. CHECK FOR CONFLICT (Facebook ID already linked to different email)
         # ======================
         existing = UserVerification.objects.filter(
             facebook_id=facebook_id
         ).exclude(
             user__email=email
         ).first()
+        
         if existing:
             return Response({
                 "stage": "account_link_conflict",
                 "detail": "Facebook already linked to another account"
             }, status=400)
+        
         # ======================
-        # 4. USER CREATION
+        # 6. GET OR CREATE USER
         # ======================
         user, user_created = User.objects.get_or_create(
             email=email,
@@ -228,23 +267,24 @@ class FacebookAuthView(APIView):
                 'first_name': name,
             }
         )
-
+        
         # Update user name if needed
         if not user_created and name and not user.first_name:
             user.first_name = name
             user.save(update_fields=['first_name'])
-
+        
         # Get or create verification
         try:
             verification = UserVerification.objects.get(user=user)
         except UserVerification.DoesNotExist:
             verification = UserVerification.objects.create(user=user)
-
+        
         verification.facebook_verified = True
         verification.facebook_id = facebook_id
         verification.save()
+        
         # ======================
-        # 5. JWT
+        # 7. JWT
         # ======================
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -258,8 +298,8 @@ class FacebookAuthView(APIView):
                 }
             },
         })
-
-class FacebookCompleteRegistrationView(APIView):
+    
+    class FacebookCompleteRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -279,7 +319,26 @@ class FacebookCompleteRegistrationView(APIView):
                 status=400
             )
 
-        # Get or create user
+        # Сначала проверяем, не привязан ли уже Facebook ID к какому-то пользователю
+        existing_verification = UserVerification.objects.filter(facebook_id=facebook_id).first()
+        
+        if existing_verification:
+            # Facebook уже привязан, просто возвращаем токены для этого пользователя
+            user = existing_verification.user
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "email": user.email,
+                    "name": user.first_name,
+                    "verification": {
+                        "facebook_verified": True,
+                    }
+                }
+            })
+        
+        # Проверяем, существует ли пользователь с таким email
         user, user_created = User.objects.get_or_create(
             email=email,
             defaults={
@@ -288,28 +347,23 @@ class FacebookCompleteRegistrationView(APIView):
             }
         )
         
-        # If user already existed but name is empty and we have name from Facebook, update it
+        # Обновляем имя если нужно
         if not user_created and name and not user.first_name:
             user.first_name = name
             user.save(update_fields=['first_name'])
-
-        # Get or create verification - FIXED: properly handle existing verification
+        
+        # Получаем или создаем верификацию
         try:
             verification = UserVerification.objects.get(user=user)
-            # Update existing verification
-            verification.facebook_verified = True
-            verification.facebook_id = facebook_id
-            verification.save()
         except UserVerification.DoesNotExist:
-            # Create new verification
-            verification = UserVerification.objects.create(
-                user=user,
-                facebook_verified=True,
-                facebook_id=facebook_id
-            )
-
+            verification = UserVerification.objects.create(user=user)
+        
+        verification.facebook_verified = True
+        verification.facebook_id = facebook_id
+        verification.save()
+        
         refresh = RefreshToken.for_user(user)
-
+        
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
