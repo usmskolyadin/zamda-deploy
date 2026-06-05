@@ -1,14 +1,14 @@
 import { Suspense } from "react";
-import FacebookCompleteRegistrationPage from "./CompleteFacebookClient";
+import FacebookCompleteRegistrationClient from "./FacebookCompleteRegistrationClient";
 
-export default function Page() {
+export default function CompleteRegistrationPage() {
   return (
     <Suspense fallback={
-      <p className="bg-white h-screen flex items-center justify-center text-black">
-        Signing in with Facebook…
-      </p>
+      <div className="bg-white h-screen flex items-center justify-center text-black">
+        <p>Loading...</p>
+      </div>
     }>
-      <FacebookCompleteRegistrationPage />
+      <FacebookCompleteRegistrationClient />
     </Suspense>
   );
 }

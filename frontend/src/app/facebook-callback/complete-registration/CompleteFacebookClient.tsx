@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import { useAuth } from "@/src/features/context/auth-context";
-import Link from "next/link"; // Добавим Link для навигации
+import Link from "next/link";
 
-export default function FacebookCompleteRegistrationPage() {
+export default function FacebookCompleteRegistrationClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -47,7 +47,7 @@ export default function FacebookCompleteRegistrationPage() {
         body: JSON.stringify({
           facebook_id,
           email,
-          name: name || "", // Передаем имя, если оно есть
+          name: name || "",
         }),
       });
 
@@ -70,7 +70,7 @@ export default function FacebookCompleteRegistrationPage() {
       console.log("FB COMPLETE REGISTRATION RESPONSE:", data);
       await login(data.access, data.refresh, data.user);
 
-      router.replace(state || "/listings"); // Перенаправляем на listings или на исходный state
+      router.replace(state || "/listings");
 
     } catch (err) {
       console.error(err);
