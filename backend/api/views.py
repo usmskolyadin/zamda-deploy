@@ -299,7 +299,7 @@ class FacebookAuthView(APIView):
             },
         })
     
-    class FacebookCompleteRegistrationView(APIView):
+class FacebookCompleteRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
