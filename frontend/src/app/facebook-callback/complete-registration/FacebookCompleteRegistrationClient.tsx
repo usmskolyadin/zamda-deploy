@@ -41,7 +41,7 @@ export default function FacebookCompleteRegistrationClient() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/facebook/complete_registration/`, {
+      const res = await fetch(`${API_URL}/api/auth/facebook/complete/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
