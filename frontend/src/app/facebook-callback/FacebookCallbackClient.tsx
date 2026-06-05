@@ -46,7 +46,15 @@ export default function FacebookCallbackPage() {
 
         if (!res.ok) {
           console.error("FB BACKEND ERROR:", data);
-          router.replace(state || "/login");
+          // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+          if (data.stage === "need_email") {
+            // Перенаправляем на страницу завершения регистрации, передавая facebook_id и name
+            const redirectPath = `/auth/facebook/complete-registration?facebook_id=${data.facebook_id}&name=${encodeURIComponent(data.name || '')}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+            router.replace(redirectPath);
+          } else {
+            router.replace(state || "/login");
+          }
+          // ----------------------
           return;
         }
           console.log("FB LOGIN RESPONSE:", data);
@@ -62,7 +70,7 @@ export default function FacebookCallbackPage() {
     };
 
     exchange();
-  }, [searchParams]);
+  }, [searchParams, router, login]); // Добавляем зависимости для useEffect
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-black text-white">

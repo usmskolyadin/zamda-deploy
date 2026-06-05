@@ -158,7 +158,7 @@ class FacebookAuthView(APIView):
         # 1. TOKEN EXCHANGE
         # ======================
         token_res = requests.get(
-            "[graph.facebook.com](https://graph.facebook.com/v19.0/oauth/access_token)",
+            "https://graph.facebook.com/v19.0/oauth/access_token",
             params={
                 "client_id": settings.FACEBOOK_CLIENT_ID,
                 "client_secret": settings.FACEBOOK_CLIENT_SECRET,
@@ -177,7 +177,7 @@ class FacebookAuthView(APIView):
         # 2. USER INFO
         # ======================
         userinfo = requests.get(
-            "[graph.facebook.com](https://graph.facebook.com/me)",
+            "https://graph.facebook.com/me",
             params={
                 "fields": "id,name,email",
                 "access_token": access_token,
