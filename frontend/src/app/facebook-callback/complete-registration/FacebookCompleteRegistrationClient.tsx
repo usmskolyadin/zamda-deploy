@@ -25,60 +25,64 @@ export default function FacebookCompleteRegistrationClient() {
     }
   }, [facebook_id, router, state]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
 
-    if (!email.trim()) {
-      setError("Email is required.");
-      return;
-    }
+  if (!email.trim()) {
+    setError("Email is required.");
+    return;
+  }
 
-    if (!facebook_id) {
-      setError("Missing Facebook ID. Please try again from the start.");
-      return;
-    }
+  if (!facebook_id) {
+    setError("Missing Facebook ID. Please try again from the start.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
+  try {
+    const res = await fetch(`${API_URL}/api/auth/facebook/complete/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        facebook_id,
+        email,
+        name: name || "",
+      }),
+    });
+
+    const raw = await res.text();
+    let data;
     try {
-      const res = await fetch(`${API_URL}/api/auth/facebook/complete/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          facebook_id,
-          email,
-          name: name || "",
-        }),
-      });
-
-      const raw = await res.text();
-      let data;
-      try {
-        data = JSON.parse(raw);
-      } catch (e) {
-        console.error("NOT JSON RESPONSE:", raw);
-        setError("An unexpected error occurred. Please try again.");
-        return;
-      }
-
-      if (!res.ok) {
-        console.error("FB COMPLETE REGISTRATION BACKEND ERROR:", data);
-        setError(data.detail || data.error || "Failed to complete registration.");
-        return;
-      }
-
-      console.log("FB COMPLETE REGISTRATION RESPONSE:", data);
-      await login(data.access, data.refresh, data.user);
-
-      router.replace(state || "/listings");
-
-    } catch (err) {
-      console.error(err);
-      setError("Network or server error. Please try again.");
-    } finally {
-      setLoading(false);
+      data = JSON.parse(raw);
+    } catch (e) {
+      console.error("NOT JSON RESPONSE:", raw);
+      setError("An unexpected error occurred. Please try again.");
+      return;
     }
-  };
+
+    if (!res.ok) {
+      console.error("FB COMPLETE REGISTRATION BACKEND ERROR:", data);
+      setError(data.detail || data.error || "Failed to complete registration.");
+      return;
+    }
+
+    console.log("FB COMPLETE REGISTRATION RESPONSE:", data);
+    
+    // Не используем await для login, так как он синхронный
+    login(data.access, data.refresh, data.user);
+    
+    setTimeout(() => {
+      router.replace(state || "/listings");
+    }, 100);
+
+  } catch (err) {
+    console.error(err);
+    setError("Network or server error. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!facebook_id) {
     return (
