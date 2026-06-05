@@ -147,21 +147,18 @@ User = get_user_model()
 
 class FacebookAuthView(APIView):
     permission_classes = [AllowAny]
-
     def post(self, request):
         code = request.data.get("code")
-
         if not code:
             return Response({
                 "stage": "input_validation",
                 "error": "No code provided"
             }, status=400)
-
         # ======================
         # 1. TOKEN EXCHANGE
         # ======================
         token_res = requests.get(
-            "https://graph.facebook.com/v19.0/oauth/access_token",
+            "[graph.facebook.com](https://graph.facebook.com/v19.0/oauth/access_token)",
             params={
                 "client_id": settings.FACEBOOK_CLIENT_ID,
                 "client_secret": settings.FACEBOOK_CLIENT_SECRET,
@@ -169,50 +166,45 @@ class FacebookAuthView(APIView):
                 "code": code,
             },
         ).json()
-
         if "access_token" not in token_res:
             return Response({
                 "stage": "token_exchange_failed",
                 "facebook_response": token_res,
                 "hint": token_res.get("error", {}),
             }, status=400)
-
         access_token = token_res["access_token"]
-
         # ======================
         # 2. USER INFO
         # ======================
         userinfo = requests.get(
-            "https://graph.facebook.com/me",
+            "[graph.facebook.com](https://graph.facebook.com/me)",
             params={
                 "fields": "id,name,email",
                 "access_token": access_token,
             },
         ).json()
-
         if "error" in userinfo:
             return Response({
                 "stage": "userinfo_failed",
                 "facebook_response": userinfo,
             }, status=400)
-
         facebook_id = userinfo.get("id")
         email = userinfo.get("email")
         name = userinfo.get("name", "")
-
         if not facebook_id:
             return Response({
                 "stage": "missing_facebook_id",
                 "facebook_response": userinfo,
             }, status=400)
-
+        # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
         if not email:
             return Response({
-                "stage": "missing_email",
-                "facebook_response": userinfo,
-                "hint": "User likely has no email permission or account type"
-            }, status=400)
-
+                "stage": "need_email", # Новый статус
+                "facebook_id": facebook_id, # Важно передать facebook_id
+                "name": name, # Передаем имя, если есть
+                "hint": "User likely has no email permission or account type, please provide email."
+            }, status=400) # Используем 400, так как это все еще неполные данные для регистрации
+        # ----------------------
         # ======================
         # 3. LINK CHECK
         # ======================
@@ -221,18 +213,15 @@ class FacebookAuthView(APIView):
         ).exclude(
             user__email=email
         ).first()
-
         if existing:
             return Response({
                 "stage": "account_link_conflict",
                 "detail": "Facebook already linked to another account"
             }, status=400)
-
         # ======================
         # 4. USER CREATION
         # ======================
         user = User.objects.filter(email=email).first()
-
         if user:
             verification, _ = UserVerification.objects.get_or_create(user=user)
         else:
@@ -242,16 +231,13 @@ class FacebookAuthView(APIView):
                 first_name=name,
             )
             verification = UserVerification.objects.create(user=user)
-
         verification.facebook_verified = True
         verification.facebook_id = facebook_id
         verification.save()
-
         # ======================
         # 5. JWT
         # ======================
         refresh = RefreshToken.for_user(user)
-
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
@@ -263,7 +249,63 @@ class FacebookAuthView(APIView):
                 }
             },
         })
-    
+
+class FacebookCompleteRegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        facebook_id = request.data.get("facebook_id")
+        email = request.data.get("email")
+        name = request.data.get("name")
+
+        if not facebook_id:
+            return Response(
+                {"detail": "facebook_id required"},
+                status=400
+            )
+
+        if not email:
+            return Response(
+                {"detail": "email required"},
+                status=400
+            )
+
+        existing = User.objects.filter(email=email).first()
+
+        if existing:
+            user = existing
+            verification, _ = UserVerification.objects.get_or_create(
+                user=user
+            )
+        else:
+            user = User.objects.create(
+                username=email,
+                email=email,
+                first_name=name or "",
+            )
+
+            verification = UserVerification.objects.create(
+                user=user
+            )
+
+        verification.facebook_verified = True
+        verification.facebook_id = facebook_id
+        verification.save()
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "email": user.email,
+                "name": user.first_name,
+                "verification": {
+                    "facebook_verified": True,
+                }
+            }
+        })
+
 import re
 
 import phonenumbers
@@ -1736,3 +1778,4 @@ class EmailChangeConfirmView(generics.GenericAPIView):
         record.delete()
 
         return Response({"detail": "Email updated"}, status=200)
+    
