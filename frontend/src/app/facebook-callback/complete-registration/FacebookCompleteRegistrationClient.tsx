@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import { useAuth } from "@/src/features/context/auth-context";
@@ -19,70 +19,83 @@ export default function FacebookCompleteRegistrationClient() {
   const name = searchParams.get("name");
   const state = searchParams.get("state");
 
-  useEffect(() => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
     if (!facebook_id) {
-      router.replace(state || "/login");
+      setError("Missing Facebook ID. Please try again from the start.");
+      return;
     }
-  }, [facebook_id, router, state]);
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
-
-  if (!email.trim()) {
-    setError("Email is required.");
-    return;
-  }
-
-  if (!facebook_id) {
-    setError("Missing Facebook ID. Please try again from the start.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const res = await fetch(`${API_URL}/api/auth/facebook/complete/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        facebook_id,
-        email,
-        name: name || "",
-      }),
-    });
-
-    const raw = await res.text();
-    let data;
+    setLoading(true);
     try {
-      data = JSON.parse(raw);
-    } catch (e) {
-      console.error("NOT JSON RESPONSE:", raw);
-      setError("An unexpected error occurred. Please try again.");
-      return;
+      // 1. Завершаем регистрацию и получаем токены
+      const tokenRes = await fetch(`${API_URL}/api/auth/facebook/complete/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          facebook_id,
+          email,
+          name: name || "",
+        }),
+      });
+
+      const raw = await tokenRes.text();
+      let tokenData;
+      try {
+        tokenData = JSON.parse(raw);
+      } catch (e) {
+        console.error("NOT JSON RESPONSE:", raw);
+        setError("An unexpected error occurred. Please try again.");
+        return;
+      }
+
+      if (!tokenRes.ok) {
+        console.error("FB COMPLETE REGISTRATION BACKEND ERROR:", tokenData);
+        setError(tokenData.detail || tokenData.error || "Failed to complete registration.");
+        return;
+      }
+
+      console.log("FB COMPLETE REGISTRATION RESPONSE:", tokenData);
+      
+      // 2. Проверяем, что получили access токен
+      if (!tokenData.access) {
+        throw new Error("No access token");
+      }
+
+      // 3. Получаем полные данные пользователя
+      const userRes = await fetch(`${API_URL}/api/users/me/`, {
+        headers: {
+          Authorization: `Bearer ${tokenData.access}`,
+        },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("User fetch failed");
+      }
+
+      const userData = await userRes.json();
+      console.log("USER DATA:", userData);
+      
+      // 4. Выполняем login
+      await login(tokenData.access, tokenData.refresh, userData);
+      
+      // 5. Полная перезагрузка страницы
+      window.location.replace(state || "/listings");
+
+    } catch (err) {
+      console.error(err);
+      setError("Network or server error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    if (!res.ok) {
-      console.error("FB COMPLETE REGISTRATION BACKEND ERROR:", data);
-      setError(data.detail || data.error || "Failed to complete registration.");
-      return;
-    }
-
-    console.log("FB COMPLETE REGISTRATION RESPONSE:", data);
-    
-    // Не используем await для login, так как он синхронный
-    login(data.access, data.refresh, data.user);
-    
-    setTimeout(() => {
-      router.replace(state || "/listings");
-    }, 100);
-
-  } catch (err) {
-    console.error(err);
-    setError("Network or server error. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   if (!facebook_id) {
     return (
