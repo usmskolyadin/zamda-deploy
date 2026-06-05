@@ -119,47 +119,52 @@ export default function VerificationBadges({
   };
 
   return (
-    <div className={`flex items-center gap-4 ${className}`}>
-      {badges.map((badge) => {
-        const verified = badge.getVerified(verification);
-        const Icon = badge.icon;
-        const href = links[badge.key as keyof typeof links];
+  <div className={`flex flex-col gap-3 ${className}`}>
+    {badges.map((badge) => {
+      const verified = badge.getVerified(verification);
+      const Icon = badge.icon;
+      const href = links[badge.key as keyof typeof links];
 
-        const clickable = verified && href;
+      const clickable = verified && href;
 
-        return (
-          <button
-            key={badge.key}
-            type="button"
-            title={
-              verified
-                ? `Open ${badge.label} profile`
-                : `${badge.label} not verified`
+      return (
+        <button
+          key={badge.key}
+          type="button"
+          title={
+            verified
+              ? `Open ${badge.label} profile`
+              : `${badge.label} not verified`
+          }
+          onClick={() => {
+            if (clickable) {
+              window.open(
+                href!,
+                "_blank",
+                "noopener,noreferrer"
+              );
             }
-            onClick={() => {
-              if (clickable) {
-                window.open(href!, "_blank", "noopener,noreferrer");
-              }
-            }}
-            className={`
-              relative
-              transition
-              hover:scale-110
-              ${
-                clickable
-                  ? "cursor-pointer"
-                  : "cursor-default"
-              }
-            `}
-                      >
+          }}
+          className={`
+            flex items-center gap-3
+            transition bg-gray-100 rounded-2xl px-4 py-2.5
+            ${
+              clickable
+                ? "cursor-pointer hover:opacity-80"
+                : "cursor-default"
+            }
+          `}
+        >
+          {/* Иконка + галочка */}
+          <div className="relative">
             {badge.key === "google" ? (
               <GoogleIcon
-                size={28}
+                size={24}
                 verified={verified}
               />
             ) : (
               <Icon
-                size={28}
+                size={24}
                 className={
                   verified
                     ? badge.colorClass
@@ -181,9 +186,21 @@ export default function VerificationBadges({
                 "
               />
             )}
-          </button>
-        );
-      })}
-    </div>
-  );
+          </div>
+
+          {/* Статус */}
+          <span
+            className={`text-sm font-medium ${
+              verified
+                ? "text-green-600"
+                : "text-gray-500"
+            }`}
+          >
+            {verified ? "Confirmed" : "Not confirmed"}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+);
 }

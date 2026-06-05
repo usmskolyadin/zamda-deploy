@@ -20,10 +20,33 @@ export default function AdActions({ ad }: AdPageProps) {
   const router = useRouter();
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
-  
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+
   const isOwner = user?.username === ad.owner.username;
   const userPhoneVerified = user?.verification?.phone_verified;
   const sellerPhone = ad.owner.verification?.phone_number;
+
+  const toggleFollow = async () => {
+    try {
+      const res = await apiFetchAuth<{
+        following: boolean;
+      }>(
+        `/api/users/${ad.owner.username}/follow/`,
+        {
+          method: "POST",
+        }
+      );
+
+      setIsFollowing(res.following);
+
+      setFollowersCount((prev) =>
+        res.following ? prev + 1 : prev - 1
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleQuickMessage = async (text: string) => {
     if (!accessToken) {
@@ -93,62 +116,62 @@ export default function AdActions({ ad }: AdPageProps) {
         <>
           {accessToken ? (
             userPhoneVerified ? (
-sellerPhone ? (
-  <div className="overflow-hidden">
-    {!showPhone ? (
-      <button
-        onClick={() => setShowPhone(true)}
-        className="
-          w-full
-          p-3.5
-          bg-[#36B731]
-          rounded-3xl
-          text-white
-          cursor-pointer
-          transition-all
-          duration-300
-          hover:bg-green-500
-          active:scale-[0.98]
-        "
-      >
-        Show phone
-      </button>
-    ) : (
-      <div
-        className="
-          rounded-3xl
-          border
-          border-green-200
-          bg-green-50
-          p-4
-          text-center
-          animate-in
-          fade-in
-          zoom-in-95
-          duration-300
-        "
-      >
-        <div className="text-xs uppercase tracking-wider text-green-700 mb-1">
-          Seller phone
-        </div>
+              sellerPhone ? (
+                <div className="overflow-hidden">
+                  {!showPhone ? (
+                    <button
+                      onClick={() => setShowPhone(true)}
+                      className="
+                        w-full
+                        p-3.5
+                        bg-[#36B731]
+                        rounded-3xl
+                        text-white
+                        cursor-pointer
+                        transition-all
+                        duration-300
+                        hover:bg-green-500
+                        active:scale-[0.98]
+                      "
+                    >
+                      Show phone
+                    </button>
+                  ) : (
+                    <div
+                      className="
+                        rounded-3xl
+                        border
+                        border-green-200
+                        bg-green-50
+                        p-4
+                        text-center
+                        animate-in
+                        fade-in
+                        zoom-in-95
+                        duration-300
+                      "
+                    >
+                      <div className="text-xs uppercase tracking-wider text-green-700 mb-1">
+                        Seller phone
+                      </div>
 
-        <a
-          href={`tel:${sellerPhone}`}
-          className="
-            block
-            text-xl
-            font-bold
-            text-black
-            hover:text-[#36B731]
-            transition
-          "
-        >
-          {sellerPhone}
-        </a>
-      </div>
-    )}
-  </div>
-) : (
+                      <a
+                        href={`tel:${sellerPhone}`}
+                        className="
+                          block
+                          text-xl
+                          font-bold
+                          text-black
+                          hover:text-[#36B731]
+                          transition
+                        "
+                      >
+                        {sellerPhone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : (
               <button
                 disabled
                 className="w-full p-3.5 bg-[#36B731] opacity-50 rounded-3xl hover:bg-green-500 transition text-white"
@@ -207,7 +230,6 @@ sellerPhone ? (
             </div>
           </div>
         </Link>
-        <VerificationBadges verification={ad.owner.verification} />
         <img
           src={`${ad.owner.profile?.avatar}`}
           width={200}
@@ -216,6 +238,30 @@ sellerPhone ? (
           className="w-12 h-12 rounded-full object-cover"
         />
       </div>
+              
+              {!isOwner && (
+              <div className="w-full gap-2 pb-4">
+                <button
+                  onClick={toggleFollow}
+                  className={`
+                    px-1 w-full
+                    py-3.5
+                    rounded-3xl
+                    font-medium
+                    transition cursor-pointer
+                    ${
+                      isFollowing
+                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        : "bg-gray-200 text-black hover:bg-gray-300"
+                    }
+                  `}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+            </div>
+              )}
+
+        <VerificationBadges verification={ad.owner.verification} />
  
       {!isOwner && (
         <div>

@@ -223,8 +223,35 @@ class AdvertisementExtraField(models.Model):
         return f"{self.field_definition.name}: {self.value}"
 
 
+class UserFollow(models.Model):
+    follower = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="following_relations"
+    )
+
+    following = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="follower_relations"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "following")
+
+    def __str__(self):
+        return f"{self.follower.username} -> {self.following.username}"
+    
+    
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+
     avatar = models.ImageField(
         upload_to='avatars/',
         blank=True,
@@ -234,6 +261,14 @@ class UserProfile(models.Model):
     )
 
     city = models.CharField(max_length=100, blank=True)
+
+    @property
+    def followers_count(self):
+        return self.user.follower_relations.count()
+
+    @property
+    def following_count(self):
+        return self.user.following_relations.count()
 
     def __str__(self):
         return f"{self.user.username} Profile"

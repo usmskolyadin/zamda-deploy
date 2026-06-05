@@ -266,6 +266,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     verification = UserVerificationSerializer(source="user.verification", read_only=True)
     rating = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
+    followers_count = serializers.IntegerField(read_only=True)
+    following_count = serializers.IntegerField(read_only=True)
 
 
     def update(self, instance, validated_data):
@@ -291,6 +293,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             "rating",
             "reviews_count",
             "reviews",
+            "followers_count",
+            "following_count",
         ]
 
     def get_rating(self, obj):

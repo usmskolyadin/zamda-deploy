@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeConfirmView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, GoogleAuthView, MessageViewSet, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
+    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeConfirmView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -29,6 +29,9 @@ urlpatterns = [
         "auth/facebook/complete/",
         FacebookCompleteRegistrationView.as_view()
     ),
+    path("users/<str:username>/follow/", ToggleFollowView.as_view()),
+    path("users/<str:username>/followers/", FollowersView.as_view()),
+    path("users/<str:username>/following/", FollowingView.as_view()),
     path("advertising/<slug:slug>/", AdBySlugView.as_view()),
     path("newsletter/send-all/", SendNewsletterToAllView.as_view(), name="send-all"),
     path("newsletter/send-selected/", SendNewsletterToSelectedView.as_view(), name="send-selected"),

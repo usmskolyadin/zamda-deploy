@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import VerificationBadges from "@/src/widgets/VerificationBadges";
 import { apiFetch } from "@/src/shared/api/base";
+import { apiFetchAuth } from "@/src/shared/api/auth";
+import { useAuth } from "@/src/features/context/auth-context";
 
 export interface Profile {
   id: number;
@@ -17,6 +19,12 @@ export interface Profile {
   rating: number;
   reviews_count: number;
   city: string;
+
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  is_own_profile: boolean;
+
   verification?: {
     google_verified: boolean;
     facebook_verified: boolean;
@@ -30,17 +38,48 @@ export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [activeTab, setActiveTab] = useState("active");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const { user, accessToken, isInitialized } = useAuth();
 
 useEffect(() => {
   if (!profileId) return;
 
   const fetchProfile = async () => {
-    const res = await apiFetch<Profile>(`/api/profiles/${Number(profileId)}/`);
-    setProfile(res);
-  };
+    const res = await apiFetch<Profile>(
+      `/api/profiles/${Number(profileId)}/`
+    );
 
+    setProfile(res);
+    setIsFollowing(res.is_following);
+    setFollowersCount(res.followers_count);
+  };
   fetchProfile();
 }, [profileId]);
+
+const toggleFollow = async () => {
+  if (!profile) return;
+
+  try {
+    const res = await apiFetchAuth<{
+      following: boolean;
+    }>(
+      `/api/users/${profile.username}/follow/`,
+      {
+        method: "POST",
+      }
+    );
+
+    setIsFollowing(res.following);
+
+    setFollowersCount((prev) =>
+      res.following ? prev + 1 : prev - 1
+    );
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 
 useEffect(() => {
   if (!profile?.username) return;
@@ -71,18 +110,17 @@ useEffect(() => {
                 width={200}
                 height={200}
                 alt="Avatar"
-                className="lg:w-18 w-22 lg:h-18 h-22 rounded-full object-cover border border-gray-500"
+                className="lg:w-25 w-22 lg:h-25 h-22 rounded-full object-cover border border-gray-500"
               />
               <div className="py-2">
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-4">
                   <h2 className="text-black font-bold lg:text-2xl text-3xl">
                     {profile.first_name} {profile.last_name}
                   </h2>
-                  <VerificationBadges verification={profile.verification} />
                 </div>
                   {profile.city ? (
-                <p className=" flex text-gray-700 font-medium items-center text-lg py-2">
-                <svg className="mr-1 min-h-5 min-w-5" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <p className=" flex text-gray-700 font-medium items-center text-md mt-1 py-0.5">
+                <svg className="mr-1 min-h-4 min-w-4" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                     {profile.city} 
@@ -90,9 +128,26 @@ useEffect(() => {
                 </p>
                   ) : (<></>
                   )}
-
               </div>
+                <div className="flex gap-6 py-2 text-md">
+                  <div>
+                    <span className="font-bold text-black">
+                      {followersCount}
+                    </span>
+                    <span className="text-gray-600 ml-1">
+                      Followers
+                    </span>
+                  </div>
 
+                  <div>
+                    <span className="font-bold text-black">
+                      {profile.following_count}
+                    </span>
+                    <span className="text-gray-600 ml-1">
+                      Following
+                    </span>
+                  </div>
+                </div>
               <div className="flex items-center text-sm text-gray-700">
                 <span className="mr-1 text-black text-lg font-bold">
                   {profile.rating ?? "—"}
@@ -109,10 +164,39 @@ useEffect(() => {
                   <Link href={`/reviews/${profile.id}`}>All reviews</Link>
                 </span>
               </div>
+              {profile.id != user?.profile.id && (
+              <div className="grid grid-cols-2 gap-2 mt-2.5">
+                <button
+                  onClick={toggleFollow}
+                  className={`
+                    px-1
+                    py-1.5
+                    rounded-3xl
+                    font-medium
+                    transition cursor-pointer
+                    ${
+                      isFollowing
+                        ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                        : "bg-[#2AAEF7] text-white hover:bg-[#1698df]"
+                    }
+                  `}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+              <button
+                className="w-full  cursor-pointer font-medium px-1 bg-[#36B731] rounded-3xl hover:bg-green-500 transition text-white"
+              >
+               Phone
+              </button>
             </div>
+              )}
+            </div>
+              <div className="py-2.5">
+                 <VerificationBadges verification={profile.verification} />
+              </div>
           </div>
 
-          <div className="lg:w-3/4 lg:ml-24">
+          <div className="lg:w-3/4 lg:ml-12">
             <h1 className="text-black font-bold lg:text-3xl text-2xl py-4">
               {profile.first_name}'s Listings
             </h1>

@@ -1849,3 +1849,87 @@ class EmailChangeConfirmView(generics.GenericAPIView):
 
         return Response({"detail": "Email updated"}, status=200)
     
+from .models import UserFollow
+
+
+class ToggleFollowView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        target_user = User.objects.get(username=username)
+
+        if target_user == request.user:
+            return Response(
+                {"error": "You cannot follow yourself"},
+                status=400
+            )
+
+        relation = UserFollow.objects.filter(
+            follower=request.user,
+            following=target_user
+        )
+
+        if relation.exists():
+            relation.delete()
+            return Response({
+                "following": False
+            })
+
+        UserFollow.objects.create(
+            follower=request.user,
+            following=target_user
+        )
+
+        return Response({
+            "following": True
+        })
+    
+class FollowersView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username):
+        user = User.objects.get(username=username)
+
+        followers = User.objects.filter(
+            following_relations__following=user
+        )
+
+        data = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "avatar": (
+                    u.profile.avatar.url
+                    if u.profile.avatar
+                    else None
+                ),
+            }
+            for u in followers
+        ]
+
+        return Response(data)
+
+class FollowingView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username):
+        user = User.objects.get(username=username)
+
+        following = User.objects.filter(
+            follower_relations__follower=user
+        )
+
+        data = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "avatar": (
+                    u.profile.avatar.url
+                    if u.profile.avatar
+                    else None
+                ),
+            }
+            for u in following
+        ]
+
+        return Response(data)

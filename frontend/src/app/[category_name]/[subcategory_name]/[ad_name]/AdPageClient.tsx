@@ -131,7 +131,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
               <div className="mt-6">
                 <h2 className="text-xl font-semibold text-black mt-2 mb-1">Additional Details</h2>
                 {ad.extra_values && ad.extra_values.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                     {ad.extra_values.map(field => (
                       <div key={field.field_key} className="flex flex-col">
                         <span className="font-semibold text-gray-800">{field.field_name}</span>
