@@ -261,7 +261,10 @@ class UserProfile(models.Model):
     )
 
     city = models.CharField(max_length=100, blank=True)
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=True)
 
+    
     @property
     def followers_count(self):
         return self.user.follower_relations.count()

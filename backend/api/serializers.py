@@ -3,7 +3,7 @@ import uuid
 from rest_framework import serializers
 from .models import (
     Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
-    ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, Message, UserVerification
+    ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserFollow, UserProfile, Message, UserVerification
 )
 from django.contrib.auth.models import User
 from rest_framework import serializers
@@ -268,7 +268,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     reviews_count = serializers.SerializerMethodField()
     followers_count = serializers.IntegerField(read_only=True)
     following_count = serializers.IntegerField(read_only=True)
-
+    is_following = serializers.SerializerMethodField()
+    is_own_profile = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
@@ -295,7 +296,38 @@ class ProfileSerializer(serializers.ModelSerializer):
             "reviews",
             "followers_count",
             "following_count",
+            "is_following",
+            "is_own_profile",
+            "email_notifications",
+            "sms_notifications",
         ]
+
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+
+        if not request:
+            return False
+
+        if not request.user.is_authenticated:
+            return False
+
+        return UserFollow.objects.filter(
+            follower=request.user,
+            following=obj.user
+        ).exists()
+
+
+    def get_is_own_profile(self, obj):
+        request = self.context.get("request")
+
+        if not request:
+            return False
+
+        if not request.user.is_authenticated:
+            return False
+
+        return request.user == obj.user
 
     def get_rating(self, obj):
         reviews = obj.reviews.all()
@@ -305,7 +337,42 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_reviews_count(self, obj):
         return obj.reviews.count()
-        
+
+class UserProfileFollowingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            "id",
+            "avatar",
+            "city",
+            "followers_count",
+            "following_count",
+        ]
+
+
+class UserFollowingSerializer(serializers.ModelSerializer):
+    profile = UserProfileFollowingSerializer(read_only=True)
+    is_verified = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "profile",
+            "is_verified",
+        ]
+
+    def get_is_verified(self, obj):
+        verification = getattr(obj, "verification", None)
+        return (
+            verification.phone_verified
+            if verification
+            else False
+        )
+    
 class OwnerSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
     verification = UserVerificationSerializer(read_only=True)

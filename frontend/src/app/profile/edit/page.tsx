@@ -26,6 +26,9 @@ export default function ProfileEdit() {
     email: "",
     password: "",
     password2: "",
+
+    email_notifications: true,
+    sms_notifications: true,
   });
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -48,11 +51,18 @@ export default function ProfileEdit() {
           avatar: null,
         });
 
-        setGeneralData((prev) => ({
-          ...prev,
+        setGeneralData({
           email: data.email || "",
-        }));
+          password: "",
+          password2: "",
 
+          email_notifications:
+            data.profile?.email_notifications ?? true,
+
+          sms_notifications:
+            data.profile?.sms_notifications ?? true,
+        });
+        
         setAvatarPreview(data.profile?.avatar || null);
       } catch (err) {
         router.push("/login");
@@ -90,6 +100,7 @@ export default function ProfileEdit() {
       [name]: value,
     }));
   };
+  
 const updateProfile = async (e: React.FormEvent) => {
   e.preventDefault();
   setError("");
@@ -152,7 +163,8 @@ const updateGeneral = async (e: React.FormEvent) => {
       method: "PATCH",
       body: JSON.stringify({
         email: generalData.email,
-        password: generalData.password || undefined,
+        email_notifications: generalData.email_notifications,
+        sms_notifications: generalData.sms_notifications,
       }),
     });
 
@@ -284,7 +296,133 @@ const updateGeneral = async (e: React.FormEvent) => {
                       Change password
                     </button>
                   </div>
+                  <div className="space-y-4 border-t pt-6">
+                    <div>
+                      <p className="font-semibold text-black text-xl">
+                        Notifications
+                      </p>
 
+                      <p className="text-gray-700 text-sm font-medium">
+                        Manage how you receive notifications about messages and activity
+                      </p>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex items-center justify-between border border-gray-200 rounded-2xl px-5 py-4">
+                      <div>
+                        <p className="font-medium text-black">
+                          Email notifications
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          Receive new message alerts by email
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGeneralData((prev) => ({
+                            ...prev,
+                            email_notifications:
+                              !prev.email_notifications,
+                          }))
+                        }
+                        className={`
+                          relative
+                          w-14
+                          h-8
+                          rounded-full
+                          transition-all
+                          duration-300
+                          cursor-pointer
+                          ${
+                            generalData.email_notifications
+                              ? "bg-green-500"
+                              : "bg-gray-300"
+                          }
+                        `}
+                      >
+                        <span
+                          className={`
+                            absolute
+                            top-1
+                            left-1
+                            w-6
+                            h-6
+                            rounded-full
+                            bg-white
+                            shadow
+                            transition-transform
+                            duration-300
+                            ${
+                              generalData.email_notifications
+                                ? "translate-x-6"
+                                : ""
+                            }
+                          `}
+                        />
+                      </button>
+                    </div>
+
+                    {/* SMS */}
+                    <div className="flex items-center justify-between border border-gray-200 rounded-2xl px-5 py-4">
+                      <div>
+                        <p className="font-medium text-black">
+                          SMS notifications
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          Receive new message alerts by text message
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGeneralData((prev) => ({
+                            ...prev,
+                            sms_notifications:
+                              !prev.sms_notifications,
+                          }))
+                        }
+                        className={`
+                          relative
+                          w-14
+                          h-8
+                          rounded-full
+                          transition-all
+                          duration-300
+                          cursor-pointer
+                          ${
+                            generalData.sms_notifications
+                              ? "bg-green-500"
+                              : "bg-gray-300"
+                          }
+                        `}
+                      >
+                        <span
+                          className={`
+                            absolute
+                            top-1
+                            left-1
+                            w-6
+                            h-6
+                            rounded-full
+                            bg-white
+                            shadow
+                            transition-transform
+                            duration-300
+                            ${
+                              generalData.sms_notifications
+                                ? "translate-x-6"
+                                : ""
+                            }
+                          `}
+                        />
+                      </button>
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"

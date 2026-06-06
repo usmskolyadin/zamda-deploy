@@ -1055,6 +1055,25 @@ class UserAdvertisementViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Advertisement.objects.filter(owner=self.request.user)
 
+
+class MyFollowingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.filter(
+            follower_relations__follower=request.user
+        ).select_related("profile")
+
+        from .serializers import UserFollowingSerializer
+
+        return Response(
+            UserFollowingSerializer(
+                users,
+                many=True,
+                context={"request": request}
+            ).data
+        )
+    
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1098,8 +1117,20 @@ class CurrentUserView(APIView):
 
         if profile:
             profile.city = request.data.get("city", profile.city)
+
+            if "email_notifications" in request.data:
+                profile.email_notifications = request.data.get(
+                    "email_notifications"
+                )
+
+            if "sms_notifications" in request.data:
+                profile.sms_notifications = request.data.get(
+                    "sms_notifications"
+                )
+
             if "avatar" in request.FILES:
                 profile.avatar = request.FILES["avatar"]
+
             profile.save()
 
         return Response({"detail": "Profile updated successfully."}, status=status.HTTP_200_OK)
@@ -1346,6 +1377,7 @@ from rest_framework.permissions import IsAdminUser
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = UserProfile.objects.prefetch_related('reviews').all()
     serializer_class = ProfileSerializer
+    permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
         return Response(
@@ -1908,20 +1940,22 @@ class FollowersView(APIView):
         ]
 
         return Response(data)
-
+    
+    
 class FollowingView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, username):
-        user = User.objects.get(username=username)
+        user = get_object_or_404(User, username=username)
 
         following = User.objects.filter(
             follower_relations__follower=user
-        )
+        ).select_related("profile")
 
         data = [
             {
                 "id": u.id,
+                "profile_id": u.profile.id,
                 "username": u.username,
                 "avatar": (
                     u.profile.avatar.url

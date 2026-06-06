@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import VerificationBadges from "@/src/widgets/VerificationBadges";
 import { apiFetch } from "@/src/shared/api/base";
@@ -41,21 +41,27 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const { user, accessToken, isInitialized } = useAuth();
+  const router = useRouter();
+
+    const fetchProfile = async () => {
+      const fetcher =
+        accessToken ? apiFetchAuth : apiFetch;
+
+      const res = await fetcher<Profile>(
+        `/api/profiles/${Number(profileId)}/`
+      );
+
+      setProfile(res);
+      setIsFollowing(res.is_following);
+      setFollowersCount(res.followers_count);
+  };
 
 useEffect(() => {
   if (!profileId) return;
+  if (!isInitialized) return;
 
-  const fetchProfile = async () => {
-    const res = await apiFetch<Profile>(
-      `/api/profiles/${Number(profileId)}/`
-    );
-
-    setProfile(res);
-    setIsFollowing(res.is_following);
-    setFollowersCount(res.followers_count);
-  };
   fetchProfile();
-}, [profileId]);
+}, [profileId, isInitialized, accessToken]);
 
 const toggleFollow = async () => {
   if (!profile) return;
@@ -166,6 +172,7 @@ useEffect(() => {
               </div>
               {profile.id != user?.profile.id && (
               <div className="grid grid-cols-2 gap-2 mt-2.5">
+                {user ? (
                 <button
                   onClick={toggleFollow}
                   className={`
@@ -183,6 +190,25 @@ useEffect(() => {
                 >
                   {isFollowing ? "Following" : "Follow"}
                 </button>
+                ) : (
+                <button
+                  onClick={() => router.push("/login")}
+                  className={`
+                    px-1
+                    py-1.5
+                    rounded-3xl
+                    font-medium
+                    transition cursor-pointer
+                    ${
+                      isFollowing
+                        ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                        : "bg-[#2AAEF7] text-white hover:bg-[#1698df]"
+                    }
+                  `}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+                )}
               <button
                 className="w-full  cursor-pointer font-medium px-1 bg-[#36B731] rounded-3xl hover:bg-green-500 transition text-white"
               >

@@ -2,6 +2,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
+from .utlis import send_sms
+
 from .models import Message, Chat
 from .models import UserProfile, UserVerification
 from utils.email import send_email
@@ -41,16 +43,44 @@ def notify_new_message(sender, instance, created, **kwargs):
     })
 
     text_content = f"""
-New message from {sender_user.username}
-Regarding: {chat.ad.title}
+        New message from {sender_user.username}
+        Regarding: {chat.ad.title}
 
-Message:
-{instance.text}
-"""
+        Message:
+        {instance.text}
+        """
 
-    send_email(
-        to_email=recipient.email,
-        subject=f"New message about {chat.ad.title}",
-        html_content=html_content,
-        text_content=text_content
+    profile = getattr(recipient, "profile", None)
+
+    if profile and profile.email_notifications:
+        send_email(
+            to_email=recipient.email,
+            subject=f"New message about {chat.ad.title}",
+            html_content=html_content,
+            text_content=text_content
+        )
+
+    verification = getattr(
+        recipient,
+        "verification",
+        None
     )
+
+    if (
+        profile
+        and profile.sms_notifications
+        and verification
+        and verification.phone_verified
+        and verification.phone_number
+    ):
+        try:
+            send_sms(
+                verification.phone_number,
+                (
+                    f"New message from {sender_user.username}\n"
+                    f"Regarding: {chat.ad.title}\n\n"
+                    f"{instance.text[:120]}"
+                )
+            )
+        except Exception as e:
+            print(f"SMS sending failed: {e}")

@@ -1,12 +1,14 @@
 import { useAuth } from '@/src/features/context/auth-context';
 import { useAds } from '@/src/features/hooks/use-ad';
 import Link from 'next/link';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaStar } from 'react-icons/fa'
 import { AdBanner } from '../ad';
 import StickyAdBlock from '../ad/StickyBanner';
 import VerificationIcons from './VerificationIcons';
 import { apiFetchAuth } from '@/src/shared/api/auth.client';
+import { useRouter } from 'next/navigation';
+import { Profile } from '@/src/app/profile/[id]/page';
 
 type SidebarProps = {
   notHideOnPhone?: boolean;
@@ -14,11 +16,31 @@ type SidebarProps = {
 };
 
 export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, accessToken, isInitialized } = useAuth();
   const rating = Math.min(5, Math.max(0, Math.round(user?.profile.rating || 0)));
   const { advs } = useAds("sidebar");
-  console.log(`ADS: ${advs}`)
   const { updateUser } = useAuth();
+  const [profile, setProfile] = useState<Profile>();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const router = useRouter();
+  
+  console.log(`ADS: ${advs}`)
+
+  useEffect(() => {
+      const fetchProfile = async () => {
+  
+        const res = await apiFetchAuth<Profile>(
+          `/api/profiles/${Number(user?.profile.id)}/`
+        );
+  
+        setProfile(res);
+        setIsFollowing(res.is_following);
+        setFollowersCount(res.followers_count);
+    };
+    
+    fetchProfile();
+  }, [user?.profile.id, isInitialized]);
 
   return (
       <div
@@ -42,6 +64,25 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     <div className="py-2">
                         <h2 className="text-black font-bold  lg:text-2xl text-3xl ">{user?.first_name} {user?.last_name}</h2>
                       <h2 className="text-gray-800 font-medium  text-md">{user?.username}</h2>
+                    </div>
+                    <div className="flex gap-6 py-2 text-md">
+                      <div>
+                        <span className="font-bold text-black">
+                          {followersCount}
+                        </span>
+                        <span className="text-gray-600 ml-1">
+                          Followers
+                        </span>
+                      </div>
+                      
+                      <Link className="" href={`/following`}>
+                        <span className="font-bold text-black">
+                          {profile?.following_count}
+                        </span>
+                        <span className="text-gray-600 hover:underline hover:text-[#2AAEF7] ml-1">
+                          Following
+                        </span>
+                      </Link>
                     </div>
                     <div className="flex items-center text-sm text-gray-700">
                         <span className="mr-1 text-black text-lg font-bold">{user?.profile.rating}</span>

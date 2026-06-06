@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
 import Link from "next/link";
@@ -10,23 +10,52 @@ import VerificationBadges from "@/src/widgets/VerificationBadges";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { FaArrowRight, FaStar } from "react-icons/fa";
 import { apiFetchAuth } from "@/src/shared/api/auth";
+import { Profile } from "@/src/app/profile/[id]/page";
+import { apiFetch } from "@/src/shared/api/base";
 
 interface AdPageProps {
   ad: Advertisement;
 }
 
 export default function AdActions({ ad }: AdPageProps) {
-  const { user, accessToken, refreshUser } = useAuth();
+  const { user, accessToken, refreshUser, isInitialized } = useAuth();
   const router = useRouter();
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [profile, setProfile] = useState<Profile>();
 
   const isOwner = user?.username === ad.owner.username;
   const userPhoneVerified = user?.verification?.phone_verified;
   const sellerPhone = ad.owner.verification?.phone_number;
 
+  const fetchProfile = async () => {
+    if (!ad?.owner?.id) return;
+
+    const fetcher =
+      accessToken ? apiFetchAuth : apiFetch;
+
+    const res = await fetcher<Profile>(
+      `/api/profiles/${ad.owner.profile.id}/`
+    );
+  console.log("PROFILE RESPONSE", res);
+    setProfile(res);
+    setIsFollowing(res.is_following);
+    setFollowersCount(res.followers_count);
+  };
+
+  useEffect(() => {
+    if (!ad?.owner?.id) return;
+    if (!isInitialized) return;
+
+    fetchProfile();
+  }, [
+    ad?.owner?.id,
+    accessToken,
+    isInitialized,
+  ]);
+    
   const toggleFollow = async () => {
     try {
       const res = await apiFetchAuth<{
@@ -39,7 +68,6 @@ export default function AdActions({ ad }: AdPageProps) {
       );
 
       setIsFollowing(res.following);
-
       setFollowersCount((prev) =>
         res.following ? prev + 1 : prev - 1
       );
@@ -240,26 +268,46 @@ export default function AdActions({ ad }: AdPageProps) {
       </div>
               
               {!isOwner && (
-              <div className="w-full gap-2 pb-4">
+                user ? (
+                  <div className="w-full gap-2 pb-4">
+                    <button
+                      onClick={toggleFollow}
+                      className={`
+                        px-1 w-full
+                        py-3.5
+                        rounded-3xl
+                        font-medium
+                        transition cursor-pointer
+                        ${
+                          isFollowing
+                            ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            : "bg-gray-200 text-black hover:bg-gray-300"
+                        }
+                      `}
+                    >
+                      {isFollowing ? "Following" : "Follow"}
+                    </button>
+                </div>
+                ) : (
                 <button
-                  onClick={toggleFollow}
+                  onClick={() => router.push("/login")}
                   className={`
-                    px-1 w-full
+                    px-1
                     py-3.5
                     rounded-3xl
                     font-medium
                     transition cursor-pointer
                     ${
                       isFollowing
-                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
                         : "bg-gray-200 text-black hover:bg-gray-300"
                     }
                   `}
                 >
                   {isFollowing ? "Following" : "Follow"}
                 </button>
-            </div>
-              )}
+                ))
+              }
 
         <VerificationBadges verification={ad.owner.verification} />
  
