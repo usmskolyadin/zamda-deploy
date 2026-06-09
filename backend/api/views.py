@@ -683,6 +683,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
+    
     filterset_class = AdvertisementFilter
 
     search_fields = [
@@ -719,6 +720,11 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         )
 
         now_ts = now()
+        
+        homepage = self.request.query_params.get("homepage")
+
+        if homepage == "true":
+            qs = qs.order_by("-is_pinned", "-created_at")
 
         if ENABLE_LIFECYCLE_CLEANUP:
             qs.filter(
@@ -729,29 +735,49 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
                 status_changed_at=now_ts
             )
 
-            qs.filter(
-                status=AdvertisementStatus.ARCHIVED,
-                status_changed_at__lte=now_ts - timedelta(days=ARCHIVE_LIFETIME_DAYS)
-            ).delete()
+        user = self.request.user
+        action = self.action
 
-            qs.filter(
-                status=AdvertisementStatus.REJECTED,
-                status_changed_at__lte=now_ts - timedelta(days=REJECTED_LIFETIME_DAYS)
-            ).delete()
+        # владелец должен иметь доступ к своим объявлениям
+        if action in [
+            "update",
+            "partial_update",
+            "destroy",
+            "relist",
+            "my_ads",
+            "my_counts",
+        ]:
+            return qs.filter(owner=user)
 
-        if self.action in ["update", "partial_update", "destroy", "relist"]:
-            return qs.filter(owner=self.request.user)
-
-        if self.action == "retrieve":
-            if self.request.user.is_authenticated:
+        # просмотр конкретного объявления
+        if action == "retrieve":
+            if user.is_authenticated:
                 return qs.filter(
                     Q(status=AdvertisementStatus.ACTIVE) |
-                    Q(owner=self.request.user)
+                    Q(owner=user)
                 )
+
             return qs.filter(status=AdvertisementStatus.ACTIVE)
 
+        # обычный список сайта
+        # поиск
+        # категории
+        # рекомендации
+        # и т.д.
         return qs.filter(status=AdvertisementStatus.ACTIVE)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        instance.status = AdvertisementStatus.ARCHIVED
+        instance.status_changed_at = now()
+        instance.save(update_fields=["status", "status_changed_at"])
+
+        return Response(
+            {"detail": "Advertisement archived"},
+            status=200
+        )
+    
     @action(
         detail=True,
         methods=["get"],
@@ -809,6 +835,59 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             "moderation": result[AdvertisementStatus.MODERATION],
             "rejected": result[AdvertisementStatus.REJECTED],
         })
+        
+    def list(self, request, *args, **kwargs):
+        owner_username = request.query_params.get("owner_username")
+
+        if owner_username:
+            qs = (
+                Advertisement.objects
+                .filter(owner__username=owner_username)
+                .select_related("owner", "subcategory__category")
+                .prefetch_related(
+                    "images",
+                    "likes",
+                    "extra_values__field_definition"
+                )
+            )
+
+            include_archived = (
+                request.query_params.get("include_archived") == "true"
+            )
+
+            archived_limit = int(
+                request.query_params.get("archived_limit", 5)
+            )
+
+            is_owner = (
+                request.user.is_authenticated
+                and request.user.username == owner_username
+            )
+
+            if not is_owner:
+                active = qs.filter(status=AdvertisementStatus.ACTIVE)
+
+                archived = (
+                    qs.filter(status=AdvertisementStatus.ARCHIVED)
+                    .order_by("-status_changed_at")[:archived_limit]
+                    if include_archived
+                    else qs.none()
+                )
+
+                qs = active | archived
+
+        else:
+            qs = self.get_queryset()
+
+        page = self.paginate_queryset(qs)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated], url_path="my")
     def my_ads(self, request):
@@ -1047,7 +1126,8 @@ class RegisterView(generics.CreateAPIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         })
-    
+
+
 class UserAdvertisementViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AdvertisementSerializer
     permission_classes = [IsAuthenticated]
@@ -1802,36 +1882,41 @@ class EmailChangeRequestView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        new_email = request.data.get("new_email")
+
+        if not new_email:
+            return Response({"detail": "new_email required"}, status=400)
+
         user = request.user
-        email = user.email
 
         code = EmailChangeCode.generate_code()
 
+        if User.objects.filter(email=new_email).exists():
+            return Response({"detail": "Email already in use"}, status=400)
+        
         EmailChangeCode.objects.filter(user=user).delete()
 
         EmailChangeCode.objects.create(
             user=user,
-            code=code
+            code=code,
+            new_email=new_email
         )
-
+        
         html_content = render_to_string("emails/email_change.html", {
             "code": code,
-            "email": email,
+            "email": new_email,
             "first_name": user.first_name,
         })
 
-        text_content = strip_tags(html_content)
-
         send_email(
-            to_email=email,
-            subject="ZAMDA — Email change verification",
+            to_email=new_email,
+            subject="ZAMDA — Confirm your new email",
             html_content=html_content,
-            text_content=text_content
+            text_content=strip_tags(html_content)
         )
 
-        return Response({"detail": "Code sent to current email"}, status=200)
+        return Response({"detail": "Code sent to new email"}, status=200)
     
-
 class EmailChangeVerifyView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -1850,31 +1935,9 @@ class EmailChangeVerifyView(generics.GenericAPIView):
         if record.code != code:
             return Response({"detail": "Invalid code"}, status=400)
 
-        record.verified = True
-        record.save()
-
-        return Response({"detail": "Code verified"}, status=200)
-    
-class EmailChangeConfirmView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        new_email = request.data.get("new_email")
-
-        try:
-            record = EmailChangeCode.objects.get(user=request.user)
-        except EmailChangeCode.DoesNotExist:
-            return Response({"detail": "No active request"}, status=400)
-
-        if not record.verified:
-            return Response({"detail": "Code not verified"}, status=400)
-
-        if record.is_expired():
-            record.delete()
-            return Response({"detail": "Code expired"}, status=400)
-
+        # ✅ сразу меняем email
         user = request.user
-        user.email = new_email
+        user.email = record.new_email
         user.save()
 
         record.delete()

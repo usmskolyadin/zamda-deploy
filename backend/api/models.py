@@ -143,6 +143,8 @@ class Advertisement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    is_pinned = models.BooleanField(default=False)
+    
     location = models.CharField(max_length=255)
 
     status = models.CharField(
@@ -573,8 +575,9 @@ import random
 
 
 class EmailChangeCode(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=10)
+    new_email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
 

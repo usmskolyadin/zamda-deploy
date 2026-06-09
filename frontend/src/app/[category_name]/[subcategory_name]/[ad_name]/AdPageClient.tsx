@@ -105,7 +105,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
       </section>
 
       <section className="bg-[#ffffff] pb-16 p-4">
-                <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
 
           <div className="lg:w-2/3 lg:pr-36">
 

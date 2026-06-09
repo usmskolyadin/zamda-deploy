@@ -475,6 +475,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "reject_reason",
             "time_left",
             "owner_profile_id",
+            "is_pinned",
         )
 
         read_only_fields = (

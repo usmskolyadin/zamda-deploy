@@ -5,6 +5,7 @@ import { Advertisement } from "../entities/advertisment/model/types";
 import { useViewAd } from "../features/hooks/use-view-ad";
 import { useAuth } from "../features/context/auth-context";
 import { useLikeAd } from "../features/hooks/use-like-ad";
+import { PinIcon } from "lucide-react";
 
 type ProductCardProps = {
   ad?: Advertisement;
@@ -43,6 +44,22 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
             className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-2xl mb-2"
           />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-50 group-hover:opacity-100 transition" />
+          {ad.is_pinned && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // TODO: логика закрепления
+              console.log("pin");
+            }}
+            className="absolute top-2 left-2 cursor-pointer rounded-full"
+          >
+            <div className="bg-black/30 p-2 rounded-full">
+              <PinIcon className="w-6 h-6" />
+            </div>
+          </button>)
+            }
 
           <button
             onClick={(e) => {
@@ -83,12 +100,18 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           </h3>
           <div className="pl-2 pr-2">
             <p
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-              }}
-              className="text-gray-800 min-h-15 lg:text-sm text-xs line-clamp-3 break-words overflow-hidden leading-snug"
+              className="
+                text-gray-800
+                text-xs lg:text-sm
+                break-words
+                overflow-hidden
+                leading-snug
+                line-clamp-2
+                lg:line-clamp-3
+                min-h-[2rem]
+                lg:min-h-[5rem]
+                lg:max-h-[5rem]
+              "
             >
               {ad.description}
             </p>

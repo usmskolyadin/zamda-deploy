@@ -62,7 +62,10 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     />
                     <div>
                     <div className="py-2">
-                        <h2 className="text-black font-bold  lg:text-2xl text-3xl ">{user?.first_name} {user?.last_name}</h2>
+                      <Link href={`/profile/${user?.profile?.id}`}>
+
+                        <h2 className="text-black hover:text-[#2AAEF7] transition font-bold  lg:text-2xl text-3xl ">{user?.first_name} {user?.last_name}</h2>
+                      </Link>
                       <h2 className="text-gray-800 font-medium  text-md">{user?.username}</h2>
                     </div>
                     <div className="flex gap-6 py-2 text-md">

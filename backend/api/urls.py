@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeConfirmView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
+    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -38,7 +38,6 @@ urlpatterns = [
     path("users/", UserListView.as_view(), name="user-list"),
     path("email/change/request/", EmailChangeRequestView.as_view(), name="email-change-request"),
     path("email/change/verify/", EmailChangeVerifyView.as_view(), name="email-change-verify"),
-    path("email/change/confirm/", EmailChangeConfirmView.as_view(), name="email-change-confirm"),
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -164,37 +164,39 @@ const deleteReview = async (id: number) => {
           <div className="lg:w-3/4 lg:ml-10 mt-2">
 
             <div className="flex items-center justify-between w-full">
-              <h1 className="text-black font-bold lg:text-4xl text-3xl">Reviews</h1>
+              <div className="flex items-center">
               <BackButton className="mr-2 px-2 py-2 py-0" />
+              <h1 className="text-black font-bold lg:text-4xl text-3xl">Reviews</h1>
+              </div>
+              <div></div>
+            </div>
+            <div className={`grid ${isOwner ? "grid-cols-2" : "grid-cols-1"} border-b mb-6 mt-4`}>
+
+              <button
+                className={`cursor-pointer text-lg font-bold pb-2 ${
+                  activeTab === "for_me"
+                    ? "text-black border-b-4 border-black"
+                    : "text-gray-400"
+                }`}
+                onClick={() => setActiveTab("for_me")}
+              >
+                Reviews {isOwner ? "For me" : profile.first_name }
+              </button>
+
+              {isOwner && (
+                <button
+                  className={`cursor-pointer text-lg font-bold pb-2 ${
+                    activeTab === "by_me"
+                      ? "text-black border-b-4 border-black"
+                      : "text-gray-400"
+                  }`}
+                  onClick={() => setActiveTab("by_me")}
+                >
+                  Reviews by Me
+                </button>
+              )}
 
             </div>
-<div className={`grid ${isOwner ? "grid-cols-2" : "grid-cols-1"} border-b mb-6 mt-4`}>
-
-  <button
-    className={`cursor-pointer text-lg font-bold pb-2 ${
-      activeTab === "for_me"
-        ? "text-black border-b-4 border-black"
-        : "text-gray-400"
-    }`}
-    onClick={() => setActiveTab("for_me")}
-  >
-    Reviews {isOwner ? "For me" : profile.first_name }
-  </button>
-
-  {isOwner && (
-    <button
-      className={`cursor-pointer text-lg font-bold pb-2 ${
-        activeTab === "by_me"
-          ? "text-black border-b-4 border-black"
-          : "text-gray-400"
-      }`}
-      onClick={() => setActiveTab("by_me")}
-    >
-      Reviews by Me
-    </button>
-  )}
-
-</div>
             <div className="mt-4">
               {!isOwner && (
                 <Link

@@ -11,6 +11,7 @@ import { useAds } from "@/src/features/hooks/use-ad";
 import { AdBanner } from "@/src/widgets/ad";
 import { formatDate } from "@/src/features/formatters/format-date";
 import LoadingScreen from '@/src/components/LoadingScreen';
+import SwipeChatItem from "@/src/widgets/swap-chat-item";
 
 
 type UserProfile = { avatar?: string | null; city?: string };
@@ -95,10 +96,24 @@ if (loading) return <LoadingScreen />;
   const last = c.last;
 
   return (
-    <Link key={c.id} href={`/messages/${c.id}`} className="block mt-3">
+    <SwipeChatItem
+  onDelete={async () => {
+    const ok = confirm("Удалить чат?");
+    if (!ok) throw new Error("cancel");
+
+    await apiFetchAuth(`/api/chats/${c.id}/block/`, {
+      method: "POST",
+    });
+
+    setChats(prev =>
+      prev.filter(chat => chat.id !== c.id)
+    );
+  }}
+>
+    <Link key={c.id} href={`/messages/${c.id}`} className="block">
 <div
   className="
-    flex flex-col sm:flex-row sm:items-center sm:justify-between
+    flex relative flex-col sm:flex-row sm:items-center sm:justify-between
     gap-2 sm:gap-0
     rounded-2xl sm:rounded-3xl
     p-3 sm:p-5
@@ -161,6 +176,7 @@ if (loading) return <LoadingScreen />;
   )}
 </div>
     </Link>
+</SwipeChatItem>
   );
 })}
 

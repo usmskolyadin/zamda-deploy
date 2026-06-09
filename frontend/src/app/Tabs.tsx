@@ -17,12 +17,22 @@ export default function TabsExample() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
-  const PAGE_SIZE = 12;
+  const PAGE_SIZE = 16;
 
   const [activeTab, setActiveTab] = useState("recommendations");
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [likedAds, setLikedAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(false);
+
+
+  const sortPinnedFirst = (items: Advertisement[]) => {
+    return [...items].sort((a, b) => {
+      if (a.is_pinned === b.is_pinned) return 0;
+      return a.is_pinned ? -1 : 1;
+    });
+  };
+
+
 
   useEffect(() => {
     if (!user) return;
@@ -50,14 +60,19 @@ export default function TabsExample() {
         return;
       }
 
-      let url = `/api/ads/?page=${pageNum}&page_size=${PAGE_SIZE}`;
+      let url = `/api/ads/?homepage=true&page=${pageNum}&page_size=${PAGE_SIZE}`;
 
       const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
+        const sortedResults = sortPinnedFirst(data.results);
 
       setAds(prev =>
-        pageNum === 1 ? data.results : [...prev, ...data.results]
+        pageNum === 1
+          ? data.results.sort((a, b) => Number(b.is_pinned) - Number(a.is_pinned))
+          : [...prev, ...data.results].sort(
+              (a, b) => Number(b.is_pinned) - Number(a.is_pinned)
+            )
       );
-
+      
       setHasNext(Boolean(data.next));
     } catch (e) {
       console.error("API error:", e);

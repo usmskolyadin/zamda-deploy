@@ -109,7 +109,7 @@ export default function FollowingPage() {
         <img
           src={u.profile.avatar || "/default-avatar.png"}
           className="
-            w-14 h-14
+            min-w-14 max-w-14 min-h-14 max-h-14
             rounded-full
             object-cover
             border border-gray-200
@@ -129,10 +129,6 @@ export default function FollowingPage() {
             )}
           </div>
 
-          <div className="text-gray-500 text-sm">
-            @{u.username}
-          </div>
-
                   {u.profile.city ? (
                 <p className=" flex text-gray-700 font-medium items-center text-sm mt-1 py-0.5">
                 <svg className="mr-1 min-h-2 min-w-2" width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -145,8 +141,6 @@ export default function FollowingPage() {
                   )}
         </div>
       </div>
-
-      {/* RIGHT STATS */}
       <div className="text-right">
         <div className="text-black font-semibold">
           {u.profile.followers_count}

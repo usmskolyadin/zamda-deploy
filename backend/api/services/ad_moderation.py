@@ -1,3 +1,5 @@
+import traceback
+
 from google.cloud import vision, language_v1
 from difflib import SequenceMatcher
 import re
@@ -219,9 +221,13 @@ class AdModerationService:
                                 score += self.weights["ocr_match"]
                                 reasons.append(f"OCR:{cat}:{item}")
 
-            except Exception:
+            except Exception as e:
                 score += 0.2
-                reasons.append("VISION_ERROR")
+                print("VISION ERROR:", e)
+                traceback.print_exc()
+
+                score += 0.2
+                reasons.append(f"VISION_ERROR:{str(e)}")
 
         return score, reasons
 

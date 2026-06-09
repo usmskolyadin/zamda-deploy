@@ -51,6 +51,7 @@ def notify_new_message(sender, instance, created, **kwargs):
         """
 
     profile = getattr(recipient, "profile", None)
+    print("SENDING EMAIL")
 
     if profile and profile.email_notifications:
         send_email(
@@ -74,7 +75,8 @@ def notify_new_message(sender, instance, created, **kwargs):
         and verification.phone_number
     ):
         try:
-            send_sms(
+            print("SENDING SMS")
+            msg = send_sms(
                 verification.phone_number,
                 (
                     f"New message from {sender_user.username}\n"
@@ -82,5 +84,11 @@ def notify_new_message(sender, instance, created, **kwargs):
                     f"{instance.text[:120]}"
                 )
             )
+
+            print("SID:", msg.sid)
+            print("STATUS:", msg.status)
+            print("ERROR_CODE:", msg.error_code)
+            print("ERROR_MESSAGE:", msg.error_message)
+            print("SMS SENT")
         except Exception as e:
             print(f"SMS sending failed: {e}")

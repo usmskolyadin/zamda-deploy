@@ -43,6 +43,7 @@ export interface Advertisement {
   images: { id: number; image: string }[];
   time_left: number;
   status: string;
+  is_pinned: boolean;
   owner: {
     id: number;
     username: string;

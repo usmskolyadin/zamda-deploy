@@ -26,6 +26,7 @@ export interface Profile {
   is_own_profile: boolean;
 
   verification?: {
+    phone_number?: string;
     google_verified: boolean;
     facebook_verified: boolean;
     phone_verified: boolean;
@@ -37,10 +38,21 @@ export default function Profile() {
   const profileId = params?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ads, setAds] = useState<Advertisement[]>([]);
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const { user, accessToken, isInitialized } = useAuth();
+  const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
+  const userPhoneVerified = user?.verification?.phone_verified;
+  const sellerPhone = profile?.verification?.phone_number;
+  const isMobile =
+    typeof window !== "undefined" &&
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
+      navigator.userAgent
+    );
+
+
   const router = useRouter();
 
     const fetchProfile = async () => {
@@ -92,14 +104,19 @@ useEffect(() => {
 
   const fetchAds = async () => {
     const res = await apiFetch<{ results: Advertisement[] }>(
-      `/api/ads/?owner_username=${profile.username}`
+      `/api/ads/?owner_username=${profile.username}&include_archived=true&archived_limit=5`
     );
+    console.log(res.results)
     setAds(res.results);
   };
 
-  fetchAds();
-}, [profile?.username]);
+    fetchAds();
+  }, [profile?.username]);
 
+  const filteredAds = ads.filter((a) => {
+    if (activeTab === "active") return a.status === "active";
+    if (activeTab === "completed") return a.status === "archived";
+  });
 
   if (!profile) {
     return <p className="text-center flex text-black justify-center text-md items-center h-screen bg-white">Loading profile...</p>;
@@ -209,11 +226,122 @@ useEffect(() => {
                   {isFollowing ? "Following" : "Follow"}
                 </button>
                 )}
-              <button
-                className="w-full  cursor-pointer font-medium px-1 bg-[#36B731] rounded-3xl hover:bg-green-500 transition text-white"
-              >
-               Phone
-              </button>
+<div>
+  {accessToken ? (
+    userPhoneVerified ? (
+      sellerPhone ? (
+        <div className="overflow-hidden">
+          {!showPhone ? (
+            <button
+              onClick={() => setShowPhone(true)}
+              className="
+                w-full
+                py-1.5
+                bg-[#36B731]
+                rounded-3xl
+                text-white
+                cursor-pointer
+                transition-all
+                duration-300
+                hover:bg-green-500
+              "
+            >
+              Show phone
+            </button>
+          ) : (
+            <div
+              className="
+                rounded-3xl
+                border
+                border-green-200
+                bg-green-50
+                p-3
+                text-center
+              "
+            >
+              <div className="text-xs uppercase tracking-wider text-green-700 mb-1">
+                Phone number
+              </div>
+
+              {isMobile ? (
+                <a
+                  href={`tel:${sellerPhone.replace(/[^\d+]/g, "")}`}
+                  className="
+                    block
+                    text-lg
+                    font-bold
+                    text-black
+                    hover:text-[#36B731]
+                    transition
+                  "
+                >
+                  {sellerPhone}
+                </a>
+              ) : (
+                <span
+                  className="
+                    block
+                    text-lg
+                    font-bold
+                    text-black
+                  "
+                >
+                  {sellerPhone}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          disabled
+          className="
+            w-full
+            py-1.5
+            bg-[#36B731]
+            opacity-50
+            rounded-3xl
+            text-white
+          "
+        >
+          No phone provided
+        </button>
+      )
+    ) : (
+      <button
+        onClick={() => setPhoneModalOpen(true)}
+        className="
+          w-full
+          py-1.5
+          bg-[#36B731]
+          rounded-3xl
+          hover:bg-green-500
+          transition
+          text-white
+          cursor-pointer
+        "
+      >
+        Verify phone to view number
+      </button>
+    )
+  ) : (
+    <button
+      onClick={() => router.push("/login")}
+      className="
+        w-full
+        py-1.5
+        bg-[#36B731]
+        rounded-3xl
+        hover:bg-green-500
+        transition
+        text-white
+        cursor-pointer
+      "
+    >
+      Login to view number
+    </button>
+  )}
+</div>
             </div>
               )}
             </div>
@@ -228,84 +356,118 @@ useEffect(() => {
             </h1>
 
 
+            <div className="grid grid-cols-2 border-b mb-4">
+              <button
+                className={`cursor-pointer text-lg font-bold pb-2 ${
+                  activeTab === "active"
+                    ? "text-black border-b-4 border-black"
+                    : "text-gray-400"
+                }`}
+                onClick={() => setActiveTab("active")}
+              >
+                Active
+              </button>
 
+              <button
+                className={`cursor-pointer text-lg font-bold pb-2 ${
+                  activeTab === "completed"
+                    ? "text-black border-b-4 border-black"
+                    : "text-gray-400"
+                }`}
+                onClick={() => setActiveTab("completed")}
+              >
+                Completed
+              </button>
+            </div>
             <div className="flex flex-col">
-  {ads.map((ad) => (
-    <Link
-      key={ad.id}
-      href={`/${ad.subcategory.slug}/${ad.subcategory.slug}/${ad.slug}`}
-      className="block"
-    >
-      <div className="lg:flex mt-4 w-full bg-gray-100 rounded-2xl lg:p-2 p-3 gap-4">
+                {filteredAds.map((ad) => {
+                const isActive = ad.status != "active";
 
-        {/* IMAGE */}
-        <div className="lg:w-[280px] w-full flex-shrink-0">
-          <img
-            src={ad.images[0]?.image}
-            alt=""
-            className="rounded-2xl h-52 lg:h-48 w-full object-cover"
-          />
-        </div>
+                const Card = (
+                    <div className={`lg:flex mt-4 w-full rounded-2xl lg:p-2 p-3 gap-4 ${
+                      isActive
+                        ? "bg-gray-100 opacity-60 pointer-events-none"
+                        : "bg-gray-100"
+                    }`}>
 
-        {/* CONTENT */}
-        <div className="w-full min-w-0 flex flex-col">
+                      {/* IMAGE */}
+                      <div className="lg:w-[280px] w-full flex-shrink-0">
+                        <img
+                          src={ad.images[0]?.image}
+                          alt=""
+                          className="rounded-2xl h-52 lg:h-48 w-full object-cover"
+                        />
+                      </div>
 
-          {/* TITLE ROW */}
-          <div className="flex justify-between items-start gap-2 min-w-0">
-            <h1 className="text-xl text-black font-bold break-words leading-snug min-w-0">
-              {ad.title}
-            </h1>
+                      {/* CONTENT */}
+                      <div className="w-full min-w-0 flex flex-col">
 
-            <span className="text-gray-600 text-sm font-medium shrink-0 whitespace-nowrap">
-              {new Date(ad.created_at).toLocaleString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
+                        {/* TITLE ROW */}
+                        <div className="flex justify-between items-start gap-2 min-w-0">
+                          <h1 className="text-xl text-black font-bold break-words leading-snug min-w-0">
+                            {ad.title}
+                          </h1>
 
-          {/* PRICE */}
-          <p className="text-md text-gray-900 font-semibold mt-1">
-            ${Number(ad.price)}
-          </p>
+                          <span className="text-gray-600 text-sm font-medium shrink-0 whitespace-nowrap">
+                            {new Date(ad.created_at).toLocaleString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </div>
 
-          {/* DESCRIPTION */}
-          <p className="text-md text-gray-600 mt-2 line-clamp-3">
-            {ad.description}
-          </p>
+                        {/* PRICE */}
+                        <p className="text-md text-gray-900 font-semibold mt-1">
+                          ${Number(ad.price)}
+                        </p>
 
-          {/* META */}
-          <div className="flex items-center mt-2 flex-wrap gap-x-2 gap-y-1">
+                        {/* DESCRIPTION */}
+                        <p className="text-md text-gray-600 mt-2 line-clamp-3">
+                          {ad.description}
+                        </p>
 
-            {/* VIEWS */}
-            <span className="text-sm text-black/80 font-medium flex items-center">
-<svg className="mr-1" width="18" height="18" viewBox="0 -4 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-260.000000, -4563.000000)" fill="#000000"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M216,4409.00052 C216,4410.14768 215.105,4411.07682 214,4411.07682 C212.895,4411.07682 212,4410.14768 212,4409.00052 C212,4407.85336 212.895,4406.92421 214,4406.92421 C215.105,4406.92421 216,4407.85336 216,4409.00052 M214,4412.9237 C211.011,4412.9237 208.195,4411.44744 206.399,4409.00052 C208.195,4406.55359 211.011,4405.0763 214,4405.0763 C216.989,4405.0763 219.805,4406.55359 221.601,4409.00052 C219.805,4411.44744 216.989,4412.9237 214,4412.9237 M214,4403 C209.724,4403 205.999,4405.41682 204,4409.00052 C205.999,4412.58422 209.724,4415 214,4415 C218.276,4415 222.001,4412.58422 224,4409.00052 C222.001,4405.41682 218.276,4403 214,4403" id="view_simple-[#815]"> </path> </g> </g> </g> </svg>
-              {ad.views_count}
-            </span>
+                        {/* META */}
+                        <div className="flex items-center mt-2 flex-wrap gap-x-2 gap-y-1">
 
-            <span className="text-gray-400">•</span>
+                          {/* VIEWS */}
+                          <span className="text-sm text-black/80 font-medium flex items-center">
+              <svg className="mr-1" width="18" height="18" viewBox="0 -4 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-260.000000, -4563.000000)" fill="#000000"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M216,4409.00052 C216,4410.14768 215.105,4411.07682 214,4411.07682 C212.895,4411.07682 212,4410.14768 212,4409.00052 C212,4407.85336 212.895,4406.92421 214,4406.92421 C215.105,4406.92421 216,4407.85336 216,4409.00052 M214,4412.9237 C211.011,4412.9237 208.195,4411.44744 206.399,4409.00052 C208.195,4406.55359 211.011,4405.0763 214,4405.0763 C216.989,4405.0763 219.805,4406.55359 221.601,4409.00052 C219.805,4411.44744 216.989,4412.9237 214,4412.9237 M214,4403 C209.724,4403 205.999,4405.41682 204,4409.00052 C205.999,4412.58422 209.724,4415 214,4415 C218.276,4415 222.001,4412.58422 224,4409.00052 C222.001,4405.41682 218.276,4403 214,4403" id="view_simple-[#815]"> </path> </g> </g> </g> </svg>
+                            {ad.views_count}
+                          </span>
 
-            {/* LIKES */}
-            <span className="text-sm text-black/80 font-medium flex items-center">
-<svg width="18" height="18" className="mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fillRule="evenodd" clipRule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> </svg>
-              {ad.likes_count}
-            </span>
+                          <span className="text-gray-400">•</span>
 
-            {/* <span className="text-gray-400">•</span>
+                          {/* LIKES */}
+                          <span className="text-sm text-black/80 font-medium flex items-center">
+              <svg width="18" height="18" className="mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" > <path fillRule="evenodd" clipRule="evenodd" d="M12 6.00019C10.2006 3.90317 7.19377 3.2551 4.93923 5.17534C2.68468 7.09558 2.36727 10.3061 4.13778 12.5772C5.60984 14.4654 10.0648 18.4479 11.5249 19.7369C11.6882 19.8811 11.7699 19.9532 11.8652 19.9815C11.9483 20.0062 12.0393 20.0062 12.1225 19.9815C12.2178 19.9532 12.2994 19.8811 12.4628 19.7369C13.9229 18.4479 18.3778 14.4654 19.8499 12.5772C21.6204 10.3061 21.3417 7.07538 19.0484 5.17534C16.7551 3.2753 13.7994 3.90317 12 6.00019Z" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> </svg>
+                            {ad.likes_count}
+                          </span>
 
-            <span className="flex items-center text-sm text-black/80 font-medium min-w-0 max-w-full">
-<svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" > <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> </svg>
-              <span className="truncate min-w-0 ml-1 block">
-                {ad.location}
-              </span>
-            </span> */}
+                          {/* <span className="text-gray-400">•</span>
 
-          </div>
-        </div>
-      </div>
-    </Link>
-  ))}
+                          <span className="flex items-center text-sm text-black/80 font-medium min-w-0 max-w-full">
+              <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" > <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> </svg>
+                            <span className="truncate min-w-0 ml-1 block">
+                              {ad.location}
+                            </span>
+                          </span> */}
+
+                        </div>
+                      </div>
+                    </div>
+                );
+                return isActive ? (
+                <div key={ad.id}>{Card}</div>
+              ) : (
+                <Link
+                  key={ad.id}
+                  href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}
+                >
+                  {Card}
+                </Link>
+                );
+                })}
               {ads.length === 0 && (
                 <p className="text-gray-500 mt-4">No listings yet.</p>
               )}

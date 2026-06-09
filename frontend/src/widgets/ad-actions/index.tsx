@@ -25,6 +25,8 @@ export default function AdActions({ ad }: AdPageProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [profile, setProfile] = useState<Profile>();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
 
   const isOwner = user?.username === ad.owner.username;
   const userPhoneVerified = user?.verification?.phone_verified;
@@ -55,7 +57,13 @@ export default function AdActions({ ad }: AdPageProps) {
     accessToken,
     isInitialized,
   ]);
-    
+
+  const reasons = [
+    { id: "sold", label: "Sold on Zamda" },
+    { id: "changed_mind", label: "Changed my mind about selling" },
+    { id: "other", label: "Other" },
+  ];
+
   const toggleFollow = async () => {
     try {
       const res = await apiFetchAuth<{
@@ -118,7 +126,13 @@ export default function AdActions({ ad }: AdPageProps) {
     }
   };
 
-  return (
+  const isMobile =
+    typeof window !== "undefined" &&
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
+      navigator.userAgent
+    );
+  
+    return (
     <div className="flex flex-col mb-6 lg:mt-0 mt-6">
       {isOwner ? (
         <div className="w-full">
@@ -130,7 +144,7 @@ export default function AdActions({ ad }: AdPageProps) {
               Edit
             </Link>
             <button
-              onClick={handleDelete}
+              onClick={() => setDeleteModalOpen(true)}
               className="p-3.5 mb-2 cursor-pointer bg-red-400 hover:bg-red-500 transition text-white rounded-3xl text-center"
             >
               Delete
@@ -140,6 +154,7 @@ export default function AdActions({ ad }: AdPageProps) {
             Increase views (Soon)
           </button>
         </div>
+        
       ) : (
         <>
           {accessToken ? (
@@ -171,8 +186,10 @@ export default function AdActions({ ad }: AdPageProps) {
                         border
                         border-green-200
                         bg-green-50
+                        
                         p-4
                         text-center
+                        text-white
                         animate-in
                         fade-in
                         zoom-in-95
@@ -183,19 +200,37 @@ export default function AdActions({ ad }: AdPageProps) {
                         Seller phone
                       </div>
 
-                      <a
-                        href={`tel:${sellerPhone}`}
-                        className="
-                          block
-                          text-xl
-                          font-bold
-                          text-black
-                          hover:text-[#36B731]
-                          transition
-                        "
-                      >
-                        {sellerPhone}
-                      </a>
+                      {isMobile ? (
+                        <a
+                          href={`tel:${sellerPhone.replace(/[^\d+]/g, "")}`}
+                          className="
+                            block
+                            text-xl
+                            font-bold
+                            text-black
+                            
+                            hover:text-[#36B731]
+                            transition
+                          "
+                        >
+                          {sellerPhone}
+                        </a>
+                      ) : (
+                        <a
+                          href={`tel:${sellerPhone.replace(/[^\d+]/g, "")}`}
+                          className="
+                            block
+                            text-xl
+                            font-bold
+                            text-black
+                            hover:text-[#36B731]
+                            transition
+                            md:pointer-events-none
+                          "
+                        >
+                          {sellerPhone}
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
@@ -228,14 +263,63 @@ export default function AdActions({ ad }: AdPageProps) {
             <StartChatButton adId={ad.id} />
           ) : (
             <Link href={"/login"}>
-              <button className="cursor-pointer w-full p-3.5 bg-[#2AAEF7] hover:bg-blue-500 transition mt-2 rounded-3xl">
+              <button className="cursor-pointer text-white w-full p-3.5 bg-[#2AAEF7] hover:bg-blue-500 transition mt-2 rounded-3xl">
                 Login for messages
               </button>
             </Link>
           )}
         </>
       )}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-black mb-4">
+              Why are you deleting this ad?
+            </h2>
 
+            <div className="flex flex-col gap-3">
+              {reasons.map((r) => (
+                <label
+                  key={r.id}
+                  className="flex items-center gap-2 text-black cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="deleteReason"
+                    value={r.id}
+                    checked={deleteReason === r.id}
+                    onChange={() => setDeleteReason(r.id)}
+                  />
+                  <span>{r.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteReason("");
+                }}
+                className="flex-1 cursor-pointer py-2 rounded-3xl bg-gray-200 text-black hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={async () => {
+                  await handleDelete();
+                  setDeleteModalOpen(false);
+                }}
+                disabled={!deleteReason}
+                className="flex-1 cursor-pointer py-2 rounded-3xl bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between py-4">
         <Link href={`/profile/${ad.owner.profile?.id ?? ad.owner.id}`}>
           <div>

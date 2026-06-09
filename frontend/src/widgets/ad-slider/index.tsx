@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { useLikeAd } from "@/src/features/hooks/use-like-ad";
 import { useAuth } from "@/src/features/context/auth-context";
+import logo from "@/public/zamda-white.png";
+import Image from "next/image";
 
 interface AdSliderProps {
   ad: Advertisement;
@@ -44,7 +46,39 @@ export default function AdSlider({ ad }: AdSliderProps) {
           className="rounded-3xl w-full object-cover min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
           onClick={() => setIsFullscreen(true)}
         />
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="
+              absolute
+              bottom-6
+              right-6
+              flex
+              items-center
+              gap-1
+              opacity-[0.3]
+              select-none
+            "
+          >
+            <Image
+              src={logo}
+              alt="ZAMDA"
+              width={36}
+              height={36}
+              className="object-contain invert brightness-0"
+            />
 
+            <span
+              className="
+                text-white
+                font-extrabold
+                text-3xl
+                tracking-tight
+              "
+            >
+              ZAMDA
+            </span>
+          </div>
+        </div>
         <button
           onClick={toggleLike}
           className="absolute top-2 right-2 cursor-pointer"
@@ -162,7 +196,39 @@ export default function AdSlider({ ad }: AdSliderProps) {
             alt="fullscreen"
             className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-lg"
           />
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="
+              absolute
+              bottom-3/5
+              right-2/5
+              flex
+              items-center
+              gap-1
+              opacity-[0.20]
+              select-none
+            "
+          >
+            <Image
+              src={logo}
+              alt="ZAMDA"
+              width={48}
+              height={48}
+              className="object-contain invert brightness-0"
+            />
 
+            <span
+              className="
+                text-white
+                font-extrabold
+                text-5xl
+                tracking-tight
+              "
+            >
+              ZAMDA
+            </span>
+          </div>
+        </div>
           {images.length > 1 && (
             <>
               <button

@@ -124,7 +124,8 @@ class AdvertisementAdmin(admin.ModelAdmin):
                 "price",
                 "subcategory",
                 "location",
-                "views_count"
+                "views_count",
+                "is_pinned",
             )
         }),
         ("Модерация", {
