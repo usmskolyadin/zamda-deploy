@@ -167,8 +167,7 @@ class AdModerationService:
 
         for img in images:
             try:
-                with open(img.image.path, "rb") as f:
-                    content = f.read()
+                content = img.image.read()
 
                 image = vision.Image(content=content)
 

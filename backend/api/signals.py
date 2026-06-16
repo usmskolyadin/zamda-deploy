@@ -54,12 +54,15 @@ def notify_new_message(sender, instance, created, **kwargs):
     print("SENDING EMAIL")
 
     if profile and profile.email_notifications:
-        send_email(
-            to_email=recipient.email,
-            subject=f"New message about {chat.ad.title}",
-            html_content=html_content,
-            text_content=text_content
-        )
+        try:
+            send_email(
+                to_email=recipient.email,
+                subject=f"New message about {chat.ad.title}",
+                html_content=html_content,
+                text_content=text_content
+            )
+        except Exception as e:
+            print(f"Email sending failed: {e}")
 
     verification = getattr(
         recipient,

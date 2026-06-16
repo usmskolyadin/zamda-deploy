@@ -9,6 +9,7 @@ import VerificationBadges from "@/src/widgets/VerificationBadges";
 import { apiFetch } from "@/src/shared/api/base";
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useAuth } from "@/src/features/context/auth-context";
+import PhoneVerificationModal from "@/src/widgets/sidebar/PhoneVerificationModal";
 
 export interface Profile {
   id: number;
@@ -41,7 +42,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
-  const { user, accessToken, isInitialized } = useAuth();
+  const { user, accessToken, isInitialized, refreshUser } = useAuth();
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
   const userPhoneVerified = user?.verification?.phone_verified;
@@ -475,6 +476,12 @@ useEffect(() => {
           </div>
         </div>
       </section>
+      <PhoneVerificationModal
+        open={phoneModalOpen}
+        onClose={() => setPhoneModalOpen(false)}
+        refreshUser={refreshUser}
+        onVerified={() => setPhoneModalOpen(false)}
+      />
     </div>
   );
 }

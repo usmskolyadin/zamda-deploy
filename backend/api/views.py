@@ -877,7 +877,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
                 qs = active | archived
 
         else:
-            qs = self.get_queryset()
+            qs = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(qs)
 
