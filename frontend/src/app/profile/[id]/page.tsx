@@ -322,7 +322,7 @@ useEffect(() => {
           cursor-pointer
         "
       >
-        Verify phone to view number
+        Show phone
       </button>
     )
   ) : (
@@ -339,7 +339,7 @@ useEffect(() => {
         cursor-pointer
       "
     >
-      Login to view number
+      Show phone
     </button>
   )}
 </div>

@@ -1120,6 +1120,10 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        ref_code = request.data.get("ref") or request.query_params.get("ref")
+        if ref_code:
+            process_referral(request, user, ref_code=ref_code)
+
         refresh = RefreshToken.for_user(user)
         return Response({
             "user": serializer.data,
@@ -1513,6 +1517,7 @@ class RegisterRequestView(generics.GenericAPIView):
                     "first_name": data["first_name"],
                     "last_name": data["last_name"],
                     "password": make_password(data["password"]),
+                    "ref_code": data.get("ref", "") or None,
                 },
             )
 
@@ -1668,20 +1673,7 @@ class VerifyCodeView(generics.GenericAPIView):
             verification.save()
             request.session.pop("verified_phone", None)
         
-        process_referral(request, user)        
-        
-        ref_code = request.session.get("referral_code")
-
-        if ref_code:
-            try:
-                referral = Referral.objects.get(code=ref_code)
-
-                ReferralConversion.objects.create(
-                    referral=referral,
-                    new_user=user
-                )
-            except Referral.DoesNotExist:
-                pass
+        process_referral(request, user, ref_code=record.ref_code)
 
         record.delete()
 
@@ -1835,8 +1827,9 @@ class UserListView(ListAPIView):
 from .models import Referral, ReferralConversion
 
 
-def process_referral(request, user):
-    ref_code = request.session.get("ref_code")
+def process_referral(request, user, ref_code=None):
+    if not ref_code:
+        ref_code = request.session.get("ref_code")
 
     if not ref_code:
         return
@@ -1852,7 +1845,7 @@ def process_referral(request, user):
     ip = get_client_ip(request)
     user_agent = request.META.get("HTTP_USER_AGENT", "")
 
-    if ReferralConversion.objects.filter(
+    if ip and ReferralConversion.objects.filter(
         referral=referral,
         ip=ip
     ).exists():

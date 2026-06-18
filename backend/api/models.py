@@ -374,6 +374,12 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
+@receiver(post_save, sender=User)
+def create_user_referral(sender, instance, created, **kwargs):
+    if created:
+        Referral.objects.get_or_create(owner=instance)
+
+
 class ReviewReply(models.Model):
     review = models.OneToOneField(
         'Review',
@@ -465,6 +471,7 @@ class EmailVerification(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     password = models.CharField(max_length=128)
+    ref_code = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     def is_expired(self):
@@ -538,7 +545,7 @@ class Referral(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            self.code = uuid.uuid4().hex[:10]
+            self.code = slugify(self.owner.username)
         super().save(*args, **kwargs)
 
     @property

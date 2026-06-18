@@ -754,6 +754,7 @@ class RegisterRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     phone = serializers.CharField(required=False, allow_blank=True)
+    ref = serializers.CharField(required=False, allow_blank=True)
 
 class VerifyCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()

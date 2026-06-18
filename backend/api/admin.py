@@ -1,7 +1,7 @@
 import uuid
 
 from django.contrib import admin
-from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Page, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User, UserVerification
+from .models import Ad, AdvertisementImage, AdvertisementStatus, AdvertisementView, Category, ExtraFieldOption, Notification, NotificationUserState, Page, ReferralConversion, Report, Review, SubCategory, ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserProfile, User, UserVerification
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
 from django.utils.html import format_html
@@ -273,3 +273,5 @@ class ReferralAdmin(admin.ModelAdmin):
         return obj.conversions
 
     converted_count.short_description = "Referrals"
+
+admin.site.register(ReferralConversion)

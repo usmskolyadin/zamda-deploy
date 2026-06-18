@@ -21,6 +21,7 @@ export default function Register() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
   const verifiedPhone = searchParams?.get("phone") ?? "";
+  const refCode = searchParams?.get("ref") ?? "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -103,6 +104,7 @@ const handleRegister = async (e: React.FormEvent) => {
         body: JSON.stringify({
           ...formData,
           phone: verifiedPhone || undefined,
+          ref: refCode || undefined,
         }),
       });
 
