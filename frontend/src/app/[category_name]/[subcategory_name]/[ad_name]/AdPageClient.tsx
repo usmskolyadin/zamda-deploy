@@ -116,7 +116,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
               <h1 className="text-xl font-semibold text-black mt-2 mb-2">
                 Description
               </h1>
-              <p className="text-black break-words overflow-hidden">{ad.description}</p>
+              <p className="text-black break-words overflow-hidden whitespace-pre-wrap">{ad.description}</p>
               <h1 className="text-xl font-semibold text-black mt-2 mb-1">
                 Location
               </h1>
