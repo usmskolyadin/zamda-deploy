@@ -239,7 +239,7 @@ export default function AdActions({ ad }: AdPageProps) {
                 disabled
                 className="w-full p-3.5 bg-[#36B731] opacity-50 rounded-3xl hover:bg-green-500 transition text-white"
               >
-               Show phone (No provided)
+               Show phone
               </button>
               )
             ) : (
