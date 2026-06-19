@@ -211,7 +211,7 @@ export const AdListings = ({
         <img
           src={ad.images[0]?.image}
           alt={ad.title}
-          className="rounded-2xl lg:h-56 lg:w-72 h-52 w-full object-cover"
+          className="rounded-2xl lg:h-56 lg:w-86 h-52 w-full object-cover"
           width={288}
           height={192}
         />
@@ -234,7 +234,7 @@ export const AdListings = ({
           </p>
         </div>
 
-        <p className="text-sm text-gray-900 mt-2 break-words overflow-hidden line-clamp-3 min-w-0 overflow-hidden">
+        <p className="text-sm text-gray-900 mt-2 whitespace-pre-wrap break-words overflow-hidden line-clamp-3 min-w-0 overflow-hidden">
           {ad.description}
         </p>
 

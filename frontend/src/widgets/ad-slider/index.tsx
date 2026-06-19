@@ -40,7 +40,7 @@ export default function AdSlider({ ad }: AdSliderProps) {
     <div className="max-w-[712px] relative">
       <div className="relative">
         
-        <div className="relative rounded-3xl overflow-hidden min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px]">
+        <div className="relative rounded-3xl overflow-hidden min-h-[300px] max-h-[300px] lg:max-h-[370px] lg:h-[600px]">
           <img
             src={images[activeIndex].image}
             alt=""
