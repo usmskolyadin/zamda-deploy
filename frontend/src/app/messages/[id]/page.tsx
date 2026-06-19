@@ -20,15 +20,14 @@ export default function Chat() {
   const params = useParams<{ id: string }>();
   const chatId = Number(params.id);
   const { accessToken, user } = useAuth();
-const didInitScrollRef = useRef(false);
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const isAtBottomRef = useRef(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isFirstLoadRef = useRef(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const firstLoadRef = useRef(true);
 
   const handleScroll = () => {
     const el = containerRef.current;
@@ -37,11 +36,11 @@ const didInitScrollRef = useRef(false);
     const atBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight < 80;
 
-    isAtBottomRef.current = atBottom;
+    if (atBottom && showScrollBtn) setShowScrollBtn(false);
+    if (!atBottom && !showScrollBtn) setShowScrollBtn(true);
   };
 
 
-  // загрузка самого чата один раз
   const loadChat = async () => {
     if (!accessToken) return;
     try {
@@ -54,7 +53,7 @@ const didInitScrollRef = useRef(false);
   };
 
   const loadMessages = async () => {
-    if (!accessToken) return;
+    if (!accessToken || !user) return;
     try {
       const msgsResponse = await apiFetchAuth<any>(`/api/messages/?chat=${chatId}`, accessToken);
       const serverMessages: Message[] = Array.isArray(msgsResponse) ? msgsResponse : msgsResponse.results || [];
@@ -88,12 +87,18 @@ const didInitScrollRef = useRef(false);
   };
 
   useEffect(() => {
+    if (!accessToken || !user) return;
+
     loadChat();
     loadMessages();
-    const interval = setInterval(loadMessages, 3000);
-    return () => clearInterval(interval);
-  }, [accessToken, chatId]);
 
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 3000);
+
+  return () => clearInterval(interval);
+
+}, [accessToken, chatId, user?.id]);
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!text) return;
@@ -126,24 +131,34 @@ const didInitScrollRef = useRef(false);
     }
   };
 
-const scrollToBottom = (smooth = false) => {
-  const el = containerRef.current;
-  if (!el) return;
+  const scrollToBottom = (smooth = false) => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  };
 
-  el.scrollTo({
-    top: el.scrollHeight,
-    behavior: smooth ? "smooth" : "auto",
-  });
-};
+  useEffect(() => {
+    if (!messages.length) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-useEffect(() => {
-  if (!messages.length) return;
+    if (firstLoadRef.current) {
+      firstLoadRef.current = false;
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
+      return;
+    }
 
-  if (isFirstLoadRef.current) {
-    scrollToBottom(false);
-    isFirstLoadRef.current = false;
-  }
-}, [messages]);
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (atBottom) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
+
 
   if (!accessToken) return <div className="w-full  h-screen flex items-center justify-center bg-white"><p className="text-xl text-black">Login to view messages</p></div>;
   if (loading) return <LoadingScreen />;
@@ -155,9 +170,8 @@ useEffect(() => {
   <div className="max-w-screen-xl mx-auto flex flex-1 w-full min-h-0 px-4 sm:px-6 lg:px-12">
     <Sidebar hideBanner={true}/>
 
-    <div className="flex flex-col flex-1 lg:ml-24 min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 lg:ml-24 min-h-0">
       
-      {/* HEADER */}
       <div className="flex items-center p-4 border-b border-gray-200 bg-white z-10 shrink-0">
         <BackButton className="mr-2 p-1 lg:w-12 w-10" />
 
@@ -230,6 +244,17 @@ useEffect(() => {
         ))}
 
         <div ref={bottomRef} />
+
+        {showScrollBtn && (
+          <button
+            onClick={() => scrollToBottom(true)}
+            className="sticky bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-black text-white shadow-lg flex items-center justify-center hover:opacity-80 transition"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <form
@@ -241,13 +266,23 @@ useEffect(() => {
           p-3
           flex gap-2
           sticky bottom-0
+          min-w-0
         "
-      >
+        >
         <input
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder="Write a message…"
-          className="flex-1 border rounded-full px-4 py-3 text-sm focus:outline-none"
+          className="
+            flex-1
+            min-w-0
+            border
+            rounded-full
+            px-4
+            py-3
+            text-sm
+            focus:outline-none
+          "
         />
 
         <button className="px-5 py-3 rounded-full bg-black text-white">

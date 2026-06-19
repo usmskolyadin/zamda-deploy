@@ -208,6 +208,7 @@ class AdvertisementLike(models.Model):
 class AdvertisementImage(models.Model):
     ad = models.ForeignKey(Advertisement, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="ads/")
+    image_original = models.ImageField(upload_to="ads/original/", blank=True, null=True)
 
     def __str__(self):
         return f"Image for {self.ad.title}"

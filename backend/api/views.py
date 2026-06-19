@@ -681,7 +681,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
-        filters.OrderingFilter,
+        # filters.OrderingFilter,
     ]
     
     filterset_class = AdvertisementFilter
@@ -716,29 +716,16 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         qs = (
             Advertisement.objects
             .select_related("owner", "subcategory__category")
-            .prefetch_related("images", "likes", "extra_values__field_definition")
-        )
-
-        now_ts = now()
-        
-        homepage = self.request.query_params.get("homepage")
-
-        if homepage == "true":
-            qs = qs.order_by("-is_pinned", "-created_at")
-
-        if ENABLE_LIFECYCLE_CLEANUP:
-            qs.filter(
-                status=AdvertisementStatus.ACTIVE,
-                created_at__lte=now_ts - timedelta(days=ACTIVE_LIFETIME_DAYS)
-            ).update(
-                status=AdvertisementStatus.ARCHIVED,
-                status_changed_at=now_ts
+            .prefetch_related(
+                "images",
+                "likes",
+                "extra_values__field_definition"
             )
+        )
 
         user = self.request.user
         action = self.action
 
-        # владелец должен иметь доступ к своим объявлениям
         if action in [
             "update",
             "partial_update",
@@ -749,7 +736,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         ]:
             return qs.filter(owner=user)
 
-        # просмотр конкретного объявления
+
         if action == "retrieve":
             if user.is_authenticated:
                 return qs.filter(
@@ -757,14 +744,24 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
                     Q(owner=user)
                 )
 
-            return qs.filter(status=AdvertisementStatus.ACTIVE)
+            return qs.filter(
+                status=AdvertisementStatus.ACTIVE
+            )
 
-        # обычный список сайта
-        # поиск
-        # категории
-        # рекомендации
-        # и т.д.
-        return qs.filter(status=AdvertisementStatus.ACTIVE)
+
+        qs = qs.filter(
+            status=AdvertisementStatus.ACTIVE
+        )
+
+
+        if self.request.query_params.get("homepage") == "true":
+            return qs.order_by(
+                "-is_pinned",
+                "-created_at"
+            )
+
+
+        return qs.order_by("-created_at")
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

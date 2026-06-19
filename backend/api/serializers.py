@@ -1,5 +1,7 @@
 import json
 import uuid
+from io import BytesIO
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 from .models import (
     Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
@@ -10,6 +12,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from .models import Report
 from backend.storages import MediaStorage
+from .services.watermark import add_watermark
 media_storage = MediaStorage()
 
 
@@ -181,7 +184,7 @@ class ExtraFieldDefinitionSerializer(serializers.ModelSerializer):
 class AdvertisementImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdvertisementImage
-        fields = ['id', 'image']
+        fields = ['id', 'image', 'image_original']
 
 class AdvertisementExtraFieldSerializer(serializers.ModelSerializer):
     field_key = serializers.CharField(source='field_definition.key', read_only=True)
@@ -225,10 +228,11 @@ def cast_value_by_type(raw_value, field_type):
 
 class AdvertisementImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
+    image_original = serializers.ImageField(use_url=True, read_only=True)
 
     class Meta:
         model = AdvertisementImage
-        fields = ["id", "image"]
+        fields = ["id", "image", "image_original"]
 
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -597,13 +601,21 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             )
 
         for f in files:
-            filename = media_storage.save(
+            f.seek(0)
+            wm_buf, orig_buf = add_watermark(f)
+
+            wm_name = media_storage.save(
                 f"advertisements/{f.name}",
-                f
+                ContentFile(wm_buf.getvalue())
+            )
+            orig_name = media_storage.save(
+                f"ads/original/{f.name}",
+                ContentFile(orig_buf.getvalue())
             )
             AdvertisementImage.objects.create(
                 ad=ad,
-                image=filename
+                image=wm_name,
+                image_original=orig_name
             )
 
         return ad
@@ -646,13 +658,21 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             ad.images.exclude(id__in=existing_ids).delete()
 
         for f in new_images:
-            filename = media_storage.save(
+            f.seek(0)
+            wm_buf, orig_buf = add_watermark(f)
+
+            wm_name = media_storage.save(
                 f"advertisements/{f.name}",
-                f
+                ContentFile(wm_buf.getvalue())
+            )
+            orig_name = media_storage.save(
+                f"ads/original/{f.name}",
+                ContentFile(orig_buf.getvalue())
             )
             AdvertisementImage.objects.create(
                 ad=ad,
-                image=filename
+                image=wm_name,
+                image_original=orig_name
             )
 
         return ad

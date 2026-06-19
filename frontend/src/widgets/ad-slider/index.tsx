@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { useLikeAd } from "@/src/features/hooks/use-like-ad";
 import { useAuth } from "@/src/features/context/auth-context";
-import logo from "@/public/zamda-white.png";
-import Image from "next/image";
+
 
 interface AdSliderProps {
   ad: Advertisement;
@@ -40,44 +39,19 @@ export default function AdSlider({ ad }: AdSliderProps) {
   return (
     <div className="max-w-[712px] relative">
       <div className="relative">
-        <img
-          src={images[activeIndex].image}
-          alt={ad.title}
-          className="rounded-3xl w-full object-cover min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px] cursor-zoom-in"
-          onClick={() => setIsFullscreen(true)}
-        />
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="
-              absolute
-              bottom-6
-              right-6
-              flex
-              items-center
-              gap-1
-              opacity-[0.3]
-              select-none
-            "
-          >
-            <Image
-              src={logo}
-              alt="ZAMDA"
-              width={36}
-              height={36}
-              className="object-contain invert brightness-0"
-            />
-
-            <span
-              className="
-                text-white
-                font-extrabold
-                text-3xl
-                tracking-tight
-              "
-            >
-              ZAMDA
-            </span>
-          </div>
+        
+        <div className="relative rounded-3xl overflow-hidden min-h-[300px] max-h-[300px] lg:max-h-[400px] lg:h-[600px]">
+          <img
+            src={images[activeIndex].image}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-80"
+          />
+          <img
+            src={images[activeIndex].image}
+            alt={ad.title}
+            className="relative w-full h-full object-contain cursor-zoom-in"
+            onClick={() => setIsFullscreen(true)}
+          />
         </div>
         <button
           onClick={toggleLike}
@@ -183,69 +157,55 @@ export default function AdSlider({ ad }: AdSliderProps) {
       )}
 
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black/90 z-[9999] flex flex-col items-center justify-center">
-          <button
-            onClick={() => setIsFullscreen(false)}
-            className="absolute top-4 cursor-pointer right-6 text-white text-4xl font-bold hover:text-gray-400 transition"
-          >
-            ✕
-          </button>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden">
+  {/* BACKGROUND BLUR */}
+  <div
+    className="absolute inset-0 scale-110"
+    style={{
+      backgroundImage: `url(${images[activeIndex].image})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      filter: "blur(30px)",
+      transform: "scale(1.1)",
+    }}
+  />
 
-          <img
-            src={images[activeIndex].image}
-            alt="fullscreen"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-lg"
-          />
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="
-              absolute
-              bottom-3/5
-              right-2/5
-              flex
-              items-center
-              gap-1
-              opacity-[0.20]
-              select-none
-            "
-          >
-            <Image
-              src={logo}
-              alt="ZAMDA"
-              width={48}
-              height={48}
-              className="object-contain invert brightness-0"
-            />
+  {/* DARK OVERLAY */}
+  <div className="absolute inset-0 bg-black/40" />
 
-            <span
-              className="
-                text-white
-                font-extrabold
-                text-5xl
-                tracking-tight
-              "
-            >
-              ZAMDA
-            </span>
-          </div>
-        </div>
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prev}
-                className="absolute cursor-pointer left-6 text-white text-6xl hover:text-gray-300 transition"
-              >
-                ‹
-              </button>
-              <button
-                onClick={next}
-                className="absolute cursor-pointer right-6 text-white text-6xl hover:text-gray-300 transition"
-              >
-                ›
-              </button>
-            </>
-          )}
-        </div>
+  {/* CLOSE BUTTON */}
+  <button
+    onClick={() => setIsFullscreen(false)}
+    className="absolute top-4 right-6 text-white text-4xl font-bold hover:text-gray-300 transition z-50"
+  >
+    ✕
+  </button>
+
+  {/* IMAGE */}
+  <img
+    src={images[activeIndex].image}
+    alt="fullscreen"
+    className="relative z-50 max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+  />
+
+  {/* NAV */}
+  {images.length > 1 && (
+    <>
+      <button
+        onClick={prev}
+        className="absolute left-6 text-white text-6xl hover:text-gray-300 transition z-50"
+      >
+        ‹
+      </button>
+      <button
+        onClick={next}
+        className="absolute right-6 text-white text-6xl hover:text-gray-300 transition z-50"
+      >
+        ›
+      </button>
+    </>
+  )}
+</div>
       )}
     </div>
   );

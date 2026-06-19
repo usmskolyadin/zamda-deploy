@@ -40,7 +40,7 @@ export interface Advertisement {
   reject_reason: string;
   category_slug: string
   location: string;
-  images: { id: number; image: string }[];
+  images: { id: number; image: string; image_original?: string | null }[];
   time_left: number;
   status: string;
   is_pinned: boolean;

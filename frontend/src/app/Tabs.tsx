@@ -63,14 +63,15 @@ export default function TabsExample() {
       let url = `/api/ads/?homepage=true&page=${pageNum}&page_size=${PAGE_SIZE}`;
 
       const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
-        const sortedResults = sortPinnedFirst(data.results);
+
+      const sorted = [...data.results].sort(
+        (a,b)=>Number(b.is_pinned)-Number(a.is_pinned)
+      );
 
       setAds(prev =>
         pageNum === 1
-          ? data.results.sort((a, b) => Number(b.is_pinned) - Number(a.is_pinned))
-          : [...prev, ...data.results].sort(
-              (a, b) => Number(b.is_pinned) - Number(a.is_pinned)
-            )
+          ? sorted
+          : [...prev, ...sorted]
       );
       
       setHasNext(Boolean(data.next));
