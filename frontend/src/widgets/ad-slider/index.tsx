@@ -40,11 +40,11 @@ export default function AdSlider({ ad }: AdSliderProps) {
     <div className="max-w-[712px] relative">
       <div className="relative">
         
-        <div className="relative rounded-3xl overflow-hidden min-h-[300px] max-h-[300px] lg:max-h-[370px] lg:h-[600px]">
+        <div className="relative rounded-3xl overflow-hidden min-h-[150px] max-h-[300px] lg:max-h-[370px] lg:h-[600px]  flex items-center justify-center">
           <img
             src={images[activeIndex].image}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-80"
+            className="absolute inset-0 w-full h-full object-cover object-center blur-lg scale-110 opacity-80"
           />
           <img
             src={images[activeIndex].image}
