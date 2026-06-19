@@ -325,7 +325,7 @@ export default function AdActions({ ad }: AdPageProps) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[#2AAEF7] font-semibold text-lg">
-                {ad.owner.last_name} {ad.owner.first_name}
+                {ad.owner.first_name} {ad.owner.last_name} 
               </h2>
             </div>
             <div className="flex items-center text-sm text-gray-700">
