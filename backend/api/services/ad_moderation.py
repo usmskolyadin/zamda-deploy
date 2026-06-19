@@ -101,7 +101,7 @@ class AdModerationService:
 
         for cat, items in self.illegal_entities.items():
             for item in items:
-                if item in text:
+                if re.search(rf'\b{re.escape(item)}\b', text):
                     score += self.weights["text_match"]
                     reasons.append(f"TEXT:{cat}:{item}")
 
@@ -167,7 +167,7 @@ class AdModerationService:
 
         for img in images:
             try:
-                content = img.image.read()
+                content = img.image.storage.open(img.image.name).read()
 
                 image = vision.Image(content=content)
 
@@ -221,7 +221,6 @@ class AdModerationService:
                                 reasons.append(f"OCR:{cat}:{item}")
 
             except Exception as e:
-                score += 0.2
                 print("VISION ERROR:", e)
                 traceback.print_exc()
 
