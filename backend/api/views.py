@@ -1858,7 +1858,8 @@ def process_referral(request, user, ref_code=None):
         referral=referral,
         new_user=user,
         ip=ip,
-        user_agent=user_agent
+        user_agent=user_agent,
+        registered_at=user.date_joined,
     )
 
 def get_client_ip(request):

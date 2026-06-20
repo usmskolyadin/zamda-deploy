@@ -223,16 +223,41 @@ admin.site.register(Review)
 admin.site.register(Ad)
 
 from django.contrib import admin
-from .models import Referral
+from .models import Referral, ReferralConversion
 from django.db.models import Count
+from django.utils import timezone
+
+
+class ReferralConversionInline(admin.TabularInline):
+    model = ReferralConversion
+    fields = ("new_user", "registered_at", "ip", "created_at")
+    readonly_fields = ("new_user", "registered_at", "ip", "created_at")
+    extra = 0
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Referral)
 class ReferralAdmin(admin.ModelAdmin):
-    list_display = ("code", "owner", "created_at", "converted_count", "copy_link")
-
+    list_display = ("name", "code", "owner", "converted_count", "created_at", "copy_link")
+    list_filter = ("created_at",)
+    search_fields = ("name", "code", "owner__email", "owner__first_name", "owner__last_name")
     readonly_fields = ("code", "created_at", "converted_count", "copy_link")
+    inlines = [ReferralConversionInline]
 
+    fieldsets = (
+        (None, {
+            "fields": ("name", "owner")
+        }),
+        ("Ссылка", {
+            "fields": ("code", "copy_link")
+        }),
+        ("Статистика", {
+            "fields": ("converted_count", "created_at")
+        }),
+    )
 
     def copy_link(self, obj):
         link = obj.link
@@ -272,6 +297,19 @@ class ReferralAdmin(admin.ModelAdmin):
     def converted_count(self, obj):
         return obj.conversions
 
-    converted_count.short_description = "Referrals"
+    converted_count.short_description = "Приведено"
 
-admin.site.register(ReferralConversion)
+
+@admin.register(ReferralConversion)
+class ReferralConversionAdmin(admin.ModelAdmin):
+    list_display = ("referral", "new_user", "registered_at", "ip", "created_at")
+    list_filter = ("registered_at", "created_at", "referral__name")
+    search_fields = ("referral__name", "referral__code", "new_user__email", "new_user__first_name")
+    readonly_fields = ("referral", "new_user", "ip", "user_agent", "registered_at", "created_at")
+    date_hierarchy = "registered_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

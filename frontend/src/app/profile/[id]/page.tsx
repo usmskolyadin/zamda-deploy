@@ -202,7 +202,7 @@ useEffect(() => {
                     ${
                       isFollowing
                         ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
-                        : "bg-[#2AAEF7] text-white hover:bg-[#1698df]"
+                        : "bg-[#ff9d20] text-white hover:opacity-90"
                     }
                   `}
                 >
@@ -305,7 +305,7 @@ useEffect(() => {
             text-white
           "
         >
-          No phone provided
+          Show phone
         </button>
       )
     ) : (

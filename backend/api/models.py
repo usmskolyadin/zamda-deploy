@@ -375,12 +375,6 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
-@receiver(post_save, sender=User)
-def create_user_referral(sender, instance, created, **kwargs):
-    if created:
-        Referral.objects.get_or_create(owner=instance)
-
-
 class ReviewReply(models.Model):
     review = models.OneToOneField(
         'Review',
@@ -534,6 +528,7 @@ import uuid
 
 
 class Referral(models.Model):
+    name = models.CharField(max_length=100, blank=True)
     code = models.CharField(max_length=50, unique=True, blank=True)
 
     owner = models.ForeignKey(
@@ -546,7 +541,7 @@ class Referral(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            self.code = slugify(self.owner.username)
+            self.code = slugify(self.name)
         super().save(*args, **kwargs)
 
     @property
@@ -554,7 +549,7 @@ class Referral(models.Model):
         return f"https://zamda.com/register?ref={self.code}"
 
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class ReferralConversion(models.Model):
@@ -563,6 +558,7 @@ class ReferralConversion(models.Model):
 
     ip = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True, null=True)
+    registered_at = models.DateTimeField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

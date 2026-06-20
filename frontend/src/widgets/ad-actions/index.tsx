@@ -255,7 +255,7 @@ export default function AdActions({ ad }: AdPageProps) {
               onClick={() => setPhoneModalOpen(true)}
               className="w-full text-center p-3.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition text-white"
             >
-              Verify phone to view seller number
+              Show phone
             </button>
           )}
 
@@ -365,7 +365,7 @@ export default function AdActions({ ad }: AdPageProps) {
                         ${
                           isFollowing
                             ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                            : "bg-gray-200 text-black hover:bg-gray-300"
+                            : "bg-[#ff9d20] text-white hover:opacity-90"
                         }
                       `}
                     >
