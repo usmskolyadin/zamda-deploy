@@ -232,7 +232,7 @@ const [showPassword, setShowPassword] = useState(false);
               </p>
               <button
                 type="submit"
-                className="cursor-pointer hover:opacity-80 transition mt-3 bg-black w-[120px] mx-auto h-[44px] rounded-3xl flex justify-center items-center text-white"
+                className="cursor-pointer hover:opacity-80 transition mt-3 bg-black w-full mx-auto h-[44px] rounded-3xl flex justify-center items-center text-white"
               >
                 Login
               </button>

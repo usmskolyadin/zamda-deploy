@@ -104,7 +104,7 @@ export default function Favorites() {
 
                             </div>
 
-                            <p className="text-md text-gray-600 mt-2 line-clamp-3 break-all overflow-hidden">
+                            <p className="text-md text-gray-600 mt-2 line-clamp-3 whitespace-pre-wrap break-words overflow-hidden">
                                 {ad.description}
                             </p>
                             <div className="flex justify-between w-1/3 mt-2">

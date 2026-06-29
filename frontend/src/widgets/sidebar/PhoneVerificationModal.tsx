@@ -188,8 +188,7 @@ export default function PhoneVerificationModal({
             )}
 
             <p className="text-xs text-center text-gray-800 mt-3 leading-relaxed">
-              We only accept US phone numbers for verification
-              to ensure marketplace safety.
+              We only accept North American phone numbers for verification to ensure marketplace safety.
             </p>
 
             <button

@@ -55,7 +55,7 @@ export default function AdPageClient({ ad }: { ad: Advertisement }) {
             <Link className="hover:underline" href={`/${ad.category_slug}/${ad.subcategory}`}>{ad.subcategory}</Link> / {ad.title}
           </p>
           <div className="lg:flex">
-            <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 py-1">
+            <h1 className="w-2/3 text-black font-bold lg:text-4xl text-2xl lg:py-4 py-1">
               {ad.title}
               <div className="flex mt-2">
                 <span className="flex items-center text-black text-sm font-medium px-3 py-2 bg-gray-200 rounded-2xl mr-2">

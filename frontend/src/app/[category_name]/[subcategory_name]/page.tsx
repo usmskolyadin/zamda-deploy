@@ -162,12 +162,14 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
                                   </h2>
                                   <div className="flex items-center text-sm text-gray-700">
                                     <span className="mr-1 text-black text-md font-bold">{ad.owner.profile?.rating}</span>
-                                    <div className="flex text-yellow-400 mr-1">
-                                      {[...Array(4)].map((_, i) => (
-                                        <FaStar key={i} />
+                                      <div className="flex text-yellow-400 mr-1">
+                                      {[...Array(5)].map((_, i) => (
+                                          <FaStar 
+                                              key={i}
+                                              className={i < ad.owner.profile?.rating ? "text-yellow-400" : "text-yellow-400 opacity-30"}
+                                          />
                                       ))}
-                                      <FaStar className="opacity-50" />
-                                    </div>
+                                      </div>
                                     <p
                                       className="text-[#2AAEF7] text-md ml-1 hover:underline"
                                     >
