@@ -219,7 +219,7 @@ export default function Header() {
                   </div>
 
                   ) : (
-                    <p className='ml-8 w-36 text-right text-white'><Link href={"/login"}>Sign in</Link> | <Link href={"/register"}>Sign up</Link></p>
+                    <p className='ml-8 w-36 text-right text-white'><Link className="text-white hover:underline" href={"/login"}>Sign in</Link> | <Link className="text-white hover:underline" href={"/register"}>Sign up</Link></p>
                   )
                 }
               </div>

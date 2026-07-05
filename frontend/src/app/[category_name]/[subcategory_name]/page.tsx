@@ -184,7 +184,6 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
                     </div>
                 ))
               )}
-
             </div>
           </div>
         </div>

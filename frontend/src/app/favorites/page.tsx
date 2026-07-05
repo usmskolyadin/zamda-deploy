@@ -88,7 +88,7 @@ export default function Favorites() {
                         <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-3">
                             <div className="w-full flex items-center justify-between">
                             <h1 className="text-xl text-black font-bold truncate pr-2">
-                                {ad.title}
+                                {ad.title.length > 30 ? `${ad.title.slice(0, 30)}...` : ad.title}
                             </h1>
                             <span className="text-sm text-gray-500 flex-shrink-0 ml-2">
                                 {new Date(ad.created_at).toLocaleString("en-US", {
@@ -140,8 +140,7 @@ export default function Favorites() {
                             </div>
                             </div>
                         </div>
-                        </div>
-
+                      </div>
                 </Link>
                 ))}
               </div>

@@ -62,7 +62,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white z-50 shadow-[0_-6px_20px_rgba(0,0,0,0.12)]">
-      <div className="flex lg:hidden justify-around items-center py-1.5">
+      <div className="flex lg:hidden justify-around items-center py-1">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           const isProtected = protectedTabs.includes(tab.id);
@@ -90,8 +90,8 @@ export default function BottomNav() {
               </div>
 
               <span
-                className={`mt-1 ${
-                  isActive ? "text-black font-medium" : ""
+                className={`text-xs mt-1 font-medium text-gray-700 ${
+                  isActive ? "text-black font-semibold" : ""
                 }`}
               >
                 {tab.label}

@@ -280,7 +280,7 @@ export default function Chat() {
             rounded-full
             px-4
             py-3
-            text-sm
+            text-base
             focus:outline-none
           "
         />

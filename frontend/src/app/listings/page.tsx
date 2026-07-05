@@ -211,7 +211,7 @@ export const AdListings = ({
         <img
           src={ad.images[0]?.image}
           alt={ad.title}
-          className="rounded-2xl lg:h-56 lg:w-86 h-52 w-full object-cover"
+          className="rounded-2xl lg:h-56 lg:w-72 h-52 w-full object-cover"
           width={288}
           height={192}
         />
