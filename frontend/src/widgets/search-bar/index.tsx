@@ -2,24 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
 import BackButton from "../back-button";
-import LoadingSpinner from '@/src/components/LoadingSpinner';
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useAuth } from "@/src/features/context/auth-context";
 
-interface Advertisement {
-  id: number;
-  title: string;
+interface SuggestResponse {
+  suggestions: string[];
+  categories: { slug: string; name: string }[];
 }
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Advertisement[]>([]);
-  const [loading, setLoading] = useState(false);
-  const user = useAuth()
-  const pathname = usePathname(); 
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
+  const { user } = useAuth()
+  const pathname = usePathname();
+  const router = useRouter();
   const [n_unreadCount, setNUnreadCount] = useState<number>(0)
 
   useEffect(() => {
@@ -29,7 +29,6 @@ export default function SearchBar() {
       try {
         const data = await apiFetchAuth<{ unread_count: number }>('/api/notifications/unread_count/')
         setNUnreadCount(data.unread_count)
-        console.log(data.unread_count)
       } catch (err) {
         console.error('Error fetching unread notifications:', err)
       }
@@ -43,61 +42,98 @@ export default function SearchBar() {
   useEffect(() => {
     setQuery("");
     setSuggestions([]);
+    setCategories([]);
   }, [pathname]);
 
   useEffect(() => {
     if (query.length < 2) {
       setSuggestions([]);
+      setCategories([]);
       return;
     }
 
     const fetchSuggestions = async () => {
-      setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/ads/?search=${query}`);
-        const data = await res.json();
-        setSuggestions(data.results || []);
+        const res = await fetch(`${API_URL}/api/ads/suggest/?q=${encodeURIComponent(query)}`);
+        if (!res.ok) { console.error("Suggest error:", res.status); return; }
+        const data: SuggestResponse = await res.json();
+        setSuggestions(data.suggestions || []);
+        setCategories(data.categories || []);
       } catch (error) {
         console.error("Ошибка поиска:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
-    const timeout = setTimeout(fetchSuggestions, 400);
+    const timeout = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeout);
   }, [query]);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?query=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  const showDropdown = (suggestions.length > 0 || categories.length > 0) && query.length >= 2;
+
   return (
-    <div className="relative flex items-center lg:mt-4 mt-2 lg:mb-2 mb-0 lg:mt-0 lg:mb-0">
+    <form onSubmit={handleSubmit} className="relative flex items-center lg:mt-4 mt-2 lg:mb-2 mb-0 lg:mt-0 lg:mb-0">
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-4 border-0.5  border text-gray-900 border-black rounded-3xl ml-2 lg:h-[44px] h-[35px] lg:w-[510px] w-60"
+        className="p-4 border-0.5 border text-gray-900 border-black rounded-3xl ml-2 lg:h-[44px] h-[35px] lg:w-[510px] w-60 pr-[90px] outline-none"
         placeholder="Find an Ad..."
         type="text"
       />
-      {loading && (
-        <div className="absolute top-12 left-4">
-          <LoadingSpinner size={18} />
+
+      {showDropdown && (
+        <div className="absolute top-12 left-0 w-full bg-white border border-gray-200 rounded-2xl shadow-lg z-50 py-2 overflow-hidden">
+          {suggestions.length > 0 && (
+            <div>
+              <div className="px-4 py-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                Suggestions
+              </div>
+              {suggestions.map((word, i) => (
+                <Link
+                  key={i}
+                  href={`/search?query=${encodeURIComponent(word)}`}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition"
+                >
+                  <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span className="text-sm text-black">{word}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {categories.length > 0 && (
+            <div className={suggestions.length > 0 ? "border-t border-gray-100 mt-1 pt-1" : ""}>
+              <div className="px-4 py-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                Categories
+              </div>
+              {categories.map((cat, i) => (
+                <Link
+                  key={i}
+                  href={`/search?category=${cat.slug}`}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition"
+                >
+                  <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span className="text-sm text-black">{cat.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
-      {suggestions.length > 0 && (
-        <div className="absolute top-12 left-0 w-full bg-white border border-gray-200 rounded-3xl m-1 z-50">
-          {suggestions.map((ad) => (
-            <Link
-              key={ad.id}
-              href={`/search?query=${encodeURIComponent(ad.title)}`}
-              className="block px-4 py-2 rounded-2xl hover:bg-gray-100 text-black"
-            >
-              {ad.title}
-            </Link>
-          ))}
-        </div>
-      )}
-      <Link
-        href={`/search?query=${encodeURIComponent(query)}`}
-        className="hover:opacity-80 transition bg-black w-[82px] absolute lg:right-0 right-[92px] lg:h-[44px] h-[35px] rounded-3xl flex justify-center items-center"
+
+      <button
+        type="submit"
+        className="hover:opacity-80 transition bg-black w-[82px] absolute lg:right-0 right-[92px] lg:h-[44px] h-[35px] rounded-3xl flex justify-center items-center cursor-pointer"
       >
         <svg
           width="24"
@@ -105,7 +141,6 @@ export default function SearchBar() {
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className=""
         >
           <path d="M17 17L21 21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <path
@@ -116,7 +151,8 @@ export default function SearchBar() {
             strokeLinejoin="round"
           />
         </svg>
-      </Link>
+      </button>
+
       <div className="absolute lg:hidden right-12 top-0.5">
         <Link href={"/notifications"} className="relative inline-flex items-center justify-center w-9 h-9">
           <svg
@@ -149,8 +185,6 @@ export default function SearchBar() {
         </Link>
       </div>
       <BackButton absolute className="lg:hidden" />
-
-      
-    </div>
+    </form>
   );
 }

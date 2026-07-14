@@ -7,13 +7,14 @@ import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
-import { FaCheck, FaCheckDouble } from "react-icons/fa";
+import { FaCheck, FaCheckDouble, FaPaperclip } from "react-icons/fa";
 import BackButton from "@/src/widgets/back-button";
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { SendIcon } from "lucide-react";
 
 type UserProfile = { avatar?: string | null };
 type Owner = { id: number; first_name: string; last_name: string; profile: UserProfile };
-type Message = { id?: number; chat: number; sender: number; text: string; created_at: string; is_read: boolean; isMine?: boolean; tempId?: string };
+type Message = { id?: number; chat: number; sender: number; text: string; created_at: string; is_read: boolean; images?: string[]; isMine?: boolean; tempId?: string };
 type Chat = { id: number; ad_title: string; buyer: Owner; seller: Owner; messages: Message[]; created_at: string };
 
 export default function Chat() {
@@ -27,6 +28,10 @@ export default function Chat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const firstLoadRef = useRef(true);
 
   const handleScroll = () => {
@@ -59,25 +64,26 @@ export default function Chat() {
       const serverMessages: Message[] = Array.isArray(msgsResponse) ? msgsResponse : msgsResponse.results || [];
 
       setMessages(prev => {
-        const serverMap = new Map<number, Message>();
-        serverMessages.forEach(m => serverMap.set(m.id!, { ...m, isMine: m.sender === user?.id }));
+        const serverIds = new Set<number>();
+        const result: Message[] = [];
 
-        // Сохраняем временные сообщения (у которых нет id)
-        const tempMessages = prev.filter(m => m.id === undefined);
+        for (const m of serverMessages) {
+          const msg = { ...m, isMine: m.sender === user?.id };
+          serverIds.add(msg.id!);
+          result.push(msg);
+        }
 
-        // Убираем дубликаты: если сервер вернул реальное сообщение с тем же текстом, убираем временное
-        const filteredTemp = tempMessages.filter(tm => !Array.from(serverMap.values()).some(sm => sm.text === tm.text));
+        for (const m of prev) {
+          if (m.id === undefined || !serverIds.has(m.id)) {
+            result.push(m);
+          }
+        }
 
-        // Объединяем и сортируем
-        const merged = [
-          ...serverMap.values(),
-          ...filteredTemp
-        ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-        return merged;
+        return result.sort((a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
       });
 
-      // mark read
       await apiFetchAuth(`/api/chats/${chatId}/mark-read/`, { method: "POST" });
 
       setLoading(false);
@@ -101,7 +107,7 @@ export default function Chat() {
 }, [accessToken, chatId, user?.id]);
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!text) return;
+    if (!text && selectedFiles.length === 0) return;
     const tempId = Date.now().toString();
     const tempMessage: Message = {
       chat: chatId,
@@ -115,19 +121,37 @@ export default function Chat() {
     setMessages(prev => [...prev, tempMessage]);
     setText("");
 
+    const body = selectedFiles.length > 0
+      ? (() => {
+          const fd = new FormData();
+          fd.append("chat", String(chatId));
+          if (text) fd.append("text", text);
+          selectedFiles.forEach(f => fd.append("images", f));
+          return fd;
+        })()
+      : JSON.stringify({ chat: chatId, text });
+
     try {
       const created = await apiFetchAuth<Message>("/api/messages/", {
         method: "POST",
-        body: JSON.stringify({ chat: chatId, text }),
+        body,
       });
 
-      // заменяем временное сообщение реальным
+      console.log("Message created:", created);
+
+      if (!created || !created.id) {
+        console.error("Server returned no id for message");
+        setMessages(prev => prev.filter(m => m.tempId !== tempId));
+        return;
+      }
+
       setMessages(prev =>
         prev.map(m => (m.tempId === tempId ? { ...created, isMine: true } : m))
       );
+      setSelectedFiles([]);
     } catch (err) {
-      console.error("Failed to send message", err);
-      // если не отправилось, можно оставить tempMessage или пометить ошибку
+      console.error("Failed to send message:", err);
+      setMessages(prev => prev.filter(m => m.tempId !== tempId));
     }
   };
 
@@ -139,6 +163,25 @@ export default function Chat() {
       behavior: smooth ? "smooth" : "auto",
     });
   };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(prev => {
+      const combined = [...prev, ...files].slice(0, 5);
+      return combined;
+    });
+    e.target.value = "";
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    const urls = selectedFiles.map(f => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+    return () => urls.forEach(u => URL.revokeObjectURL(u));
+  }, [selectedFiles]);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -217,9 +260,35 @@ export default function Chat() {
                   : "bg-white text-black border border-gray-200"}
               `}
             >
-              <div className="text-sm whitespace-pre-wrap break-words">
-                {m.text}
-              </div>
+              {m.images && m.images.length > 0 && (
+                <div className={`grid gap-1 mb-1 ${m.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                  {m.images.map((url, i) => {
+                    const count = m.images!.length;
+                    let cls = "rounded-lg object-cover w-full cursor-pointer transition hover:opacity-90 ";
+                    if (count === 1) cls += "max-h-80";
+                    else if (count === 2) cls += "h-44";
+                    else if (count === 3 && i === 0) cls += "col-span-2 h-52";
+                    else if (count === 3) cls += "h-32";
+                    else if (count === 4) cls += "h-36";
+                    else cls += "h-32";
+                    return (
+                      <img
+                        key={i}
+                        src={url}
+                        alt=""
+                        className={cls}
+                        onClick={() => setLightboxUrl(url)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {m.text && (
+                <div className="text-sm whitespace-pre-wrap break-words">
+                  {m.text}
+                </div>
+              )}
 
               <div className="flex justify-between items-center mt-1">
                 <span className={`text-[10px] ${m.isMine ? "text-blue-100" : "text-gray-400"}`}>
@@ -264,31 +333,80 @@ export default function Chat() {
           border-t border-gray-200
           bg-white text-black
           p-3
-          flex gap-2
           sticky bottom-0
           min-w-0
         "
         >
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder="Write a message…"
-          className="
-            flex-1
-            min-w-0
-            border
-            rounded-full
-            px-4
-            py-3
-            text-base
-            focus:outline-none
-          "
-        />
+        {selectedFiles.length > 0 && (
+          <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+            {previewUrls.map((url, i) => (
+              <div key={i} className="relative shrink-0">
+                <img src={url} alt="" className="w-16 h-16 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-        <button className="px-5 py-3 rounded-full bg-black text-white">
-          Send
-        </button>
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-3 cursor-pointer rounded-full rounded-full border  hover:bg-gray-100 transition"
+          >
+            <FaPaperclip className="w-5 h-5 text-gray-800" />
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
+          <input
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Write a message…"
+            className="
+              flex-1
+              min-w-0
+              border
+              rounded-full
+              px-4
+              py-3
+              text-base
+              focus:outline-none
+            "
+          />
+
+          <button className="px-5 py-3 rounded-full cursor-pointer hover:opacity-80 transition bg-black text-white shrink-0">
+            <SendIcon className="w-5 h-5" />
+          </button>
+        </div>
       </form>
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center cursor-pointer"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <img
+            src={lightboxUrl}
+            alt=""
+            className="max-w-[90vw] max-h-[90vh] object-contain cursor-default"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
 
     </div>
   </div>

@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
+    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, PushSubscriptionView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -47,4 +47,5 @@ urlpatterns = [
     path("auth/google/", GoogleAuthView.as_view()),
     path("password/reset/request/", PasswordResetRequestView.as_view()),
     path("password/reset/confirm/", PasswordResetConfirmView.as_view()),
+    path("push/subscribe/", PushSubscriptionView.as_view()),
 ]

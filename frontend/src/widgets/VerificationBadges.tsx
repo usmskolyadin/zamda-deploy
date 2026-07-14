@@ -8,6 +8,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+// import phoneimage from "../../public/phone.png";
 
 const GoogleIcon = ({
   size = 28,

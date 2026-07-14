@@ -4,7 +4,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from .models import (
-    Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
+    Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, MessageImage, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserFollow, UserProfile, Message, UserVerification
 )
 from django.contrib.auth.models import User
@@ -678,18 +678,38 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         return ad
 
 
+class MessageImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MessageImage
+        fields = ["id", "image"]
+
+
 class MessageSerializer(serializers.ModelSerializer):
     chat = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all())
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = ['id', 'chat', 'sender', 'text', 'created_at', 'is_read']
+        fields = ['id', 'chat', 'sender', 'text', 'created_at', 'is_read', 'images']
         read_only_fields = ['sender', 'created_at', 'is_read']
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        return [
+            request.build_absolute_uri(img.image.url) if request else img.image.url
+            for img in obj.images.all()
+        ]
 
     def create(self, validated_data):
         request = self.context.get('request')
         validated_data['sender'] = request.user
-        return super().create(validated_data)
+        message = super().create(validated_data)
+
+        files = request.FILES.getlist("images")
+        for f in files[:5]:
+            MessageImage.objects.create(message=message, image=f)
+
+        return message
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -767,6 +787,13 @@ class NotificationSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from .models import PushSubscription
+
+class PushSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PushSubscription
+        fields = ("id", "endpoint", "p256dh_key", "auth_key", "created_at")
+        read_only_fields = ("id", "created_at")
 
 class RegisterRequestSerializer(serializers.Serializer):
     first_name = serializers.CharField()

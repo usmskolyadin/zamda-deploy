@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/src/shared/api/base";
+import { useAuth } from "@/src/features/context/auth-context";
 import LocationMap from "../location-map/LocationMap";
 import AdsBlock from "../ad/AdBannerClient";
 import { StickyAdBlock } from "../ad/StickyBanner";
@@ -36,12 +37,21 @@ export default function Filters({ initialSubcategory, categorySlug}: FiltersProp
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
   const [location, setLocation] = useState("");
+  const [radius, setRadius] = useState("");
+  const [customRadius, setCustomRadius] = useState("50");
   const [freshness, setFreshness] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [extraFields, setExtraFields] = useState<ExtraFieldDefinition[]>([]);
   const [extraValues, setExtraValues] = useState<Record<string, string | number | boolean>>({});
 
+  const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!location && user?.profile?.city) {
+      setLocation(user.profile.city);
+    }
+  }, [user]);
 
   useEffect(() => {
     const url = categorySlug
@@ -77,6 +87,11 @@ export default function Filters({ initialSubcategory, categorySlug}: FiltersProp
     if (priceFrom) params.append("price_min", priceFrom);
     if (priceTo) params.append("price_max", priceTo);
     if (location) params.append("location", location);
+    if (radius === "custom" && customRadius) {
+      params.append("radius", customRadius);
+    } else if (radius) {
+      params.append("radius", radius);
+    }
     if (freshness) {
       const date = new Date();
       date.setDate(date.getDate() - Number(freshness));
@@ -112,6 +127,10 @@ export default function Filters({ initialSubcategory, categorySlug}: FiltersProp
               setPriceTo={setPriceTo}
               location={location}
               setLocation={setLocation}
+              radius={radius}
+              setRadius={setRadius}
+              customRadius={customRadius}
+              setCustomRadius={setCustomRadius}
               extraFields={extraFields}
               extraValues={extraValues}
               setExtraValues={setExtraValues}
@@ -153,6 +172,10 @@ export default function Filters({ initialSubcategory, categorySlug}: FiltersProp
               setPriceTo={setPriceTo}
               location={location}
               setLocation={setLocation}
+              radius={radius}
+              setRadius={setRadius}
+              customRadius={customRadius}
+              setCustomRadius={setCustomRadius}
               extraFields={extraFields}
               extraValues={extraValues}
               setExtraValues={setExtraValues}
@@ -176,6 +199,10 @@ type FiltersBodyProps = {
   setPriceTo: (v: string) => void;
   location: string;
   setLocation: (v: string) => void;
+  radius: string;
+  setRadius: (v: string) => void;
+  customRadius: string;
+  setCustomRadius: (v: string) => void;
   extraFields: ExtraFieldDefinition[];
   extraValues: Record<string, any>;
   setExtraValues: React.Dispatch<
@@ -194,6 +221,10 @@ function FiltersBody({
   setPriceTo,
   location,
   setLocation,
+  radius,
+  setRadius,
+  customRadius,
+  setCustomRadius,
   extraFields,
   extraValues,
   setExtraValues,
@@ -252,9 +283,62 @@ function FiltersBody({
         placeholder="City, region..."
       />
     </label>
-      <LocationMap location={location} />
 
+    <div className="mt-3">
+      <span className="text-black font-semibold text-base mb-2 block">Radius</span>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {[
+          { label: "Recommended", value: "" },
+          { label: "20 mi", value: "20" },
+          { label: "40 mi", value: "40" },
+          { label: "60 mi", value: "60" },
+          { label: "100 mi", value: "100" },
+        ].map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setRadius(opt.value === radius ? "" : opt.value)}
+            className={`px-3 py-1 rounded-full text-sm font-medium border transition cursor-pointer ${
+              radius === opt.value
+                ? "bg-[#2AAEF7] text-white border-[#2AAEF7]"
+                : "bg-white text-gray-700 border-gray-300 hover:border-[#2AAEF7]"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setRadius(radius === "custom" ? "" : "custom")}
+          className={`px-3 py-1 rounded-full text-sm font-medium border transition cursor-pointer ${
+            radius === "custom"
+              ? "bg-[#2AAEF7] text-white border-[#2AAEF7]"
+              : "bg-white text-gray-700 border-gray-300 hover:border-[#2AAEF7]"
+          }`}
+        >
+          Custom
+        </button>
       </div>
+      {radius === "custom" && (
+        <div className="mt-2">
+          <input
+            type="range"
+            min="1"
+            max="500"
+            value={customRadius}
+            onChange={(e) => setCustomRadius(e.target.value)}
+            className="w-full accent-[#2AAEF7]"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>1 mi</span>
+            <span className="font-semibold text-black">{customRadius} mi</span>
+            <span>500 mi</span>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <LocationMap location={location} radius={radius === "custom" ? customRadius : radius} />
+
+  </div>
 
   {extraFields.length > 0 && (
     <div className="mb-4">

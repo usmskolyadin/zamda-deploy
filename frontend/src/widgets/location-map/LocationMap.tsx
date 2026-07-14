@@ -5,12 +5,18 @@ import { MapContainer, TileLayer, Circle, CircleMarker, Popup } from "react-leaf
 import L from "leaflet";
 
 interface LocationMapProps {
-  location: string; // адрес
+  location: string;
+  radius?: string;
 }
 
 const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
 
-export default function LocationMap({ location }: LocationMapProps) {
+function milesToMeters(miles: string): number {
+  const n = parseFloat(miles);
+  return isNaN(n) ? 2000 : n * 1609.34;
+}
+
+export default function LocationMap({ location, radius }: LocationMapProps) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
 
@@ -62,7 +68,7 @@ export default function LocationMap({ location }: LocationMapProps) {
         </CircleMarker>
         <Circle
           center={[coords.lat, coords.lng]}
-          radius={2000}
+          radius={radius ? milesToMeters(radius) : 2000}
           pathOptions={{ color: "blue", fillColor: "blue", fillOpacity: 0.2 }}
         />
       </MapContainer>

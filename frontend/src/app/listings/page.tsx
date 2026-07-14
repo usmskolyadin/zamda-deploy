@@ -71,8 +71,8 @@ useEffect(() => {
 }, [isInitialized, accessToken, profileId]);
 
   const fetchAds = async (tab: typeof activeTab) => {
-    const res = await apiFetchAuth<{ results: Advertisement[] }>(`/api/ads/my/?tab=${tab}`);
-    setAds(res?.results || []);
+    const res = await apiFetchAuth<Advertisement[]>(`/api/ads/my/?tab=${tab}`);
+    setAds(res || []);
   };
 useEffect(() => {
   if (!isInitialized) return;

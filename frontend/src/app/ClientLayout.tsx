@@ -5,15 +5,18 @@ import Header from '@/src/widgets/header';
 import BottomNav from '@/src/widgets/bottom-nav';
 import Footer from '@/src/widgets/footer';
 import ScrollToTopButton from '../entities/scroll-top-button';
+import PushProvider from '@/src/features/push-notification/PushProvider';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <Header />
-      <main className="lg:mt-32 mt-24">{children}</main>
-      <ScrollToTopButton />
-      <BottomNav />
-      <Footer />
+      <PushProvider>
+        <Header />
+        <main className="lg:mt-32 mt-24">{children}</main>
+        <ScrollToTopButton />
+        <BottomNav />
+        <Footer />
+      </PushProvider>
     </AuthProvider>
   );
 }

@@ -353,7 +353,7 @@ class Message(models.Model):
         related_name="sent_messages",
         on_delete=models.CASCADE
     )
-    text = models.TextField()
+    text = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
@@ -362,7 +362,33 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.text[:30]}"
-    
+
+
+class MessageImage(models.Model):
+    message = models.ForeignKey(
+        Message,
+        related_name="images",
+        on_delete=models.CASCADE
+    )
+    image = models.ImageField(upload_to="chat/")
+
+    def __str__(self):
+        return f"Image for message {self.message.id}"
+
+
+class PushSubscription(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions")
+    endpoint = models.URLField(max_length=500)
+    p256dh_key = models.CharField(max_length=255)
+    auth_key = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "endpoint")
+
+    def __str__(self):
+        return f"PushSubscription for {self.user.username}"
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

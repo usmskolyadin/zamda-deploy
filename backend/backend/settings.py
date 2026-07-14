@@ -236,3 +236,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(BASE_DIR / "keys/google.json")
+
+WEBPUSH_VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+WEBPUSH_VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+WEBPUSH_VAPID_CLAIMS_EMAIL = os.getenv("VAPID_CLAIMS_EMAIL", "support@zamda.net")

@@ -34,8 +34,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Notification, Referral, ReferralConversion
-from .serializers import NotificationSerializer
+from .models import Notification, PushSubscription, Referral, ReferralConversion
+from .serializers import NotificationSerializer, PushSubscriptionSerializer
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter
 import logging
 import requests
@@ -916,11 +916,6 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         else:
             qs = qs.exclude(status=AdvertisementStatus.ARCHIVED)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
@@ -1107,7 +1102,37 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-        
+    @action(detail=False, methods=["get"], permission_classes=[AllowAny], url_path="suggest")
+    def suggest(self, request):
+        q = request.query_params.get("q", "").strip()
+        if len(q) < 2:
+            return Response({"suggestions": [], "categories": []})
+
+        titles = (
+            Advertisement.objects.filter(
+                status=AdvertisementStatus.ACTIVE, title__icontains=q
+            )
+            .values_list("title", flat=True)[:30]
+        )
+
+        words = set()
+        q_lower = q.lower()
+        for title in titles:
+            for word in title.split():
+                w = word.strip(".,!?\"'()[]{}")
+                if w.lower().startswith(q_lower) and len(w) > len(q):
+                    words.add(w)
+
+        suggestions = sorted(words)[:8]
+
+        categories = Category.objects.filter(name__icontains=q)[:4]
+        cats = [
+            {"slug": c.slug, "name": c.name} for c in categories
+        ]
+
+        return Response({"suggestions": suggestions, "categories": cats})
+
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -1369,10 +1394,38 @@ class NotificationViewSet(viewsets.ModelViewSet):  # <- ModelViewSet вмест�
 
         return Response({"status": "ok"})
 
+
+class PushSubscriptionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PushSubscriptionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        sub, created = PushSubscription.objects.update_or_create(
+            user=request.user,
+            endpoint=serializer.validated_data["endpoint"],
+            defaults={
+                "p256dh_key": serializer.validated_data["p256dh_key"],
+                "auth_key": serializer.validated_data["auth_key"],
+            },
+        )
+        return Response(PushSubscriptionSerializer(sub).data, status=status.HTTP_201_OK if created else status.HTTP_200_OK)
+
+    def delete(self, request):
+        endpoint = request.data.get("endpoint") or request.query_params.get("endpoint")
+        if not endpoint:
+            return Response({"error": "endpoint required"}, status=status.HTTP_400_BAD_REQUEST)
+        PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     from django.db.models import Q
 
     def get_queryset(self):

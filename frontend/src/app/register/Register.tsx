@@ -1,10 +1,10 @@
 'use client'
 
 import { API_URL } from "@/src/shared/api/base";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Register() {
   const searchParams = useSearchParams();
@@ -19,9 +19,24 @@ export default function Register() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [detectedCity, setDetectedCity] = useState("");
+  const [showCityConfirm, setShowCityConfirm] = useState(false);
+  const [confirmedCity, setConfirmedCity] = useState("");
   const router = useRouter();
   const verifiedPhone = searchParams?.get("phone") ?? "";
   const refCode = searchParams?.get("ref") ?? "";
+
+  useEffect(() => {
+    fetch("https://ip-api.com/json/?fields=city")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.city) {
+          setDetectedCity(data.city);
+          setShowCityConfirm(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -146,6 +161,19 @@ const handleRegister = async (e: React.FormEvent) => {
         setSuccess("Registration complete!");
         localStorage.setItem("access_token", data.access);
         localStorage.setItem("refresh_token", data.refresh);
+
+        if (confirmedCity) {
+          try {
+            await fetch(`${API_URL}/api/users/me/`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${data.access}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ "profile.city": confirmedCity }),
+            });
+          } catch {}
+        }
 
         setTimeout(() => router.push("/login"), 1500);
       }
@@ -299,6 +327,35 @@ const [showPassword2, setShowPassword2] = useState(false);
                   Verify & Finish
                 </button>
               </form>
+            )}
+
+            {showCityConfirm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="bg-white rounded-3xl p-6 max-w-sm w-full mx-4 shadow-xl">
+                  <div className="flex justify-center mb-3">
+                    <MapPin className="text-[#2AAEF7] w-8 h-8" />
+                  </div>
+                  <p className="text-black text-lg font-semibold text-center mb-2">Is this your city?</p>
+                  <p className="text-gray-700 text-center text-2xl font-bold mb-6">{detectedCity}</p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setConfirmedCity(detectedCity);
+                        setShowCityConfirm(false);
+                      }}
+                      className="flex-1 bg-[#2AAEF7] text-white rounded-3xl h-[44px] font-semibold cursor-pointer hover:bg-blue-400 transition"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      onClick={() => setShowCityConfirm(false)}
+                      className="flex-1 bg-gray-200 text-black rounded-3xl h-[44px] font-semibold cursor-pointer hover:bg-gray-300 transition"
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             <p className="text-black mt-4 text-center">

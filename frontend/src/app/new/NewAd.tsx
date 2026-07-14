@@ -573,19 +573,17 @@ const handleSubmit = async (e: FormEvent) => {
               
             </div>
             
-            <Link href={'/listings'}>
               <button
                 type="submit"
                 className="bg-black/50 invisible text-white rounded-3xl px-6 py-2 mt-4 hover:bg-gray-800 transition mb-4"
               >
                 Back
               </button>
-            </Link>
             
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`bg-black text-white rounded-3xl px-6 py-2 mt-4 transition mb-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+              className={`bg-black cursor-pointer text-white rounded-3xl px-6 py-2 mt-4 transition mb-4 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
             >
               Create Ad
             </button>
