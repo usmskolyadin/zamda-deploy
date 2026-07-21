@@ -1078,10 +1078,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         )
 
         if status == "active":
-            qs = qs.filter(
-                status=AdvertisementStatus.ACTIVE,
-                created_at__gt=expiration_border
-            )
+            qs = qs.filter(status=AdvertisementStatus.ACTIVE)
         elif status == "archived":
             qs = qs.filter(
                 status=AdvertisementStatus.ARCHIVED,

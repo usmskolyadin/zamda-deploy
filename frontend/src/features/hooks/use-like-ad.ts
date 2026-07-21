@@ -37,9 +37,12 @@ export function useLikeAd(adSlug: string | undefined, token: string | null) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
       const updated = await res.json();
 
-      // обновляем с сервера
       mutate(
         {
           ...data,
@@ -50,7 +53,6 @@ export function useLikeAd(adSlug: string | undefined, token: string | null) {
       );
     } catch (err) {
       console.error("Failed to like ad:", err);
-      // откат в случае ошибки
       mutate(data, false);
     }
   };

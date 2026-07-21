@@ -188,8 +188,6 @@ export default function VerificationBadges({
               />
             )}
           </div>
-
-          {/* Статус */}
           <span
             className={`text-sm font-medium ${
               verified
