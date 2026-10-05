@@ -38,8 +38,8 @@ export default async function Home() {
     <div className="w-full">
       <section className="bg-white pb-16 pt-14 p-4">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
-        <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Everything with No Fees</h1>
-        <h1 className="text-md mt-4 font-bold text-black text-center">Your Simple Local Marketplace. Join Americans Trading Today.</h1>
+        <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Locally Across the U.S.</h1>
+        <h1 className="text-md mt-4 font-bold text-black text-center">Cars, homes, jobs, services, and more.</h1>
         <div className="max-w-screen-xl mx-auto mt-8">
           <div className="grid md:grid-cols-5 grid-cols-2 lg:gap-14 gap-8">
             {cards
