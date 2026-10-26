@@ -4,7 +4,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from .models import (
-    Ad, AdvertisementImage, AdvertisementStatus, Category, Chat, ExtraFieldOption, MessageImage, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
+    Ad, AdvertisementImage, AdvertisementReport, AdvertisementStatus, Category, Chat, ExtraFieldOption, MessageImage, Notification, NotificationUserState, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory,
     ExtraFieldDefinition, Advertisement, AdvertisementExtraField, UserFollow, UserProfile, Message, UserVerification
 )
 from django.contrib.auth.models import User
@@ -19,6 +19,17 @@ media_storage = MediaStorage()
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
+        fields = [
+            "id",
+            "reason",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+class AdvertisementReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementReport
         fields = [
             "id",
             "reason",
@@ -600,7 +611,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 value=value
             )
 
-        for f in files:
+        for order, f in enumerate(files):
             f.seek(0)
             wm_buf, orig_buf = add_watermark(f)
 
@@ -615,7 +626,8 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             AdvertisementImage.objects.create(
                 ad=ad,
                 image=wm_name,
-                image_original=orig_name
+                image_original=orig_name,
+                order=order
             )
 
         return ad
@@ -657,7 +669,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
                 existing_ids = json.loads(existing_ids)
             ad.images.exclude(id__in=existing_ids).delete()
 
-        for f in new_images:
+        def _create_image(f, order):
             f.seek(0)
             wm_buf, orig_buf = add_watermark(f)
 
@@ -672,8 +684,31 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             AdvertisementImage.objects.create(
                 ad=ad,
                 image=wm_name,
-                image_original=orig_name
+                image_original=orig_name,
+                order=order
             )
+
+        image_order = request.data.get("image_order")
+        if image_order:
+            if isinstance(image_order, str):
+                image_order = json.loads(image_order)
+
+        if image_order:
+            new_files_iter = iter(new_images)
+            for position, entry in enumerate(image_order):
+                if entry.get("type") == "existing":
+                    ad.images.filter(id=entry.get("id")).update(order=position)
+                else:
+                    f = next(new_files_iter, None)
+                    if f is not None:
+                        _create_image(f, position)
+        else:
+            from django.db.models import Max
+            base_order = (
+                ad.images.aggregate(Max("order"))["order__max"] or 0
+            ) + 1
+            for i, f in enumerate(new_images):
+                _create_image(f, base_order + i)
 
         return ad
 

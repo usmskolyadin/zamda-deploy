@@ -10,7 +10,7 @@ import Image from 'next/image';
 
 import { API_URL, apiFetch } from '@/src/shared/api/base';
 import { ChevronDown } from "lucide-react";
-import ImageUploader from '@/src/widgets/image-uploader/ImageUploader';
+import ImageUploader, { ImageItem } from '@/src/widgets/image-uploader/ImageUploader';
 import { LatLngExpression } from 'leaflet';
 import Link from 'next/link';
 
@@ -92,11 +92,8 @@ const maptilerStyles = {
   light: "dataviz",
   winter: "winter",
 };
-type ExistingImage = { id: number; url: string };
-
 const [errorMessage, setErrorMessage] = useState<string | null>(null); // <-- сюда ошибки
-const [existingImages, setExistingImages] = useState<ExistingImage[]>([]); 
-const [newImages, setNewImages] = useState<File[]>([]);
+const [imageItems, setImageItems] = useState<ImageItem[]>([]);
 
 const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
 
@@ -279,7 +276,7 @@ const handleSubmit = async (e: FormEvent) => {
     return;
   }
 
-  if ((existingImages?.length ?? 0) + (newImages?.length ?? 0) < 1) {
+  if ((imageItems?.length ?? 0) < 1) {
     alert("Minimum 1 image!");
     setIsSubmitting(false);
     return;
@@ -294,8 +291,10 @@ const handleSubmit = async (e: FormEvent) => {
   formData.append('extra', JSON.stringify(extraValues));
   formData.append('location', locationInput);
 
-  newImages.forEach((file) => {
-    formData.append('images', file, file.name);
+  imageItems.forEach((item) => {
+    if (item.type === 'new') {
+      formData.append('images', item.file, item.file.name);
+    }
   });
 
   try {
@@ -440,10 +439,8 @@ const handleSubmit = async (e: FormEvent) => {
             </label>
               <div>
               <ImageUploader
-                existingImages={existingImages}
-                setExistingImages={setExistingImages}
-                newImages={newImages}
-                setNewImages={setNewImages} 
+                items={imageItems}
+                setItems={setImageItems}
               />
                     {errorMessage && (
                   <p className="text-red-600 text-sm mt-1">{errorMessage}</p>

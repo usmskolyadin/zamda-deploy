@@ -99,6 +99,21 @@ useEffect(() => {
     }
   };
 
+  const handleDeleteArchived = async (slug: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete this advertisement? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      await apiFetchAuth(`/api/ads/${slug}/`, { method: "DELETE" });
+      fetchAds(activeTab);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete the advertisement");
+    }
+  };
+
   function formatTimeLeft(seconds: number) {
     if (seconds <= 0) return "Expired";
     const days = Math.floor(seconds / (3600 * 24));
@@ -177,7 +192,7 @@ if (!isInitialized) {
                 </div>
               ) : (
                 ads.map((ad) => (
-                  <AdListings onRelist={handleRelist} formatTimeLeft={formatTimeLeft} ad={ad} activeTab={activeTab} />
+                  <AdListings onRelist={handleRelist} onDelete={handleDeleteArchived} formatTimeLeft={formatTimeLeft} ad={ad} activeTab={activeTab} />
                 ))
               )}
             </div>
@@ -192,6 +207,7 @@ interface AdListingsProps {
   ad: Advertisement
   activeTab: "active" | "archived" | "moderation" | "rejected"
   onRelist?: (slug: string) => void
+  onDelete?: (slug: string) => void
   formatTimeLeft: (seconds: number) => string
 }
 
@@ -199,6 +215,7 @@ export const AdListings = ({
   ad,
   activeTab,
   onRelist,
+  onDelete,
   formatTimeLeft,
 }: AdListingsProps) => {
   const isClickable = activeTab === "active"
@@ -285,6 +302,13 @@ export const AdListings = ({
               className="px-4 py-1 rounded-full cursor-pointer bg-[#2AAEF7] text-white hover:bg-blue-700 transition"
             >
               Reactivate
+            </button>
+
+            <button
+              onClick={() => onDelete?.(ad.slug)}
+              className="px-4 py-1 rounded-full cursor-pointer bg-red-400 text-white hover:bg-red-500 transition"
+            >
+              Delete
             </button>
           </div>
         )}

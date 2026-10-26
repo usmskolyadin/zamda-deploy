@@ -121,3 +121,12 @@ input[type="password"] {
 .delay-500 {
   animation-delay: 500ms;
 }
+
+.no-scrollbar {
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

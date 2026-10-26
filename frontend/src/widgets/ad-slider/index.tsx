@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { useLikeAd } from "@/src/features/hooks/use-like-ad";
 import { useAuth } from "@/src/features/context/auth-context";
+import ReportAdButton from "@/src/widgets/report-ad";
 
 
 interface AdSliderProps {
@@ -33,8 +35,10 @@ export default function AdSlider({ ad }: AdSliderProps) {
   const next = () =>
     setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
 
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { isLiked, likesCount, toggleLike } = useLikeAd(ad.slug, accessToken);
+  const router = useRouter();
+  const isOwner = user?.username === ad.owner.username;
 
   return (
     <div className="max-w-[712px] relative">
@@ -119,6 +123,12 @@ export default function AdSlider({ ad }: AdSliderProps) {
         <div className="absolute top-14 right-0 bg-black text-white text-sm px-3 py-1 rounded-lg shadow-lg animate-fade-in-out">
           Link copied!
         </div>
+      )}
+      {!isOwner && (
+        <ReportAdButton
+          adSlug={ad.slug}
+          onRequireLogin={accessToken ? undefined : () => router.push("/login")}
+        />
       )}
         {images.length > 1 && (
           <>

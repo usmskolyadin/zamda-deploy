@@ -46,15 +46,15 @@ export default async function Home() {
             .sort((a, b) => Number(b.priority) - Number(a.priority))
             .map((card, index) => (
               <Link key={index} href={card.href}>
-                <div className={`${card.bg} lg:w-[195px] hover:opacity-80  transition w-full lg:h-[170px] h-[170px] rounded-2xl p-4`}>
+                <div className={`${card.bg} relative overflow-hidden lg:w-[195px] hover:opacity-80 transition w-full lg:h-[170px] h-[170px] rounded-2xl p-4`}>
+                  <h2 className="relative z-10 font-bold text-black lg:text-lg text-left">{card.title}</h2>
                   <img
                     src={card.image}
                     width={200}
                     height={300}
-                    className="lg:h-[95px] h-[95px] object-contain"
+                    className="absolute -bottom-4 -right-4 lg:h-[120px] h-[120px] w-auto object-contain pointer-events-none"
                     alt={card.title}
                   />
-                  <h2 className="font-bold text-black lg:text-lg pt-1 truncate">{card.title}</h2>
                 </div>
               </Link>
             ))}

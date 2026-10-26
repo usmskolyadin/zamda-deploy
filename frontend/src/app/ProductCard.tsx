@@ -50,13 +50,12 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
               e.preventDefault();
               e.stopPropagation();
 
-              // TODO: логика закрепления
               console.log("pin");
             }}
             className="absolute top-2 left-2 cursor-pointer rounded-full"
           >
             <div className="bg-black/30 p-2 rounded-full">
-              <PinIcon className="w-6 h-6" />
+              <PinIcon className="w-6 h-6 text-white" />
             </div>
           </button>)
             }

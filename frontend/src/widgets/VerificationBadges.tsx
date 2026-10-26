@@ -7,6 +7,7 @@ import {
   FaPhone,
   FaCheckCircle,
 } from "react-icons/fa";
+import { PhoneIcon } from "../shared/ui/PhoneIcon";
 
 // import phoneimage from "../../public/phone.png";
 
@@ -46,6 +47,7 @@ const GoogleIcon = ({
         fill="#FBBC05"
         d="M0 37V11l17 13z"
       />
+
       <path
         clipPath={`url(#${clipId})`}
         fill="#EA4335"
@@ -99,7 +101,7 @@ const badges = [
   {
     key: "phone",
     label: "Phone",
-    icon: FaPhone,
+    icon: PhoneIcon,
     colorClass: "text-[#22C55E]",
     getVerified: (v?: VerificationStatus | null) =>
       Boolean(v?.phone_verified),
@@ -156,7 +158,6 @@ export default function VerificationBadges({
             }
           `}
         >
-          {/* Иконка + галочка */}
           <div className="relative">
             {badge.key === "google" ? (
               <GoogleIcon

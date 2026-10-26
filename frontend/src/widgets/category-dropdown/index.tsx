@@ -71,7 +71,7 @@ export default function CategoryDropdown() {
           ${
             open
               ? "bg-[#E5E9F2] text-black"
-              : "bg-black text-white hover:bg-[#E5E9F2] hover:text-black"
+              : "bg-[#2AAEF7] text-white hover:bg-[#E5E9F2] hover:text-black"
           }`}
       >
         <span>All categories</span>

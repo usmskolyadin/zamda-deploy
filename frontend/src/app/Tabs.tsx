@@ -135,7 +135,7 @@ export default function TabsExample() {
           <div className="flex justify-center mt-8">
             <button
               onClick={loadMore}
-              className="cursor-pointer px-6 py-3 rounded-3xl bg-[#2AAEF7] text-white font-semibold hover:bg-blue-500 transition"
+              className="cursor-pointer px-6 py-3 rounded-3xl bg-[#2AAEF7] text-white font-medium hover:bg-blue-500 transition"
             >
               Load more
             </button>

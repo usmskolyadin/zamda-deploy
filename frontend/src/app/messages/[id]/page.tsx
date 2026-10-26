@@ -372,20 +372,33 @@ export default function Chat() {
             onChange={handleFileSelect}
           />
 
-          <input
+          <textarea
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={e => {
+              setText(e.target.value);
+
+              const el = e.currentTarget;
+              el.style.height = "auto";
+              el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+            }}
             placeholder="Write a message…"
+            rows={1}
             className="
               flex-1
               min-w-0
+              w-full
+              resize-none
+              overflow-y-auto
+              no-scrollbar
               border
-              rounded-full
+              rounded-3xl
               px-4
               py-3
               text-base
+              leading-6
               focus:outline-none
             "
+            style={{ maxHeight: "160px" }}
           />
 
           <button className="px-5 py-3 rounded-full cursor-pointer hover:opacity-80 transition bg-black text-white shrink-0">

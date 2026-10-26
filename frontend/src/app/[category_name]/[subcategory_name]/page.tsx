@@ -97,25 +97,28 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
                     <div key={ad.id} className="bg-[#F2F1F0] rounded-2xl hover:opacity-70 transition p-4 lg:flex mt-3">
                       <div className="lg:w-1/3">
                         <div className="relative">
-                          <img
-                            src={ad.images[0]?.image || "/placeholder.png"}
-                            alt={ad.title}
-                            width={200}
-                            height={150}
-                            className="rounded-xl object-cover w-full max-h-40"
-                          />
-
+                          <Link className="cursor-pointer" href={`/${params.category_name}/${params.subcategory_name}/${ad.slug}`}>
+                            <img
+                              src={ad.images[0]?.image || "/placeholder.png"}
+                              alt={ad.title}
+                              width={200}
+                              height={150}
+                              className="rounded-xl object-cover w-full max-h-40"
+                            />
+                          </Link>
                         </div>
                         <div className="flex gap-2 mt-2 mr-2">
                           {ad.images.slice(0, 2).map((img) => (
-                            <img
-                              key={img.id}
-                              className="rounded-2xl max-h-24 w-1/2 object-cover"
-                              src={img.image}
-                              width={900}
-                              height={600}
-                              alt={ad.title}
-                            />
+                            <Link className="cursor-pointer" href={`/${params.category_name}/${params.subcategory_name}/${ad.slug}`}>
+                              <img
+                                key={img.id}
+                                className="rounded-2xl max-h-24 w-1/2 object-cover"
+                                src={img.image}
+                                width={900}
+                                height={600}
+                                alt={ad.title}
+                              />
+                            </Link>
                           ))}
                         </div>
                       </div>

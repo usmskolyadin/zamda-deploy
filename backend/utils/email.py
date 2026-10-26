@@ -6,7 +6,7 @@ from django.conf import settings
 
 def send_email(to_email, subject, html_content, text_content=None):
     message = Mail(
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=(settings.DEFAULT_FROM_EMAIL, "ZAMDA"),
         to_emails=to_email,
         subject=subject,
         html_content=html_content,

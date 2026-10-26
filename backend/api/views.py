@@ -10,9 +10,9 @@ from api.services.ad_moderation import AdModerationService
 from .pagination import AdvertisementPagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Ad, AdvertisementLike, AdvertisementStatus, AdvertisementView, Category, Chat, EmailChangeCode, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
+from .models import Ad, AdvertisementLike, AdvertisementReport, AdvertisementStatus, AdvertisementView, Category, Chat, EmailChangeCode, NotificationUserState, PasswordResetCode, Review, ReviewImage, ReviewReply, ReviewReport, SubCategory, ExtraFieldDefinition, Advertisement, Message, UserProfile
 from .serializers import (
-    AdSerializer, CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
+    AdSerializer, AdvertisementReportSerializer, CategorySerializer, ChatSerializer, CustomTokenObtainPairSerializer, MessageSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer, ProfileSerializer, ReportSerializer, ReviewReplySerializer, ReviewReportSerializer, ReviewSerializer, SubCategorySerializer,
     ExtraFieldDefinitionSerializer, AdvertisementSerializer, UserVerificationSerializer
 )
 from .permissions import IsOwnerOrReadOnly
@@ -43,6 +43,9 @@ from django.conf import settings
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from utils.email import send_email
 import requests
 
 from django.conf import settings
@@ -753,18 +756,14 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             status=AdvertisementStatus.ACTIVE
         )
 
-
-        if self.request.query_params.get("homepage") == "true":
-            return qs.order_by(
-                "-is_pinned",
-                "-created_at"
-            )
-
-
-        return qs.order_by("-created_at")
+        return qs.order_by("-is_pinned", "-created_at")
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        if instance.status == AdvertisementStatus.ARCHIVED:
+            instance.delete()
+            return Response(status=204)
 
         instance.status = AdvertisementStatus.ARCHIVED
         instance.status_changed_at = now()
@@ -1015,6 +1014,55 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             logger.exception("Error")
             return Response({"detail": str(e)}, status=500)
         
+    @action(detail=True, methods=["post"])
+    def report(self, request, slug=None):
+        ad = self.get_object()
+
+        if ad.owner == request.user:
+            return Response({"detail": "You cannot report your own ad"}, status=400)
+
+        serializer = AdvertisementReportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        AdvertisementReport.objects.update_or_create(
+            ad=ad,
+            reporter=request.user,
+            defaults=serializer.validated_data
+        )
+
+        total_reports = AdvertisementReport.objects.filter(ad=ad).count()
+
+        if total_reports > 5 and ad.status != AdvertisementStatus.REJECTED:
+            reported_reasons = (
+                AdvertisementReport.objects
+                .filter(ad=ad)
+                .values_list("reason", flat=True)
+                .distinct()
+            )
+            reason_labels = [
+                dict(AdvertisementReport.REASON_CHOICES)[r]
+                for r in reported_reasons
+            ]
+
+            ad.status = AdvertisementStatus.REJECTED
+            ad.reject_reason = "Removed due to multiple user reports"
+            ad.save(update_fields=["status", "reject_reason", "status_changed_at"])
+
+            html_content = render_to_string("emails/ad_reported.html", {
+                "ad_title": ad.title,
+                "reasons": reason_labels,
+                "first_name": ad.owner.first_name,
+            })
+
+            send_email(
+                to_email=ad.owner.email,
+                subject="ZAMDA — Your listing has been removed",
+                html_content=html_content,
+                text_content=strip_tags(html_content)
+            )
+
+        return Response({"detail": "Report submitted"}, status=201)
+
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def view(self, request, slug=None):
         ad = self.get_object()

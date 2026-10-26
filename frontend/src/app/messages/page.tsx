@@ -24,6 +24,7 @@ type Chat = {
   buyer: Owner;
   seller: Owner;
   created_at: string;
+  unread_count: number;
   messages: { id: number; text: string; created_at: string; sender: number; is_read: boolean }[];
 };
 
@@ -51,7 +52,7 @@ const items = useMemo(() => {
     .map((c) => ({
       ...c,
       last: c.messages?.[c.messages.length - 1],
-      unread: c.unread,
+      unread: c.unread_count,
     }))
     .sort((a, b) => {
       const at = a.last ? new Date(a.last.created_at).getTime() : 0;
@@ -112,16 +113,19 @@ if (loading) return <LoadingScreen />;
 >
     <Link key={c.id} href={`/messages/${c.id}`} className="block">
 <div
-  className="
+  className={`
     flex relative flex-col sm:flex-row sm:items-center sm:justify-between
     gap-2 sm:gap-0
     rounded-2xl sm:rounded-3xl
     p-3 sm:p-5
-    border border-gray-200
-    bg-gray-100
+    border
     transition
-    hover:bg-gray-200 hover:shadow-md
-  "
+    ${
+      c.unread > 0
+        ? "border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 hover:bg-blue-100 hover:shadow-md"
+        : "border-gray-200 bg-gray-100 hover:bg-gray-200 hover:shadow-md"
+    }
+  `}
 >
   {/* LEFT */}
   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -149,7 +153,7 @@ if (loading) return <LoadingScreen />;
       </div>
 
       {/* MESSAGE */}
-      <div className="text-gray-600 text-sm truncate">
+      <div className={`text-sm truncate ${c.unread > 0 ? "text-black font-semibold" : "text-gray-600"}`}>
         {last?.text || "No messages yet"}
       </div>
     </div>

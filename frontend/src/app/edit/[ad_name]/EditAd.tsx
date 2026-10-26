@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { API_URL, apiFetch } from '@/src/shared/api/base';
 import { ChevronDown } from "lucide-react";
-import ImageUploader from '@/src/widgets/image-uploader/ImageUploader';
+import ImageUploader, { ImageItem } from '@/src/widgets/image-uploader/ImageUploader';
 import { LatLngExpression } from 'leaflet';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -53,15 +53,13 @@ export default function EditAd() {
   const [location, setLocation] = useState<string>('');
   const [latLng, setLatLng] = useState<LatLngExpression>([38.5816, -121.4944]);
   const [isActive, setIsActive] = useState<boolean>(true);
-  const [images, setImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
+  const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [locationInput, setLocationInput] = useState<string>('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [extraFields, setExtraFields] = useState<any[]>([]);
   const [extraValues, setExtraValues] = useState<{ [key: string]: any }>({});
-  const [newImages, setNewImages] = useState<File[]>([]); // только что выбранные файлы
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter()
   
@@ -151,7 +149,14 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
         });
         setExtraValues(extras);
 
-        setExistingImages((ad.images || []).map((img: any) => ({ id: img.id, url: img.image })));
+        setImageItems(
+          (ad.images || []).map((img: any) => ({
+            key: `existing-${img.id}`,
+            type: 'existing' as const,
+            id: img.id,
+            url: img.image,
+          }))
+        );
         if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
       } catch (err) {
         console.error(err);
@@ -239,9 +244,17 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     formData.append('location', locationInput || location);
     formData.append('extra', JSON.stringify(extraValues));
 
-    newImages.forEach(file => formData.append('images', file));
+    const imageOrder = imageItems.map((item) => {
+      if (item.type === 'existing') return { type: 'existing', id: item.id };
+      formData.append('images', item.file);
+      return { type: 'new' };
+    });
 
-    formData.append('existing_ids', JSON.stringify(existingImages.map(img => img.id)));
+    formData.append(
+      'existing_ids',
+      JSON.stringify(imageItems.filter(item => item.type === 'existing').map(item => item.id))
+    );
+    formData.append('image_order', JSON.stringify(imageOrder));
 
     const res = await fetch(`${API_URL}/api/ads/${adId}/`, {
       method: 'PATCH',
@@ -314,10 +327,8 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
             <div className="col-span-2">
               <ImageUploader
-                existingImages={existingImages}
-                setExistingImages={setExistingImages}
-                newImages={newImages}
-                setNewImages={setNewImages}
+                items={imageItems}
+                setItems={setImageItems}
               />
             </div>
              {extraFields.length > 0 && (

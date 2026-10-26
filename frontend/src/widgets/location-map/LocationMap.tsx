@@ -48,7 +48,7 @@ export default function LocationMap({ location, radius }: LocationMapProps) {
   if (!coords) return <div className="text-gray-500">Type location for map</div>;
 
   return (
-    <div className="w-full h-[300px] mt-4 rounded-xl overflow-hidden border border-gray-300">
+    <div className="relative z-0 w-full h-[300px] mt-4 rounded-xl overflow-hidden border border-gray-300">
       <MapContainer
         center={[coords.lat, coords.lng]}
         zoom={13}

@@ -37,6 +37,36 @@ export default function ProfileEdit() {
   const [success, setSuccess] = useState("");
   const { advs } = useAds("favorites")
 
+  const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
+
+  const detectCityAutomatically = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        fetch(
+          `https://api.maptiler.com/geocoding/${longitude},${latitude}.json?key=${MAPTILER_KEY}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            const features = data.features || [];
+            const place =
+              features.find((f: any) => f.place_type?.includes("place")) ||
+              features[0];
+            const city = place?.text || place?.place_name;
+
+            if (!city) return;
+
+            setProfileData((prev) => (prev.city ? prev : { ...prev, city }));
+          })
+          .catch(() => {});
+      },
+      () => {}
+    );
+  };
+
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -50,6 +80,10 @@ export default function ProfileEdit() {
           city: data.profile?.city || "",
           avatar: null,
         });
+
+        if (!data.profile?.city) {
+          detectCityAutomatically();
+        }
 
         setGeneralData({
           email: data.email || "",

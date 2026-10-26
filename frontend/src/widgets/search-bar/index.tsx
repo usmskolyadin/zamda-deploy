@@ -82,7 +82,7 @@ export default function SearchBar() {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="p-4 border-0.5 border text-gray-900 border-black rounded-3xl ml-2 lg:h-[44px] h-[35px] lg:w-[510px] w-60 pr-[90px] outline-none"
+        className="p-4 border-0.5 border text-gray-900 border-[#2AAEF7] rounded-3xl ml-2 lg:h-[44px] h-[35px] lg:w-[510px] w-60 pr-[90px] outline-none"
         placeholder="Find an Ad..."
         type="text"
       />
@@ -133,7 +133,7 @@ export default function SearchBar() {
 
       <button
         type="submit"
-        className="hover:opacity-80 transition bg-black w-[82px] absolute lg:right-0 right-[92px] lg:h-[44px] h-[35px] rounded-3xl flex justify-center items-center cursor-pointer"
+        className="hover:opacity-80 transition bg-[#2AAEF7] w-[82px] absolute lg:right-0 right-[92px] lg:h-[44px] h-[35px] rounded-3xl flex justify-center items-center cursor-pointer"
       >
         <svg
           width="24"

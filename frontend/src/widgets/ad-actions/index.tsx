@@ -414,7 +414,7 @@ export default function AdActions({ ad }: AdPageProps) {
             ].map((text, idx) => (
               <button
                 key={idx}
-                onClick={() => handleQuickMessage(text)} 
+                onClick={() => handleQuickMessage(text)}
                 className="bg-black text-white cursor-pointer rounded-full text-sm px-4 py-3 text-left hover:bg-gray-800 transition"
               >
                 {text}

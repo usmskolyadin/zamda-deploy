@@ -209,6 +209,10 @@ class AdvertisementImage(models.Model):
     ad = models.ForeignKey(Advertisement, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="ads/")
     image_original = models.ImageField(upload_to="ads/original/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
 
     def __str__(self):
         return f"Image for {self.ad.title}"
@@ -224,6 +228,31 @@ class AdvertisementExtraField(models.Model):
 
     def __str__(self):
         return f"{self.field_definition.name}: {self.value}"
+
+
+class AdvertisementReport(models.Model):
+    REASON_CHOICES = [
+        ("scam", "Scam or Fraud"),
+        ("prohibited_content", "Prohibited or Inappropriate Content"),
+        ("counterfeit_stolen", "Counterfeit or Stolen Item"),
+        ("misleading", "Misleading Description or Photos"),
+        ("wrong_category_location", "Wrong Category or Location"),
+        ("duplicate_spam", "Duplicate Listing or Spam"),
+        ("other", "Other"),
+    ]
+
+    ad = models.ForeignKey(Advertisement, related_name="reports", on_delete=models.CASCADE)
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.CharField(max_length=30, choices=REASON_CHOICES)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("ad", "reporter")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.reporter} reported {self.ad} ({self.reason})"
 
 
 class UserFollow(models.Model):

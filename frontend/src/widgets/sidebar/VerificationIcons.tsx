@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
+import { PhoneIcon } from "@/src/shared/ui/PhoneIcon";
 
 import PhoneVerificationModal from "./PhoneVerificationModal";
 
@@ -167,7 +168,7 @@ export default function VerificationIcons({
             }
           `}
         >
-          <FaPhone size={28} />
+          <PhoneIcon size={32} />
 
           {verification?.phone_verified && (
             <FaCheckCircle
