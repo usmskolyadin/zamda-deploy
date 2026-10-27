@@ -96,13 +96,11 @@ export default function CategoryDropdown() {
         <div className="absolute left-0 mt-2 py-3 w-[188px] bg-white rounded-3xl shadow-lg p-4 z-10">
           <ul className="space-y-0.5">
             {categories.map((category) => (
-              <li
-                key={category.id ?? category.slug}
-                className="hover:bg-gray-100 text-sm px-2 py-1.5 rounded-xl text-black cursor-pointer"
-              >
+              <li key={category.id ?? category.slug}>
                 <Link
                   href={`/${category.slug}`}
                   onClick={() => setOpen(false)}
+                  className="block hover:bg-gray-100 text-sm px-2 py-1.5 rounded-xl text-black cursor-pointer"
                 >
                   {category.name}
                 </Link>

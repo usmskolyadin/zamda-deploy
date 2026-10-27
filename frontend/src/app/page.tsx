@@ -65,7 +65,7 @@ export default async function Home() {
       <section className="bg-[#E5E9F2] p-4">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
         <div className="max-w-screen-xl mx-auto">
-          <AdsBlock page={"home"} />
+          <AdsBlock page={"home"} desktopHeight={300} />
           <div className="w-full flex flex-col items-center justify-center">
             <h1 className="lg:text-4xl text-3xl mt-12 font-bold text-black text-center">Recommended for you</h1>
             <Tabs />

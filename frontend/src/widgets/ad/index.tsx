@@ -14,13 +14,16 @@ interface Ad {
 interface AdBannerProps {
   ads?: Ad[];
   height?: number;
+  desktopHeight?: number;
 }
 
 export const AdBanner: React.FC<AdBannerProps> = ({
   ads,
   height = 200,
+  desktopHeight,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const effectiveHeight = isMobile ? height : (desktopHeight ?? height);
 
   useEffect(() => {
     const checkScreen = () => {
@@ -68,7 +71,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         justify-center
         items-center
       "
-      style={{ height }}
+      style={{ height: effectiveHeight }}
     >
       <h2 className="text-[#333333] text-3xl font-bold opacity-40">
         Your Ad Here
@@ -86,7 +89,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return (
       <div
         className="rounded-3xl overflow-hidden w-full"
-        style={{ height }}
+        style={{ height: effectiveHeight }}
         dangerouslySetInnerHTML={{
           __html: ad.iframe_code,
         }}
@@ -105,7 +108,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       className="block rounded-3xl overflow-hidden w-full"
-      style={{ height }}
+      style={{ height: effectiveHeight }}
     >
       <img
         src={image}

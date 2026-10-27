@@ -31,20 +31,42 @@ type Chat = {
 export default function Chats() {
   const { accessToken, user } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { advs } = useAds("messages")
 
   useEffect(() => {
     if (!accessToken) return;
     (async () => {
       try {
-        const data = await apiFetchAuth<Chat[]>("/api/chats/", accessToken);
-        setChats(data.results);;
+        const data = await apiFetchAuth<{ results: Chat[]; next: string | null }>(
+          "/api/chats/?page=1"
+        );
+        setChats(data.results);
+        setHasNext(Boolean(data.next));
+        setPage(1);
       } finally {
         setLoading(false);
       }
     })();
   }, [accessToken]);
+
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    try {
+      const data = await apiFetchAuth<{ results: Chat[]; next: string | null }>(
+        `/api/chats/?page=${nextPage}`
+      );
+      setChats((prev) => [...prev, ...data.results]);
+      setHasNext(Boolean(data.next));
+      setPage(nextPage);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
 const items = useMemo(() => {
   return chats
@@ -134,7 +156,6 @@ if (loading) return <LoadingScreen />;
       src={partner.profile.avatar || "/default-avatar.png"}
       className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 flex-shrink-0"
     />
-
     <div className="flex flex-col min-w-0 flex-1">
       <div className="flex items-center justify-between gap-2">
         <div className="text-black font-semibold truncate">
@@ -181,6 +202,18 @@ if (loading) return <LoadingScreen />;
 
             {items.length === 0 && (
               <div className="text-gray-500">You don't have messages</div>
+            )}
+
+            {hasNext && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="cursor-pointer px-6 py-3 rounded-3xl bg-[#2AAEF7] text-white font-medium hover:bg-blue-500 transition disabled:opacity-50"
+                >
+                  {loadingMore ? "Loading..." : "Load more"}
+                </button>
+              </div>
             )}
 
             </div>

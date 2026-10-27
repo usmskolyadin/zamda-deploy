@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { apiFetchAuth } from "@/src/shared/api/auth.client";
+import useSWR from "swr";
 import { apiFetch } from "@/src/shared/api/base";
 
 interface Ad {
@@ -16,42 +15,29 @@ interface UseAdsOptions {
   trackView?: boolean;
 }
 
+const fetcher = (url: string) => apiFetch<Ad[]>(url);
+
 export function useAds(adSlug?: string, options?: UseAdsOptions) {
-  const { fallbackSlug} = options || {};
+  const { fallbackSlug } = options || {};
+  const slugToUse = adSlug || fallbackSlug;
 
-  const [advs, setAdvs] = useState<Ad[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const hasFetched = useRef(false);
-
-  useEffect(() => {
-    const slugToUse = adSlug || fallbackSlug;
-
-    if (!slugToUse || hasFetched.current) return;
-
-    const fetchAds = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await apiFetch(`/api/advertising/${slugToUse}/`);
-        setAdvs(data);
-      } catch (err: any) {
-        console.error("Ads fetch error:", err);
-        setError(err.message || "Unknown error");
-      } finally {
-        setLoading(false);
-        hasFetched.current = true;
-      }
-    };
-
-    fetchAds();
-  }, [adSlug, fallbackSlug]);
+  // Many unrelated components (sidebar, listings, messages, profile, ...)
+  // mount at once and each ask for their own ad slot. SWR caches/dedupes by
+  // key, so the same slug fetched from several places at once only hits
+  // the network once, and re-mounting a page that already showed this slot
+  // reuses the cached banner instead of flashing a placeholder again.
+  const { data, error, isLoading } = useSWR<Ad[]>(
+    slugToUse ? `/api/advertising/${slugToUse}/` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60_000,
+    }
+  );
 
   return {
-    advs,
-    loading,
-    error,
+    advs: data ?? [],
+    loading: isLoading,
+    error: error ? error.message || "Unknown error" : null,
   };
 }

@@ -168,7 +168,7 @@ export default function VerificationIcons({
             }
           `}
         >
-          <PhoneIcon size={32} />
+          <PhoneIcon size={28} />
 
           {verification?.phone_verified && (
             <FaCheckCircle

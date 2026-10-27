@@ -79,7 +79,7 @@ export default async function SubCategoriesPage({ params }: Props) {
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
               <div className="max-w-screen-xl mx-auto lg:mt-12 mt-0">
                 <div className="pt-4 hidden lg:block">
-                  <AdsBlock page={"category"} />
+                  <AdsBlock page={"category"} height={300} />
                 </div>
                 <h1 className="text-black font-bold lg:text-4xl text-3xl py-2 lg:pt-8 pt-8 pt-0 text-center">
                   Recommended for you

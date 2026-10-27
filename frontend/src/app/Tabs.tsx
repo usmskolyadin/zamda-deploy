@@ -50,16 +50,10 @@ export default function TabsExample() {
     fetchLikedAds();
   }, [user]);
 
-  const fetchAdsByTab = async (tabId: string, pageNum = 1) => {
+  const fetchAdsByTab = async (pageNum = 1) => {
     setLoading(true);
 
     try {
-      if (tabId === "favorites") {
-        setAds(likedAds);
-        setHasNext(false);
-        return;
-      }
-
       let url = `/api/ads/?homepage=true&page=${pageNum}&page_size=${PAGE_SIZE}`;
 
       const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
@@ -73,7 +67,7 @@ export default function TabsExample() {
           ? sorted
           : [...prev, ...sorted]
       );
-      
+
       setHasNext(Boolean(data.next));
     } catch (e) {
       console.error("API error:", e);
@@ -84,16 +78,23 @@ export default function TabsExample() {
     }
   };
 
-
+  // Favorites is rendered straight from likedAds (fetched separately above) -
+  // it never needs its own network call, so it must not be in this effect's
+  // deps either: that was the bug (likedAds arriving after mount re-triggered
+  // this effect and re-fetched "recommendations"/"recent" a second time).
   useEffect(() => {
     setPage(1);
-    fetchAdsByTab(activeTab, 1);
-  }, [activeTab, likedAds]);
+    if (activeTab === "favorites") return;
+    fetchAdsByTab(1);
+  }, [activeTab]);
+
+  const displayedAds = activeTab === "favorites" ? likedAds : ads;
+  const isLoading = activeTab === "favorites" ? false : loading;
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchAdsByTab(activeTab, nextPage);
+    fetchAdsByTab(nextPage);
   };
 
 
@@ -116,22 +117,22 @@ export default function TabsExample() {
       </div>
 
       <div className="mt-4 w-full">
-        {loading ? (
+        {isLoading ? (
           <div className="grid lg:grid-cols-4 gap-4 mt-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <ProductCard key={i} loading />
             ))}
           </div>
-        ) : ads.length ? (
+        ) : displayedAds.length ? (
           <div className="grid lg:grid-cols-4 grid-cols-2 gap-4 mt-6">
-            {ads.map((ad) => (
+            {displayedAds.map((ad) => (
               <ProductCard key={ad.id} ad={ad} />
             ))}
           </div>
         ) : (
           <p className="text-center text-gray-500 mt-6">No ads found.</p>
         )}
-        {!loading && hasNext && activeTab !== "favorites" && (
+        {!isLoading && hasNext && activeTab !== "favorites" && (
           <div className="flex justify-center mt-8">
             <button
               onClick={loadMore}
