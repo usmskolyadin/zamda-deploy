@@ -188,6 +188,16 @@ if USE_S3:
     STATICFILES_STORAGE = "backend.storages.StaticStorage"
     DEFAULT_FILE_STORAGE = "backend.storages.MediaStorage"
 
+    # Django 4.2+ reads storage backends from STORAGES, not the legacy
+    # DEFAULT_FILE_STORAGE/STATICFILES_STORAGE settings above (Django 5.x
+    # ignores those two entirely). Without this, any model field that
+    # doesn't pass storage=... explicitly silently falls back to local
+    # FileSystemStorage even with USE_S3=true.
+    STORAGES = {
+        "default": {"BACKEND": DEFAULT_FILE_STORAGE},
+        "staticfiles": {"BACKEND": STATICFILES_STORAGE},
+    }
+
 else:
     STATIC_URL = "/static/"
     MEDIA_URL = "/media/"
@@ -197,6 +207,11 @@ else:
 
     STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+    STORAGES = {
+        "default": {"BACKEND": DEFAULT_FILE_STORAGE},
+        "staticfiles": {"BACKEND": STATICFILES_STORAGE},
+    }
 
 # STATIC_ROOT нужно убрать, чтобы Django не писал локально
 # STATIC_ROOT = BASE_DIR / "staticfiles"  # ❌ закомментировать
