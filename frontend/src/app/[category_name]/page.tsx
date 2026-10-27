@@ -41,34 +41,34 @@ export default async function SubCategoriesPage({ params }: Props) {
                   className="group"
                 >
                   <div className="
-                    relative overflow-hidden
                     h-[160px] md:h-[180px]
-                    rounded-2xl
+                    rounded-2xl overflow-hidden
                     bg-gray-100
-                    p-3
+                    grid grid-rows-[1fr_auto]
                   ">
 
-                    <h2 className="
-                      relative z-10
-                      text-black text-sm md:text-lg font-semibold leading-tight
-                      text-left
-                    ">
-                      {subcategory.name}
-                    </h2>
-
                     {/* IMAGE */}
-                    <img
-                      src={subcategory.image || "/billie.png"}
-                      alt={subcategory.name}
-                      className="
-                        absolute -bottom-3 -right-3
-                        h-[100px] md:h-[120px] w-auto
-                        object-contain
-                        transition duration-300
-                        group-hover:scale-105
-                        pointer-events-none
-                      "
-                    />
+                    <div className="flex items-center justify-center p-3 overflow-hidden">
+                      <img
+                        src={subcategory.image || "/billie.png"}
+                        alt={subcategory.name}
+                        className="
+                          max-h-full max-w-full
+                          object-contain
+                          transition duration-300
+                          group-hover:scale-105
+                        "
+                      />
+                    </div>
+
+                    <div className="px-3 pb-3">
+                      <h2 className="
+                        text-black text-sm md:text-lg font-semibold leading-tight
+                        line-clamp-2
+                      ">
+                        {subcategory.name}
+                      </h2>
+                    </div>
 
                   </div>
                 </Link>
