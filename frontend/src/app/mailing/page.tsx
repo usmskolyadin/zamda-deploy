@@ -1,14 +1,26 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
 import Sidebar from "@/src/widgets/sidebar";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import UserSelector from "./UserSelector";
 import NewsletterForm from "./NewsletterForm";
+import LoadingScreen from "@/src/components/LoadingScreen";
 
 export default function NewsletterPage() {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
+  const router = useRouter();
+  const isStaff = !!user && (user.is_staff || user.is_superuser);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    if (!isStaff) router.replace("/");
+  }, [isInitialized, isStaff, router]);
+
+  if (!isInitialized) return <LoadingScreen message="Loading..." />;
+  if (!isStaff) return <LoadingScreen message="Redirecting..." />;
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [sendMode, setSendMode] = useState<"all" | "selected">("all");

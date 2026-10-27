@@ -48,4 +48,5 @@ urlpatterns = [
     path("password/reset/request/", PasswordResetRequestView.as_view()),
     path("password/reset/confirm/", PasswordResetConfirmView.as_view()),
     path("push/subscribe/", PushSubscriptionView.as_view()),
+    path("admin/", include("api.admin_urls")),
 ]
