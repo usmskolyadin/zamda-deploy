@@ -219,7 +219,9 @@ const updateGeneral = async (e: React.FormEvent) => {
 
           <div className="lg:w-3/4 lg:ml-10">
 
-            <AdBanner ads={advs} height={250} />
+            <div className="hidden lg:block">
+              <AdBanner ads={advs} height={250} />
+            </div>
 
 
             <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl py-4">Profile settings</h1>

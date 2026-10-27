@@ -59,7 +59,9 @@ export default function FollowingPage() {
           <Sidebar notHideOnPhone />
 
           <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
-            <AdBanner ads={advs} height={250} />
+            <div className="hidden lg:block">
+              <AdBanner ads={advs} height={250} />
+            </div>
 
             <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
               Following

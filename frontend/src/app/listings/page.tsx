@@ -130,7 +130,9 @@ if (!isInitialized) {
           <Sidebar notHideOnPhone={true}/>
           
           <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
-            <AdBanner ads={advs} height={250} />
+            <div className="hidden lg:block">
+              <AdBanner ads={advs} height={250} />
+            </div>
 
             <h1 className="w-3/4 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
 

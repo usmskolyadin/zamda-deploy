@@ -8,5 +8,9 @@ export default function AdBannerWithFetch({ slug }: { slug: string }) {
 
   if (loading) return null;
 
-  return <AdBanner ads={advs} height={250} />;
+  return (
+    <div className="hidden lg:block">
+      <AdBanner ads={advs} height={250} />
+    </div>
+  );
 }

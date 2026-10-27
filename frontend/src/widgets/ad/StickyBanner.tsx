@@ -32,98 +32,111 @@ export default function StickyAdBlock({
   const [bottomOffset, setBottomOffset] = useState(0);
 
   useEffect(() => {
-    const handleResize = () => {
+    let rafId: number | null = null;
+
+    // avoid redundant re-renders (and the layout feedback loop that
+    // comes with them) by only touching state when a rounded value
+    // actually changed
+    let lastMode: "normal" | "fixed" | "bottom" | null = null;
+    let lastBottomOffset: number | null = null;
+    let lastWidth: number | null = null;
+    let lastLeft: number | null = null;
+
+    const measure = () => {
       if (!wrapperRef.current) return;
 
-      const rect = wrapperRef.current.getBoundingClientRect();
+      const wrapperRect = wrapperRef.current.getBoundingClientRect();
 
-      console.log("=== RESIZE ===", rect.width, rect.left);
+      const safeWidth = wrapperRect.width > 50 ? wrapperRect.width : FALLBACK_WIDTH;
+      const safeLeft = wrapperRect.left !== 0 ? wrapperRect.left : 0;
 
-      // ❗️КРИТИЧНО
-      const safeWidth = rect.width > 50 ? rect.width : FALLBACK_WIDTH;
-      const safeLeft = rect.left !== 0 ? rect.left : undefined;
+      const roundedWidth = Math.round(safeWidth);
+      const roundedLeft = Math.round(safeLeft);
 
-      setRect({
-        width: safeWidth,
-        left: safeLeft ?? 0,
-      });
-    };
+      if (roundedWidth !== lastWidth || roundedLeft !== lastLeft) {
+        lastWidth = roundedWidth;
+        lastLeft = roundedLeft;
+        setRect({ width: roundedWidth, left: roundedLeft });
+      }
 
-    const handleScroll = () => {
-      if (!wrapperRef.current) return;
-
-      const wrapper = wrapperRef.current;
-      const wrapperTop =
-        wrapper.getBoundingClientRect().top +
-        window.scrollY;
+      // wrapperRect.top is always measured against the wrapper's own
+      // fixed-height box (set via the `height` style below), which never
+      // changes size across modes — so this is stable across renders.
+      const wrapperTop = wrapperRect.top + window.scrollY;
 
       const footer = document.querySelector("footer");
       if (!footer) return;
 
-      const footerTop =
-        footer.getBoundingClientRect().top +
-        window.scrollY;
+      const footerTop = footer.getBoundingClientRect().top + window.scrollY;
 
       const scrollY = window.scrollY;
       const startSticky = wrapperTop - top;
       const stopSticky = footerTop - height - top - 32;
 
+      let nextMode: "normal" | "fixed" | "bottom";
+      let nextBottomOffset = lastBottomOffset ?? 0;
+
       if (scrollY < startSticky) {
-        setMode("normal");
+        nextMode = "normal";
       } else if (scrollY >= stopSticky) {
-        setMode("bottom");
-        setBottomOffset(
-          footerTop - wrapperTop - height - 32
-        );
+        nextMode = "bottom";
+        nextBottomOffset = Math.round(footerTop - wrapperTop - height - 32);
       } else {
-        setMode("fixed");
+        nextMode = "fixed";
+      }
+
+      if (nextMode !== lastMode) {
+        lastMode = nextMode;
+        setMode(nextMode);
+      }
+
+      if (nextMode === "bottom" && nextBottomOffset !== lastBottomOffset) {
+        lastBottomOffset = nextBottomOffset;
+        setBottomOffset(nextBottomOffset);
       }
     };
 
-    handleResize();
-    handleScroll();
+    // batch scroll/resize bursts into at most one measurement per frame
+    const scheduleMeasure = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        measure();
+      });
+    };
 
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
+    scheduleMeasure();
+
+    window.addEventListener("scroll", scheduleMeasure, { passive: true });
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
-
-      window.removeEventListener(
-        "resize",
-        handleResize
-      );
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", scheduleMeasure);
+      window.removeEventListener("resize", scheduleMeasure);
     };
   }, [height, top]);
 
   return (
+    // Fixed height here is the whole fix: the ad itself is *always*
+    // taken out of normal flow (absolute/fixed), so this wrapper's
+    // height never changes when `mode` flips. Previously the ad sat
+    // in-flow during "normal" mode on top of a same-height spacer,
+    // so the wrapper was briefly ~2x taller and collapsed the instant
+    // the mode switched — that sudden page-height jump is what made
+    // the browser yank scrollY back near the footer.
     <div
       ref={wrapperRef}
       className={`relative hidden lg:block ${className}`}
+      style={{ height }}
     >
       <div
-        className={`transition-all duration-300 ${
-          mode === "fixed"
-            ? "fixed"
-            : mode === "bottom"
-            ? "absolute"
-            : "relative"
-        }`}
+        className={mode === "fixed" ? "fixed" : "absolute"}
         style={{
-          width: mode === "fixed" ? `${rect.width}px` : undefined,
-          left: mode === "fixed" ? `${rect.left}px` : undefined,
-          top:
-            mode === "fixed"
-              ? `${top}px`
-              : undefined,
-
-          bottom:
-            mode === "bottom"
-              ? `-${bottomOffset}px`
-              : undefined,
+          width: `${rect.width}px`,
+          left: mode === "fixed" ? `${rect.left}px` : 0,
+          top: mode === "fixed" ? `${top}px` : mode === "normal" ? 0 : undefined,
+          bottom: mode === "bottom" ? `-${bottomOffset}px` : undefined,
         }}
       >
         <AdsBlock
@@ -131,9 +144,6 @@ export default function StickyAdBlock({
           height={height}
         />
       </div>
-
-      {/* spacer */}
-      <div style={{ height }} />
     </div>
   );
 }

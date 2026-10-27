@@ -12,6 +12,8 @@ import BackButton from "@/src/widgets/back-button";
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { SendIcon } from "lucide-react";
 
+const MAX_FILE_SIZE_MB = 15;
+
 type UserProfile = { avatar?: string | null };
 type Owner = { id: number; first_name: string; last_name: string; profile: UserProfile };
 type Message = { id?: number; chat: number; sender: number; text: string; created_at: string; is_read: boolean; images?: string[]; isMine?: boolean; tempId?: string };
@@ -31,6 +33,7 @@ export default function Chat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const firstLoadRef = useRef(true);
 
@@ -108,6 +111,7 @@ export default function Chat() {
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!text && selectedFiles.length === 0) return;
+    setSendError(null);
     const tempId = Date.now().toString();
     const tempMessage: Message = {
       chat: chatId,
@@ -149,9 +153,17 @@ export default function Chat() {
         prev.map(m => (m.tempId === tempId ? { ...created, isMine: true } : m))
       );
       setSelectedFiles([]);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to send message:", err);
       setMessages(prev => prev.filter(m => m.tempId !== tempId));
+
+      let friendly = "Failed to send message. Please try again.";
+      try {
+        const parsed = JSON.parse(err?.message);
+        friendly = parsed?.detail || parsed?.images?.[0] || friendly;
+      } catch {}
+
+      setSendError(friendly);
     }
   };
 
@@ -166,8 +178,17 @@ export default function Chat() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    const oversized = files.filter(f => f.size > MAX_FILE_SIZE_MB * 1024 * 1024);
+    const validFiles = files.filter(f => f.size <= MAX_FILE_SIZE_MB * 1024 * 1024);
+
+    setSendError(
+      oversized.length > 0
+        ? `Some images exceed ${MAX_FILE_SIZE_MB} MB and were not added.`
+        : null
+    );
+
     setSelectedFiles(prev => {
-      const combined = [...prev, ...files].slice(0, 5);
+      const combined = [...prev, ...validFiles].slice(0, 5);
       return combined;
     });
     e.target.value = "";
@@ -337,6 +358,10 @@ export default function Chat() {
           min-w-0
         "
         >
+        {sendError && (
+          <p className="text-red-500 text-xs mb-2">{sendError}</p>
+        )}
+
         {selectedFiles.length > 0 && (
           <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
             {previewUrls.map((url, i) => (

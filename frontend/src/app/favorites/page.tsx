@@ -55,7 +55,9 @@ export default function Favorites() {
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar />
           <div className="lg:w-3/4 lg:ml-10">
-            <AdBanner ads={advs} height={250} />
+            <div className="hidden lg:block">
+              <AdBanner ads={advs} height={250} />
+            </div>
 
             <div className="flex justify-between items-center mb-4 mt-4">
               <h1 className="text-black font-bold lg:text-4xl text-3xl">Favorites</h1>

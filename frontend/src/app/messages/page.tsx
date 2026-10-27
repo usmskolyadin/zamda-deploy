@@ -84,7 +84,9 @@ if (loading) return <LoadingScreen />;
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar/>
           <div className=" lg:w-3/4 lg:ml-10">
-            <AdBanner ads={advs} height={250} />
+            <div className="hidden lg:block">
+              <AdBanner ads={advs} height={250} />
+            </div>
             <div className="lg:flex">
                 <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 lg:py-1 py-4">Messages</h1>
             </div>
@@ -127,7 +129,6 @@ if (loading) return <LoadingScreen />;
     }
   `}
 >
-  {/* LEFT */}
   <div className="flex items-center gap-3 min-w-0 flex-1">
     <img
       src={partner.profile.avatar || "/default-avatar.png"}
@@ -136,7 +137,6 @@ if (loading) return <LoadingScreen />;
 
     <div className="flex flex-col min-w-0 flex-1">
       
-      {/* NAME + DATE (mobile inline) */}
       <div className="flex items-center justify-between gap-2">
         <div className="text-black font-semibold truncate">
           {partner.first_name} {partner.last_name}
@@ -147,19 +147,16 @@ if (loading) return <LoadingScreen />;
         </span>
       </div>
 
-      {/* AD TITLE (weaker, separated color) */}
       <div className="text-gray-400 text-xs truncate">
         {c.ad_title}
       </div>
 
-      {/* MESSAGE */}
       <div className={`text-sm truncate ${c.unread > 0 ? "text-black font-semibold" : "text-gray-600"}`}>
         {last?.text || "No messages yet"}
       </div>
     </div>
   </div>
 
-  {/* RIGHT (desktop only) */}
   <div className="hidden sm:flex flex-col items-end gap-2">
     <span className="text-xs text-gray-400 whitespace-nowrap">
       {last?.created_at ? formatDate(last.created_at) : ""}
@@ -172,9 +169,8 @@ if (loading) return <LoadingScreen />;
     )}
   </div>
 
-  {/* MOBILE unread (inline right top corner feel) */}
   {c.unread > 0 && (
-    <div className="sm:hidden absolute right-5 top-4 min-w-5 h-5 px-1.5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
+    <div className="sm:hidden absolute right-5 top-8 min-w-5 h-5 px-1.5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
       {c.unread}
     </div>
   )}

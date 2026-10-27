@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Circle, CircleMarker, Popup } from "react-leaflet";
 import L from "leaflet";
+import { Send } from "lucide-react";
 
 interface LocationMapProps {
   location: string;
@@ -47,8 +48,20 @@ export default function LocationMap({ location, radius }: LocationMapProps) {
 
   if (!coords) return <div className="text-gray-500">Type location for map</div>;
 
+  const recenter = () => {
+    map?.setView([coords.lat, coords.lng], 13);
+  };
+
   return (
     <div className="relative z-0 w-full h-[300px] mt-4 rounded-xl overflow-hidden border border-gray-300">
+      <button
+        type="button"
+        onClick={recenter}
+        title="Return to your location"
+        className="absolute top-2 right-2 z-[1000] bg-white hover:bg-gray-100 transition rounded-full p-2 shadow-md cursor-pointer"
+      >
+        <Send size={18} className="text-black" />
+      </button>
       <MapContainer
         center={[coords.lat, coords.lng]}
         zoom={13}
