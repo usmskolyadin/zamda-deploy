@@ -7,11 +7,11 @@ import { useAuth } from "@/src/features/context/auth-context";
 import LoadingScreen from "@/src/components/LoadingScreen";
 
 const TABS = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/listings", label: "Listings" },
-  { href: "/admin/reports", label: "Reports" },
-  { href: "/admin/users", label: "Users" },
-  { href: "/admin/audit-log", label: "Audit Log" },
+  { href: "/admin-panel", label: "Overview" },
+  { href: "/admin-panel/listings", label: "Listings" },
+  { href: "/admin-panel/reports", label: "Reports" },
+  { href: "/admin-panel/users", label: "Users" },
+  { href: "/admin-panel/audit-log", label: "Audit Log" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +37,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex gap-6 border-b mb-6 overflow-x-auto">
             {TABS.map((tab) => {
-              const active = tab.href === "/admin" ? pathname === "/admin" : pathname.startsWith(tab.href);
+              const active =
+                tab.href === "/admin-panel" ? pathname === "/admin-panel" : pathname.startsWith(tab.href);
               return (
                 <Link
                   key={tab.href}

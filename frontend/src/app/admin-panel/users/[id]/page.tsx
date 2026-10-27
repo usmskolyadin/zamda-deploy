@@ -98,7 +98,7 @@ export default function AdminUserDetailPage() {
 
   return (
     <div>
-      <button onClick={() => router.push("/admin/users")} className="text-[#2AAEF7] mb-4 cursor-pointer">
+      <button onClick={() => router.push("/admin-panel/users")} className="text-[#2AAEF7] mb-4 cursor-pointer">
         &larr; Back to users
       </button>
 
@@ -127,7 +127,7 @@ export default function AdminUserDetailPage() {
                 {ads.map((ad) => (
                   <Link
                     key={ad.id}
-                    href={`/admin/listings/${ad.id}`}
+                    href={`/admin-panel/listings/${ad.id}`}
                     className="flex justify-between border border-gray-200 rounded-xl p-3 hover:bg-gray-50"
                   >
                     <span className="text-black font-medium">{ad.title}</span>

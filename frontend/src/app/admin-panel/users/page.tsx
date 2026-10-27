@@ -78,7 +78,7 @@ export default function AdminUsersPage() {
                   <tr
                     key={u.id}
                     className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => router.push(`/admin/users/${u.id}`)}
+                    onClick={() => router.push(`/admin-panel/users/${u.id}`)}
                   >
                     <td className="py-2 pr-2 text-black font-medium">
                       {u.first_name} {u.last_name} (@{u.username})

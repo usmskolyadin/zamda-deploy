@@ -121,7 +121,7 @@ export default function AdminReportsPage() {
             <div key={r.id} className="border border-gray-200 rounded-2xl p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <Link href={`/admin/listings/${r.ad_id}`} className="text-[#2AAEF7] font-semibold">
+                  <Link href={`/admin-panel/listings/${r.ad_id}`} className="text-[#2AAEF7] font-semibold">
                     {r.ad_title}
                   </Link>
                   <p className="text-black font-medium mt-1">{r.reason_label}</p>
@@ -168,7 +168,7 @@ export default function AdminReportsPage() {
               {topAds.results.map((row) => (
                 <tr key={row.id} className="border-b hover:bg-gray-50">
                   <td className="py-2 pr-2">
-                    <Link href={`/admin/listings/${row.id}`} className="text-[#2AAEF7] font-medium">
+                    <Link href={`/admin-panel/listings/${row.id}`} className="text-[#2AAEF7] font-medium">
                       {row.title}
                     </Link>
                   </td>

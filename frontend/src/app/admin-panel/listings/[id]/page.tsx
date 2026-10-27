@@ -101,7 +101,7 @@ export default function AdminListingDetailPage() {
 
   return (
     <div>
-      <button onClick={() => router.push("/admin/listings")} className="text-[#2AAEF7] mb-4 cursor-pointer">
+      <button onClick={() => router.push("/admin-panel/listings")} className="text-[#2AAEF7] mb-4 cursor-pointer">
         &larr; Back to listings
       </button>
 
@@ -150,7 +150,7 @@ export default function AdminListingDetailPage() {
               </div>
             )}
             {reports.length > 0 && (
-              <Link href={`/admin/reports?ad=${ad.id}`} className="text-[#2AAEF7] text-sm inline-block mt-2">
+              <Link href={`/admin-panel/reports?ad=${ad.id}`} className="text-[#2AAEF7] text-sm inline-block mt-2">
                 Manage these reports &rarr;
               </Link>
             )}
@@ -181,7 +181,7 @@ export default function AdminListingDetailPage() {
             <Link href={`/profile/${ad.owner.profile.id}`} className="text-[#2AAEF7]">
               {ad.owner.first_name} {ad.owner.last_name} (@{ad.owner.username})
             </Link>
-            <Link href={`/admin/users/${ad.owner.id}`} className="block text-[#2AAEF7] text-sm mt-1">
+            <Link href={`/admin-panel/users/${ad.owner.id}`} className="block text-[#2AAEF7] text-sm mt-1">
               View in admin &rarr;
             </Link>
           </div>

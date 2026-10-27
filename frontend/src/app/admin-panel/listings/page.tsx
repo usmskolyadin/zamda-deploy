@@ -133,7 +133,7 @@ export default function AdminListingsPage() {
                   <tr
                     key={ad.id}
                     className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => router.push(`/admin/listings/${ad.id}`)}
+                    onClick={() => router.push(`/admin-panel/listings/${ad.id}`)}
                   >
                     <td className="py-2 pr-2">
                       {ad.thumbnail ? (

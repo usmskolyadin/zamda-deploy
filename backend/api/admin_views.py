@@ -109,7 +109,7 @@ class AdminOverviewView(APIView):
             items.append({
                 "type": "unreviewed_reports",
                 "label": f"{unreviewed} report(s) awaiting review",
-                "link": "/admin/reports?status=pending",
+                "link": "/admin-panel/reports?status=pending",
                 "count": unreviewed,
             })
 
@@ -121,7 +121,7 @@ class AdminOverviewView(APIView):
             items.append({
                 "type": "stale_moderation",
                 "label": f"{stale_moderation} listing(s) waiting over 48h for moderation",
-                "link": "/admin/listings?status=moderation&ordering=status_changed_at",
+                "link": "/admin-panel/listings?status=moderation&ordering=status_changed_at",
                 "count": stale_moderation,
             })
 
@@ -135,7 +135,7 @@ class AdminOverviewView(APIView):
             items.append({
                 "type": "heavily_reported",
                 "label": f"{heavily_reported} active/pending listing(s) with 3+ reports",
-                "link": "/admin/listings?min_reports=3",
+                "link": "/admin-panel/listings?min_reports=3",
                 "count": heavily_reported,
             })
 

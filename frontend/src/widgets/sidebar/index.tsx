@@ -138,7 +138,7 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     {(user?.is_staff || user?.is_superuser) && (
                       <div className='flex flex-col mt-4 py-2 border-t border-gray-300'>
                         <h2 className='text-lg text-black font-semibold text-gray-800'>Admin tools</h2>
-                        <Link href="/admin" className="hover:underline text-[#2AAEF7]">
+                        <Link href="/admin-panel" className="hover:underline text-[#2AAEF7]">
                           <span className="text-md h-12 pt-2">Admin Panel</span>
                         </Link>
                         <Link href="/mailing" className="hover:underline text-[#2AAEF7]">
