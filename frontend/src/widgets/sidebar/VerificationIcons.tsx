@@ -163,7 +163,7 @@ export default function VerificationIcons({
             hover:scale-110
             cursor-pointer
             ${verification?.phone_verified
-              ? "text-[#0e76bd]"
+              ? "text-[#2AAEF7]"
               : "text-gray-400 hover:text-black"
             }
           `}
