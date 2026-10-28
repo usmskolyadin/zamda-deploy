@@ -23,6 +23,7 @@
 @layer base {
   html {
     overflow-y: scroll;
+    scrollbar-gutter: stable;
     transition: margin-right 0.3s ease-out;
   }
 

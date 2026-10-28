@@ -116,89 +116,89 @@ if (loading) return <LoadingScreen />;
                 <div>
             </div>
             <div className="flex flex-col min-h-screen">
-{items.map((c) => {
-  const partner = getChatPartner(c, user?.id);
-  const last = c.last;
+            {items.map((c) => {
+              const partner = getChatPartner(c, user?.id);
+              const last = c.last;
 
-  return (
-    <SwipeChatItem
-  onDelete={async () => {
-    const ok = confirm("Удалить чат?");
-    if (!ok) throw new Error("cancel");
+              return (
+                <SwipeChatItem
+              onDelete={async () => {
+                const ok = confirm("Удалить чат?");
+                if (!ok) throw new Error("cancel");
 
-    await apiFetchAuth(`/api/chats/${c.id}/block/`, {
-      method: "POST",
-    });
+                await apiFetchAuth(`/api/chats/${c.id}/block/`, {
+                  method: "POST",
+                });
 
-    setChats(prev =>
-      prev.filter(chat => chat.id !== c.id)
-    );
-  }}
->
-    <Link key={c.id} href={`/messages/${c.id}`} className="block">
-<div
-  className={`
-    flex relative flex-col sm:flex-row sm:items-center sm:justify-between
-    gap-2 sm:gap-0
-    rounded-2xl sm:rounded-3xl
-    p-3 sm:p-5
-    border
-    transition
-    ${
-      c.unread > 0
-        ? "border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 hover:bg-blue-100 hover:shadow-md"
-        : "border-gray-200 bg-gray-100 hover:bg-gray-200 hover:shadow-md"
-    }
-  `}
->
-  <div className="flex items-center gap-3 min-w-0 flex-1">
-    <img
-      src={partner.profile.avatar || "/default-avatar.png"}
-      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 flex-shrink-0"
-    />
-    <div className="flex flex-col min-w-0 flex-1">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-black font-semibold truncate">
-          {partner.first_name} {partner.last_name}
-        </div>
+                setChats(prev =>
+                  prev.filter(chat => chat.id !== c.id)
+                );
+              }}
+            >
+                <Link key={c.id} href={`/messages/${c.id}`} className="block">
+            <div
+              className={`
+                flex relative flex-col sm:flex-row sm:items-center sm:justify-between
+                gap-2 sm:gap-0
+                rounded-2xl sm:rounded-3xl
+                p-3 sm:p-5
+                border
+                transition
+                ${
+                  c.unread > 0
+                    ? "border-blue-200 border-l-4 border-l-blue-600 bg-blue-50 hover:bg-blue-100 hover:shadow-md"
+                    : "border-gray-200 bg-gray-100 hover:bg-gray-200 hover:shadow-md"
+                }
+              `}
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <img
+                  src={partner.profile.avatar || "/default-avatar.png"}
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-black font-semibold truncate">
+                      {partner.first_name} {partner.last_name}
+                    </div>
 
-        <span className="text-[11px] text-gray-400 whitespace-nowrap sm:hidden">
-          {last?.created_at ? formatDate(last.created_at) : ""}
-        </span>
-      </div>
+                    <span className="text-[11px] text-gray-400 whitespace-nowrap sm:hidden">
+                      {last?.created_at ? formatDate(last.created_at) : ""}
+                    </span>
+                  </div>
 
-      <div className="text-gray-400 text-xs truncate">
-        {c.ad_title}
-      </div>
+                  <div className="text-gray-400 text-xs truncate">
+                    {c.ad_title}
+                  </div>
 
-      <div className={`text-sm truncate ${c.unread > 0 ? "text-black font-semibold" : "text-gray-600"}`}>
-        {last?.text || "No messages yet"}
-      </div>
-    </div>
-  </div>
+                  <div className={`text-sm truncate ${c.unread > 0 ? "text-black font-semibold" : "text-gray-600"}`}>
+                    {last?.text || "No messages yet"}
+                  </div>
+                </div>
+              </div>
 
-  <div className="hidden sm:flex flex-col items-end gap-2">
-    <span className="text-xs text-gray-400 whitespace-nowrap">
-      {last?.created_at ? formatDate(last.created_at) : ""}
-    </span>
+              <div className="hidden sm:flex flex-col items-end gap-2">
+                <span className="text-xs text-gray-400 whitespace-nowrap">
+                  {last?.created_at ? formatDate(last.created_at) : ""}
+                </span>
 
-    {c.unread > 0 && (
-      <div className="min-w-6 h-6 px-2 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-        {c.unread}
-      </div>
-    )}
-  </div>
+                {c.unread > 0 && (
+                  <div className="min-w-6 h-6 px-2 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+                    {c.unread}
+                  </div>
+                )}
+              </div>
 
-  {c.unread > 0 && (
-    <div className="sm:hidden absolute right-5 top-8 min-w-5 h-5 px-1.5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
-      {c.unread}
-    </div>
-  )}
-</div>
-    </Link>
-</SwipeChatItem>
-  );
-})}
+              {c.unread > 0 && (
+                <div className="sm:hidden absolute right-5 top-8 min-w-5 h-5 px-1.5 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
+                  {c.unread}
+                </div>
+              )}
+            </div>
+                </Link>
+            </SwipeChatItem>
+              );
+            })}
 
             {items.length === 0 && (
               <div className="text-gray-500">You don't have messages</div>

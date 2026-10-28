@@ -17,7 +17,7 @@ const ProfileImg = (profileImgUrl: string) => {
 const tabs = [
   { id: "search", label: "Search", icon: <FaSearch className="w-5 h-5" />, href: "/search" },
   { id: "favorites", label: "Favorites", icon: <FaHeart className="w-5 h-5" />, href: "/favorites" },
-  { id: "ads", label: "Place an Ad", icon: <FaPlusCircle className="w-5 h-5" />, highlight: true, href: "/new" },
+  { id: "ads", label: "Post an Ad", icon: <FaPlusCircle className="w-5 h-5" />, highlight: true, href: "/new" },
   { id: "messages", label: "Messages", icon: <FaCommentDots className="w-5 h-5" />, href: "/messages" },
   { id: "profile", label: "Profile", icon: <FaUser className="w-5 h-5" />, href: "/listings" },
 ];

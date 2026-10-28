@@ -132,7 +132,7 @@ export default function Header() {
                           </clipPath>
                         </defs>
                       </svg>
-                    Place an Ad
+                    Post an Ad
                   </div>
                 </button>
                 </Link>

@@ -45,7 +45,7 @@ your location to see listings near you.
         <h1 className='text-2xl font-bold'>POSTING LISTINGS</h1><br />
         <h2 className='text-xl font-bold'>How do I post a listing?</h2>
             1. Log in to your account <br />
-            2. Click "Place an Ad" or "+" button <br />
+            2. Click "Post an Ad" or "+" button <br />
             3. Choose a category <br />
             4. Add photos (up to 10) <br />
             5. Write a title and description <br />

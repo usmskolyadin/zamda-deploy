@@ -175,10 +175,10 @@ if (!isInitialized) {
               </button>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col min-h-[70vh]">
               {ads.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <img src="/not_found.png" alt="No ads available" className="w-86 h-86 object-contain" />
+                  <img src="/not_found.png" alt="No ads available" className="w-56 h-56 object-contain" />
                   <p className="text-black text-3xl font-bold text-center">
                     {activeTab === "active"
                       ? "So far you do not have any active ads."
