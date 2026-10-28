@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Circle, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Circle, CircleMarker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { Send } from "lucide-react";
 
@@ -15,6 +15,16 @@ const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
 function milesToMeters(miles: string): number {
   const n = parseFloat(miles);
   return isNaN(n) ? 2000 : n * 1609.34;
+}
+
+function MapInstanceCapture({ onReady }: { onReady: (map: L.Map) => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    onReady(map);
+  }, [map, onReady]);
+
+  return null;
 }
 
 export default function LocationMap({ location, radius }: LocationMapProps) {
@@ -67,8 +77,8 @@ export default function LocationMap({ location, radius }: LocationMapProps) {
         zoom={13}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={false}
-        whenCreated={(m) => setMap(m)}
       >
+        <MapInstanceCapture onReady={setMap} />
         <TileLayer
           url={`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`}
         />
