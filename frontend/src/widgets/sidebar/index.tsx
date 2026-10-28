@@ -116,7 +116,7 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
 
                     <div className="lg:hidden block py-4">
                       <Link href={"/new"}>
-                        <button className="w-full px-4 py-2.5 text-white bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Place an ad</button>
+                        <button className="w-full px-4 py-2.5 text-white bg-blue-500 rounded-3xl cursor-pointer hover:bg-green-500 transition ">Post an ad</button>
                       </Link>
                       <Link href={"/profile/edit"}>
                         <button className="w-full mt-2 px-4 text-white py-2.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>

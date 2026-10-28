@@ -69,7 +69,7 @@ export default async function Home() {
             <div className="flex flex-row items-center justify-center gap-4">
               <Link href="/login">
                 <button className="cursor-pointer group relative lg:px-12 px-8 py-3 bg-[#2AAEF7] text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  <span className="relative z-10">Place an ad</span>
+                  <span className="relative z-10">Post an ad</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
                 </button>
               </Link>
