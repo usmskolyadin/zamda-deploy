@@ -2,7 +2,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Advertisement, AdvertisementReport
+from .models import Advertisement, AdvertisementReport, UserProfile, UserVerification
 from .serializers import OwnerSerializer, AdvertisementImageSerializer
 
 
@@ -15,7 +15,7 @@ class AdminAdvertisementListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = (
-            "id", "slug", "title", "owner", "status", "reject_reason",
+            "id", "slug", "title", "owner", "status", "reject_reason", "is_pinned",
             "price", "thumbnail", "views_count", "likes_count", "report_count",
             "created_at", "updated_at", "status_changed_at",
         )
@@ -112,6 +112,7 @@ class AdminLogEntrySerializer(serializers.ModelSerializer):
 class AdminUserListSerializer(serializers.ModelSerializer):
     ads_count = serializers.IntegerField(read_only=True)
     active_ads_count = serializers.IntegerField(read_only=True)
+    pinned_ads_count = serializers.IntegerField(read_only=True)
     reports_against = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -119,8 +120,48 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         fields = (
             "id", "username", "email", "first_name", "last_name",
             "is_active", "is_staff", "date_joined", "last_login",
-            "ads_count", "active_ads_count", "reports_against",
+            "ads_count", "active_ads_count", "pinned_ads_count", "reports_against",
         )
+
+
+class AdminUserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    followers_count = serializers.IntegerField(read_only=True)
+    following_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ("avatar", "city", "followers_count", "following_count")
+
+    def get_avatar(self, obj):
+        if not obj.avatar:
+            return None
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.avatar.url) if request else obj.avatar.url
+
+
+class AdminUserVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserVerification
+        fields = ("google_verified", "facebook_verified", "phone_verified", "phone_number")
+
+
+class AdminUserDetailSerializer(AdminUserListSerializer):
+    profile = serializers.SerializerMethodField()
+    verification = serializers.SerializerMethodField()
+
+    class Meta(AdminUserListSerializer.Meta):
+        fields = AdminUserListSerializer.Meta.fields + ("profile", "verification")
+
+    def get_profile(self, obj):
+        if not hasattr(obj, "profile"):
+            return None
+        return AdminUserProfileSerializer(obj.profile, context=self.context).data
+
+    def get_verification(self, obj):
+        if not hasattr(obj, "verification"):
+            return None
+        return AdminUserVerificationSerializer(obj.verification).data
 
 
 class AdminBanUserSerializer(serializers.Serializer):

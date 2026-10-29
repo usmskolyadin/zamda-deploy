@@ -16,6 +16,7 @@ type UserRow = {
   date_joined: string;
   ads_count: number;
   active_ads_count: number;
+  pinned_ads_count: number;
   reports_against: number;
 };
 
@@ -69,6 +70,7 @@ export default function AdminUsersPage() {
                   <th className="py-2 pr-2">Joined</th>
                   <th className="py-2 pr-2">Listings</th>
                   <th className="py-2 pr-2">Active</th>
+                  <th className="py-2 pr-2">Pinned</th>
                   <th className="py-2 pr-2">Reports against</th>
                   <th className="py-2 pr-2">Status</th>
                 </tr>
@@ -87,6 +89,13 @@ export default function AdminUsersPage() {
                     <td className="py-2 pr-2 text-gray-500">{new Date(u.date_joined).toLocaleDateString()}</td>
                     <td className="py-2 pr-2 text-gray-700">{u.ads_count}</td>
                     <td className="py-2 pr-2 text-gray-700">{u.active_ads_count}</td>
+                    <td className="py-2 pr-2">
+                      {u.pinned_ads_count > 0 ? (
+                        <span className="text-[#2AAEF7] font-semibold">{u.pinned_ads_count}</span>
+                      ) : (
+                        <span className="text-gray-400">0</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-2 text-gray-700">{u.reports_against}</td>
                     <td className="py-2 pr-2">
                       {u.is_active ? (

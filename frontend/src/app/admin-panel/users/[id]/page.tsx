@@ -15,12 +15,33 @@ type UserDetail = {
   is_active: boolean;
   is_staff: boolean;
   date_joined: string;
+  last_login: string | null;
   ads_count: number;
   active_ads_count: number;
+  pinned_ads_count: number;
   reports_against: number;
+  profile: {
+    avatar: string | null;
+    city: string;
+    followers_count: number;
+    following_count: number;
+  } | null;
+  verification: {
+    google_verified: boolean;
+    facebook_verified: boolean;
+    phone_verified: boolean;
+    phone_number: string | null;
+  } | null;
 };
 
-type AdRow = { id: number; title: string; status: string; views_count: number; report_count: number };
+type AdRow = {
+  id: number;
+  title: string;
+  status: string;
+  views_count: number;
+  report_count: number;
+  is_pinned: boolean;
+};
 
 type HistoryRow = {
   id: number;
@@ -96,6 +117,9 @@ export default function AdminUserDetailPage() {
   if (error) return <p className="text-red-500">{error}</p>;
   if (!user) return null;
 
+  const pinnedAds = ads.filter((ad) => ad.is_pinned);
+  const otherAds = ads.filter((ad) => !ad.is_pinned);
+
   return (
     <div>
       <button onClick={() => router.push("/admin-panel/users")} className="text-[#2AAEF7] mb-4 cursor-pointer">
@@ -104,27 +128,83 @@ export default function AdminUserDetailPage() {
 
       <div className="lg:flex gap-8">
         <div className="lg:w-2/3">
-          <h1 className="text-black font-bold text-2xl">
-            {user.first_name} {user.last_name} (@{user.username})
-          </h1>
-          <p className="text-gray-500">
-            {user.email} &middot; joined {new Date(user.date_joined).toLocaleDateString()}
-          </p>
-          <p className="mt-1">
-            {user.is_active ? (
-              <span className="text-green-600 font-semibold">Active</span>
-            ) : (
-              <span className="text-red-600 font-semibold">Banned</span>
+          <div className="flex items-center gap-4">
+            {user.profile?.avatar && (
+              <img
+                src={user.profile.avatar}
+                alt={user.username}
+                className="w-16 h-16 rounded-full object-cover border border-gray-200"
+              />
             )}
-          </p>
+            <div>
+              <h1 className="text-black font-bold text-2xl">
+                {user.first_name} {user.last_name} (@{user.username})
+              </h1>
+              <p className="text-gray-500">
+                {user.email} &middot; joined {new Date(user.date_joined).toLocaleDateString()}
+              </p>
+              <p className="mt-1">
+                {user.is_active ? (
+                  <span className="text-green-600 font-semibold">Active</span>
+                ) : (
+                  <span className="text-red-600 font-semibold">Banned</span>
+                )}
+                {user.is_staff && <span className="ml-2 text-[#2AAEF7] font-semibold">Staff</span>}
+              </p>
+            </div>
+          </div>
 
           <section className="mt-8">
-            <h2 className="text-black font-bold text-lg mb-2">Listings ({ads.length})</h2>
-            {ads.length === 0 ? (
-              <p className="text-gray-500">No listings.</p>
+            <h2 className="text-black font-bold text-lg mb-2">Profile info</h2>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <p className="text-gray-700">City: <span className="text-black">{user.profile?.city || "—"}</span></p>
+              <p className="text-gray-700">Last login: <span className="text-black">{user.last_login ? new Date(user.last_login).toLocaleString() : "Never"}</span></p>
+              <p className="text-gray-700">Followers: <span className="text-black">{user.profile?.followers_count ?? 0}</span></p>
+              <p className="text-gray-700">Following: <span className="text-black">{user.profile?.following_count ?? 0}</span></p>
+              <p className="text-gray-700">Phone: <span className="text-black">{user.verification?.phone_number || "—"}</span></p>
+              <p className="text-gray-700">
+                Verifications:{" "}
+                <span className="text-black">
+                  {[
+                    user.verification?.google_verified && "Google",
+                    user.verification?.facebook_verified && "Facebook",
+                    user.verification?.phone_verified && "Phone",
+                  ].filter(Boolean).join(", ") || "None"}
+                </span>
+              </p>
+            </div>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-black font-bold text-lg mb-2">Pinned listings ({pinnedAds.length})</h2>
+            {pinnedAds.length === 0 ? (
+              <p className="text-gray-500">No pinned listings.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {ads.map((ad) => (
+                {pinnedAds.map((ad) => (
+                  <Link
+                    key={ad.id}
+                    href={`/admin-panel/listings/${ad.id}`}
+                    className="flex justify-between border border-[#2AAEF7] bg-[#2AAEF7]/5 rounded-xl p-3 hover:bg-[#2AAEF7]/10"
+                  >
+                    <span className="text-black font-medium">&#128204; {ad.title}</span>
+                    <span className="text-gray-500 text-sm">
+                      {ad.status} &middot; {ad.views_count} views
+                      {ad.report_count > 0 && <span className="text-red-600"> &middot; {ad.report_count} reports</span>}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mt-8">
+            <h2 className="text-black font-bold text-lg mb-2">Other listings ({otherAds.length})</h2>
+            {otherAds.length === 0 ? (
+              <p className="text-gray-500">No other listings.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {otherAds.map((ad) => (
                   <Link
                     key={ad.id}
                     href={`/admin-panel/listings/${ad.id}`}
@@ -165,6 +245,7 @@ export default function AdminUserDetailPage() {
             <h2 className="text-black font-bold mb-2">Stats</h2>
             <p className="text-gray-700">Listings: {user.ads_count}</p>
             <p className="text-gray-700">Active listings: {user.active_ads_count}</p>
+            <p className="text-gray-700">Pinned listings: {user.pinned_ads_count}</p>
             <p className="text-gray-700">Reports against their listings: {user.reports_against}</p>
           </div>
 

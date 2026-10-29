@@ -19,7 +19,8 @@ from .admin_audit import log_admin_action
 from .admin_serializers import (
     AdminAdvertisementDetailSerializer, AdminAdvertisementListSerializer,
     AdminAdvertisementReportSerializer, AdminBanUserSerializer, AdminLogEntrySerializer,
-    AdminRejectAdSerializer, AdminTopReportedAdSerializer, AdminUserListSerializer,
+    AdminRejectAdSerializer, AdminTopReportedAdSerializer, AdminUserDetailSerializer,
+    AdminUserListSerializer,
 )
 from .models import Advertisement, AdvertisementLike, AdvertisementReport, AdvertisementStatus, AdvertisementView
 from .pagination import AdvertisementPagination
@@ -297,11 +298,22 @@ class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ["-date_joined"]
 
     def get_queryset(self):
-        return User.objects.annotate(
+        return User.objects.select_related("profile", "verification").annotate(
             ads_count=Count("ads", distinct=True),
             active_ads_count=Count("ads", filter=Q(ads__status=AdvertisementStatus.ACTIVE), distinct=True),
+            pinned_ads_count=Count("ads", filter=Q(ads__is_pinned=True), distinct=True),
             reports_against=Count("ads__reports", distinct=True),
         )
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return AdminUserDetailSerializer
+        return AdminUserListSerializer
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
 
     @action(detail=True, methods=["get"])
     def history(self, request, pk=None):
