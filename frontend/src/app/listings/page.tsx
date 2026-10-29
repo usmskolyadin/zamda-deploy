@@ -253,11 +253,11 @@ export const AdListings = ({
           </p>
         </div>
 
-        <p className={`text-sm text-gray-900 mt-2 whitespace-pre-wrap break-words overflow-hidden min-w-0 ${
-          activeTab === "archived" ? "line-clamp-2" : "line-clamp-3"
-        }`}>
-          {ad.description}
-        </p>
+        {activeTab !== "archived" && (
+          <p className="text-sm text-gray-900 mt-2 whitespace-pre-wrap break-words overflow-hidden min-w-0 line-clamp-3">
+            {ad.description}
+          </p>
+        )}
 
         <p className="mt-2 text-black font-medium text-sm">
           <span
