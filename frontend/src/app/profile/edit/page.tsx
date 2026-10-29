@@ -217,10 +217,10 @@ const updateGeneral = async (e: React.FormEvent) => {
 
           <Sidebar notHideOnPhone={true} />
 
-          <div className="lg:w-3/4 lg:ml-10">
+          <div className="lg:w-3/4 lg:ml-10 min-w-0">
 
             <div className="hidden lg:block">
-              <AdBanner ads={advs} height={250} />
+              <AdBanner ads={advs} height={300} />
             </div>
 
 

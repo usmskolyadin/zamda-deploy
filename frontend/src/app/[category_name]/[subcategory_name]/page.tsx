@@ -82,7 +82,7 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
                   <img
                     src="/not_found.png" 
                     alt="No ads available"
-                    className="w-86 h-86 object-contain"
+                    className="w-56 h-56 object-contain"
                   />
                 <p className="text-black text-3xl font-bold text-center">
                   There are no ads in this category yet

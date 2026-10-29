@@ -124,14 +124,14 @@ if (!isInitialized) {
   return <LoadingScreen message={"Loading..."} />;
 }
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       <section className="bg-[#ffffff] pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar notHideOnPhone={true}/>
-          
-          <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
+
+          <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2 min-w-0">
             <div className="hidden lg:block">
-              <AdBanner ads={advs} height={250} />
+              <AdBanner ads={advs} height={300} />
             </div>
 
             <h1 className="w-3/4 text-black font-bold lg:text-4xl text-3xl py-4">My Listings</h1>
@@ -293,7 +293,7 @@ export const AdListings = ({
         )}
 
         {activeTab === "archived" && (
-          <div className="flex gap-2 mt-2">
+          <div className="flex flex-wrap gap-2 mt-2">
             <Link
               href={`/edit/${ad.slug}`}
               className="px-4 py-1 rounded-full bg-green-400 text-white hover:bg-gray-400 transition"

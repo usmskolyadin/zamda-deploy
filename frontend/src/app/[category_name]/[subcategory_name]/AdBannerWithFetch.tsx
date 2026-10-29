@@ -10,7 +10,7 @@ export default function AdBannerWithFetch({ slug }: { slug: string }) {
 
   return (
     <div className="hidden lg:block">
-      <AdBanner ads={advs} height={250} />
+      <AdBanner ads={advs} height={300} />
     </div>
   );
 }

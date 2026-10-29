@@ -54,9 +54,9 @@ export default function Favorites() {
       <section className="bg-white pb-16 p-4">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar />
-          <div className="lg:w-3/4 lg:ml-10">
+          <div className="lg:w-3/4 lg:ml-10 min-w-0">
             <div className="hidden lg:block">
-              <AdBanner ads={advs} height={250} />
+              <AdBanner ads={advs} height={300} />
             </div>
 
             <div className="flex justify-between items-center mb-4 mt-4">

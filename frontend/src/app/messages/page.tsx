@@ -105,9 +105,9 @@ if (loading) return <LoadingScreen />;
       <section className="bg-white pb-16 pt-6 px-4 sm:px-6 lg:px-12 xl:px-16">
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar/>
-          <div className=" lg:w-3/4 lg:ml-10">
+          <div className=" lg:w-3/4 lg:ml-10 min-w-0">
             <div className="hidden lg:block">
-              <AdBanner ads={advs} height={250} />
+              <AdBanner ads={advs} height={300} />
             </div>
             <div className="lg:flex">
                 <h1 className="w-2/3 text-black font-bold lg:text-4xl text-3xl lg:py-4 lg:py-1 py-4">Messages</h1>

@@ -58,9 +58,9 @@ export default function FollowingPage() {
         <div className="max-w-screen-xl lg:flex mx-auto px-4 sm:px-6 lg:px-12">
           <Sidebar notHideOnPhone />
 
-          <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2">
+          <div className="lg:w-3/4 lg:ml-10 lg:mt-0 mt-2 min-w-0">
             <div className="hidden lg:block">
-              <AdBanner ads={advs} height={250} />
+              <AdBanner ads={advs} height={300} />
             </div>
 
             <h1 className="text-black font-bold lg:text-4xl text-3xl py-4">
@@ -81,7 +81,7 @@ export default function FollowingPage() {
                 <img
                   src="/not_found.png"
                   alt="No following"
-                  className="w-86 h-86 object-contain"
+                  className="w-56 h-56 object-contain"
                 />
 
                 <p className="text-black text-3xl font-bold text-center">
