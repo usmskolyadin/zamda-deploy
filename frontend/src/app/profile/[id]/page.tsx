@@ -10,6 +10,8 @@ import { apiFetch } from "@/src/shared/api/base";
 import { apiFetchAuth } from "@/src/shared/api/auth";
 import { useAuth } from "@/src/features/context/auth-context";
 import PhoneVerificationModal from "@/src/widgets/sidebar/PhoneVerificationModal";
+import { MapPin } from "lucide-react";
+import AdThumbnail from "@/src/shared/ui/AdThumbnail";
 
 export interface Profile {
   id: number;
@@ -144,9 +146,7 @@ useEffect(() => {
                 </div>
                   {profile.city ? (
                 <p className=" flex text-gray-700 font-medium items-center text-md mt-1 py-0.5">
-                <svg className="mr-1 min-h-4 min-w-4" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <MapPin className="mr-1 min-h-4 min-w-4" width={20} height={20} strokeWidth={2} />
                     {profile.city} 
                     <></>
                 </p>
@@ -393,7 +393,7 @@ useEffect(() => {
 
                       {/* IMAGE */}
                       <div className="lg:w-[280px] w-full flex-shrink-0">
-                        <img
+                        <AdThumbnail
                           src={ad.images[0]?.image}
                           alt=""
                           className="rounded-2xl h-52 lg:h-48 w-full object-cover"
@@ -448,7 +448,7 @@ useEffect(() => {
                           {/* <span className="text-gray-400">•</span>
 
                           <span className="flex items-center text-sm text-black/80 font-medium min-w-0 max-w-full">
-              <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" > <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> </svg>
+              <MapPin className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
                             <span className="truncate min-w-0 ml-1 block">
                               {ad.location}
                             </span>

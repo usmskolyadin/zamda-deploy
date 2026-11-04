@@ -5,7 +5,8 @@ import { Advertisement } from "../entities/advertisment/model/types";
 import { useViewAd } from "../features/hooks/use-view-ad";
 import { useAuth } from "../features/context/auth-context";
 import { useLikeAd } from "../features/hooks/use-like-ad";
-import { PinIcon } from "lucide-react";
+import { PinIcon, MapPin } from "lucide-react";
+import AdThumbnail from "../shared/ui/AdThumbnail";
 
 type ProductCardProps = {
   ad?: Advertisement;
@@ -38,7 +39,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
     <Link href={`/${ad.category_slug}/${ad.subcategory}/${ad.slug}`}>
       <div className="bg-white rounded-3xl shadow-xl w-full hover:opacity-70 transition">
         <div className="relative">
-          <img
+          <AdThumbnail
             src={ad.images[0]?.image}
             alt={ad.title}
             className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-2xl mb-2"
@@ -94,22 +95,20 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
         </div>
 
         <div className="lg:p-4 p-2 flex-col items-center justify-center">
-          <h3 className="font-semibold lg:text-xl text-lg text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden truncate">
+          <h3 className="font-semibold lg:text-lg text-base text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden line-clamp-2">
             {ad.title}
           </h3>
-          <div className="pl-2 pr-2">
+          <div className="pl-2 pr-2 hidden lg:block">
             <p
               className="
                 text-gray-800
-                text-xs lg:text-sm
+                text-sm
                 break-words
                 overflow-hidden
                 leading-snug
                 line-clamp-2
-                lg:line-clamp-3
-                min-h-[2rem]
-                lg:min-h-[5rem]
-                lg:max-h-[5rem]
+                min-h-[2.5rem]
+                max-h-[2.5rem]
               "
             >
               {ad.description}
@@ -118,9 +117,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           <div className="lg:mt-4 mt-2 flex items-center justify-between p-2 space-x-2 mb-1 w-full">
             <div className="w-full">
               <p className="pb-1 w-full flex items-center text-sm font-medium text-black/80 truncate overflow-hidden text-ellipsis max-w-[180px] sm:max-w-[220px] md:max-w-[260px]">
-                <svg className="mr-1 min-h-5 min-w-5" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <MapPin className="mr-1 min-h-4 min-w-4" width={16} height={16} strokeWidth={2} />
                 
                 {ad.location}
               </p>     

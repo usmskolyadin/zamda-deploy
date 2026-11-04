@@ -53,8 +53,8 @@ export default function ThreeDotsDropdown({ chatId }: DropdownProps) {
     if (!confirm("Are you sure you want to delete chat with this user?")) return;
 
     try {
-      await apiFetchAuth(`/api/chats/${chatId}/block/`, {
-        method: "POST",
+      await apiFetchAuth(`/api/chats/${chatId}/`, {
+        method: "DELETE",
       });
       window.location.href = "/messages";
     } catch (err: any) {

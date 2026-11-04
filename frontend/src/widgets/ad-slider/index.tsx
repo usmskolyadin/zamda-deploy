@@ -28,17 +28,31 @@ export default function AdSlider({ ad }: AdSliderProps) {
     }
   };
 
-  if (images.length === 0) return null;
+  const { accessToken, user } = useAuth();
+  const { isLiked, likesCount, toggleLike } = useLikeAd(ad.slug, accessToken);
+  const router = useRouter();
+  const isOwner = user?.username === ad.owner.username;
+
+  if (images.length === 0) {
+    return (
+      <div className="max-w-[712px] relative">
+        <div className="relative rounded-3xl overflow-hidden min-h-[150px] max-h-[300px] lg:max-h-[370px] lg:h-[600px] bg-gray-100 flex items-center justify-center">
+          <span className="text-gray-400 text-xl font-medium">No photo</span>
+        </div>
+        {!isOwner && (
+          <ReportAdButton
+            adSlug={ad.slug}
+            onRequireLogin={accessToken ? undefined : () => router.push("/login")}
+          />
+        )}
+      </div>
+    );
+  }
 
   const prev = () =>
     setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const next = () =>
     setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-
-  const { accessToken, user } = useAuth();
-  const { isLiked, likesCount, toggleLike } = useLikeAd(ad.slug, accessToken);
-  const router = useRouter();
-  const isOwner = user?.username === ad.owner.username;
 
   return (
     <div className="max-w-[712px] relative">
@@ -155,11 +169,9 @@ export default function AdSlider({ ad }: AdSliderProps) {
               key={img.id}
               src={img.image}
               alt={ad.title}
-              className={`rounded-2xl object-cover max-h-20 min-h-20 cursor-pointer hover:opacity-80 transition border-2 ${
+              className={`w-full rounded-2xl object-cover max-h-20 min-h-20 cursor-pointer hover:opacity-80 transition border-2 ${
                 idx === activeIndex ? "border-blue-500" : "border-transparent"
               }`}
-              width={150}
-              height={100}
               onClick={() => setActiveIndex(idx)}
             />
           ))}

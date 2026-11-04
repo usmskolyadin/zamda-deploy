@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    AdBySlugView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, PushSubscriptionView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
+    AdBySlugView, BlockedUsersView, CategoryViewSet, ChatViewSet, CheckPhoneVerificationView, CurrentUserView, CustomTokenObtainPairView, EmailChangeRequestView, EmailChangeVerifyView, FacebookAuthView, FacebookCompleteRegistrationView, FollowersView, FollowingView, GoogleAuthView, MessageViewSet, MyFollowingView, NotificationViewSet, PageViewSet, PasswordResetConfirmView, PasswordResetRequestView, PushSubscriptionView, RegisterRequestView, RegisterView, ReviewReplyViewSet, ReviewReportViewSet, ReviewViewSet, SendNewsletterToAllView, SendNewsletterToSelectedView, SendPhoneVerificationView, SubCategoryViewSet, ExtraFieldDefinitionViewSet, AdvertisementViewSet, ToggleFollowView, UnblockUserView, UserAdvertisementViewSet, UserListView, UserProfileViewSet, VerifyCodeView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -32,6 +32,8 @@ urlpatterns = [
     path("users/<str:username>/follow/", ToggleFollowView.as_view()),
     path("users/<str:username>/followers/", FollowersView.as_view()),
     path("users/me/following/", MyFollowingView.as_view()),
+    path("users/me/blocked/", BlockedUsersView.as_view()),
+    path("users/<int:user_id>/unblock/", UnblockUserView.as_view()),
     path("advertising/<slug:slug>/", AdBySlugView.as_view()),
     path("newsletter/send-all/", SendNewsletterToAllView.as_view(), name="send-all"),
     path("newsletter/send-selected/", SendNewsletterToSelectedView.as_view(), name="send-selected"),

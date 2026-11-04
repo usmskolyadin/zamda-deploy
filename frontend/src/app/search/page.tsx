@@ -6,6 +6,8 @@ import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
+import { MapPin } from "lucide-react";
+import AdThumbnail from "@/src/shared/ui/AdThumbnail";
 
 type SortType = "relevance" | "price_asc" | "price_desc" | "date_desc";
 
@@ -62,7 +64,7 @@ export default async function SearchPage({ searchParams }: Props) {
     <section className="bg-[#ffffff] pb-16 p-4 ">
       <div className="max-w-screen-xl lg:flex lg:items-start mx-auto px-4 sm:px-6 lg:px-12">
         <div className="lg:w-1/3 self-start">
-          <Filters />
+          <Filters mobileTitle="Search results" />
 
             <div className="mt-6 mr-10">
               <StickyAdBlock
@@ -74,7 +76,7 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
           <div className="lg:w-2/3">
             <div>
-              <h1 className="text-black font-bold text-3xl py-4">Search results</h1>
+              <h1 className="hidden lg:block text-black font-bold text-3xl py-4">Search results</h1>
               <div className="grid md:grid-cols-3 grid-cols-2 ">
               </div>
             </div>
@@ -119,11 +121,9 @@ export default async function SearchPage({ searchParams }: Props) {
         href={`/${params.category_name}/${params.subcategory_name}/${ad.slug}`}
       >
         <div className="relative">
-          <img
-            src={ad.images[0]?.image || "/placeholder.png"}
+          <AdThumbnail
+            src={ad.images[0]?.image}
             alt={ad.title}
-            width={600}
-            height={400}
             className="
               h-[260px]
               lg:h-[260px]
@@ -171,21 +171,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
         {/* LOCATION */}
         <div className="flex items-center text-gray-600 mt-3 text-sm font-medium">
-          <svg
-            className="mr-2 flex-shrink-0"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <MapPin className="mr-2 flex-shrink-0" width={18} height={18} strokeWidth={2} />
 
           <span className="truncate">
             {ad.location}

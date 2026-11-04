@@ -73,6 +73,7 @@ export default function NewAd() {
   const [suggestions, setSuggestions] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadMinimized, setUploadMinimized] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -233,10 +234,11 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
 const handleSuggestionClick = (suggestion: any) => {
-  const { lat, lon, display_name } = suggestion;
-  setLatLng([parseFloat(lat), parseFloat(lon)]);
-  setLocation(display_name);
-  setLocationInput(display_name);
+  const [lon, lat] = suggestion.center || suggestion.geometry?.coordinates || [];
+  const displayName = suggestion.place_name || suggestion.text;
+  setLatLng([lat, lon]);
+  setLocation(displayName);
+  setLocationInput(displayName);
   setSuggestions([]);
 };
 
@@ -262,6 +264,7 @@ const handleSubmit = async (e: FormEvent) => {
   if (isSubmitting) return;
   setErrorMessage(null);
   setIsSubmitting(true);
+  setUploadMinimized(false);
 
   const token = localStorage.getItem('access_token');
   if (!token) {
@@ -272,12 +275,6 @@ const handleSubmit = async (e: FormEvent) => {
 
   if (!selectedSubcategory) {
     setErrorMessage('Выберите подкатегорию');
-    setIsSubmitting(false);
-    return;
-  }
-
-  if ((imageItems?.length ?? 0) < 1) {
-    alert("Minimum 1 image!");
     setIsSubmitting(false);
     return;
   }
@@ -544,7 +541,7 @@ const handleSubmit = async (e: FormEvent) => {
                         className="p-2 hover:bg-gray-200 cursor-pointer text-sm"
                         onClick={() => handleSuggestionClick(sug)}
                       >
-                        {sug.display_name}
+                        {sug.place_name || sug.text}
                       </li>
                     ))}
                   </ul>
@@ -587,9 +584,17 @@ const handleSubmit = async (e: FormEvent) => {
           </>
         )}
       </form>
-      {isSubmitting && (
+      {isSubmitting && !uploadMinimized && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-          <div className="max-w-md w-full bg-white rounded-[32px] p-8 text-center shadow-2xl">
+          <div className="relative max-w-md w-full bg-white rounded-[32px] p-8 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setUploadMinimized(true)}
+              className="absolute top-4 right-4 cursor-pointer w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-black transition"
+              aria-label="Minimize"
+            >
+              ✕
+            </button>
             <div className="flex items-center justify-center mb-6">
               <div className="w-28 h-28 rounded-full bg-black/5 flex items-center justify-center mx-auto animate-spin" style={{ animationDuration: '2s' }}>
                 <Image
@@ -605,6 +610,25 @@ const handleSubmit = async (e: FormEvent) => {
             <p className="text-gray-600">Please wait...</p>
           </div>
         </div>
+      )}
+
+      {isSubmitting && uploadMinimized && (
+        <button
+          type="button"
+          onClick={() => setUploadMinimized(false)}
+          className="fixed bottom-6 right-6 z-[9999] cursor-pointer flex items-center gap-3 bg-white rounded-full shadow-2xl pl-3 pr-5 py-3 hover:shadow-xl transition"
+        >
+          <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center animate-spin" style={{ animationDuration: '2s' }}>
+            <Image
+              src="/zamda-white.png"
+              alt="Zamda logo"
+              width={24}
+              height={24}
+              className="w-5 h-5"
+            />
+          </div>
+          <span className="text-black text-sm font-medium">Uploading your listing...</span>
+        </button>
       )}
     </div>
   </section>

@@ -586,11 +586,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         extra_dict = validated_data.pop("extra", None)
         files = request.FILES.getlist("images")
 
-        if not files:
-            raise serializers.ValidationError({
-                "images": "At least one image is required"
-            })
-
         validated_data.update({
             "owner": request.user,
             "status": AdvertisementStatus.MODERATION,

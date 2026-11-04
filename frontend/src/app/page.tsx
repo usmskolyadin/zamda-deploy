@@ -2,7 +2,6 @@
 import Tabs from "./Tabs";
 import Link from "next/link";
 import { getCategories } from "@/src/entities/category/api/get-categories";
-import Image from "next/image";
 import AdsBlock from "../widgets/ad/AdBannerClient";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +35,7 @@ export default async function Home() {
 
   return (
     <div className="w-full">
-      <section className="bg-white pb-16 pt-14 p-4">
+      <section className="bg-white pb-16 pt-6 p-4">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
         <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Locally Across the U.S.</h1>
         <h1 className="text-md mt-4 font-bold text-black text-center">Cars, homes, jobs, services, and more.</h1>
@@ -70,8 +69,8 @@ export default async function Home() {
             <h1 className="lg:text-4xl text-3xl mt-12 font-bold text-black text-center">Recommended for you</h1>
             <Tabs />
           </div>
-          <div className="rounded-3xl w-full bg-[#F2F1F0] h-[136px] mt-12 mb-14 lg:flex hidden flex justify-center items-center">
-            <Image src={"/zamdam.png"} width={1250} height={136} alt={""} />
+          <div className="w-full mt-12 mb-14 lg:block hidden">
+            <AdsBlock page={"home_footer"} height={136} desktopHeight={136} />
           </div>
         </div>
         </div>

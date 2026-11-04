@@ -344,8 +344,8 @@ const updateGeneral = async (e: React.FormEvent) => {
                     </div>
 
                     {/* Email */}
-                    <div className="flex items-center justify-between border border-gray-200 rounded-2xl px-5 py-4">
-                      <div>
+                    <div className="flex items-center justify-between gap-3 border border-gray-200 rounded-2xl px-5 py-4">
+                      <div className="min-w-0">
                         <p className="font-medium text-black">
                           Email notifications
                         </p>
@@ -366,6 +366,7 @@ const updateGeneral = async (e: React.FormEvent) => {
                         }
                         className={`
                           relative
+                          flex-shrink-0
                           w-14
                           h-8
                           rounded-full
@@ -402,8 +403,8 @@ const updateGeneral = async (e: React.FormEvent) => {
                     </div>
 
                     {/* SMS */}
-                    <div className="flex items-center justify-between border border-gray-200 rounded-2xl px-5 py-4">
-                      <div>
+                    <div className="flex items-center justify-between gap-3 border border-gray-200 rounded-2xl px-5 py-4">
+                      <div className="min-w-0">
                         <p className="font-medium text-black">
                           SMS notifications
                         </p>
@@ -424,6 +425,7 @@ const updateGeneral = async (e: React.FormEvent) => {
                         }
                         className={`
                           relative
+                          flex-shrink-0
                           w-14
                           h-8
                           rounded-full

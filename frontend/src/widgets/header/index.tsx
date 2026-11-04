@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { useAuth } from '@/src/features/context/auth-context';
 import SearchBar from '../search-bar'
 import { apiFetchAuth } from '@/src/shared/api/auth.client'
+import { MapPin } from 'lucide-react'
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -244,9 +245,7 @@ export default function Header() {
               </div>
               <SearchBar />
               <div className="lg:flex hidden items-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4.03125 8.91703L19.5079 4.58356C19.8834 4.47843 20.2293 4.8244 20.1242 5.19986L15.7907 20.6765C15.6641 21.1286 15.0406 21.1728 14.8516 20.7431L11.6033 13.3607C11.553 13.2462 11.4615 13.1548 11.347 13.1044L3.9647 9.85617C3.535 9.66711 3.57919 9.04361 4.03125 8.91703Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <MapPin width={22} height={22} className="text-black" strokeWidth={2} />
                 <p className="ml-2 text-black">
                   {user ? (
                     user.profile?.city ? (

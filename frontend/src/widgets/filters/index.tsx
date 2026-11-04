@@ -29,9 +29,10 @@ export type ExtraFieldDefinition = {
 interface FiltersProps {
   initialSubcategory?: string;
   categorySlug?: string;
+  mobileTitle?: string;
 }
 
-export default function Filters({ initialSubcategory, categorySlug}: FiltersProps) {
+export default function Filters({ initialSubcategory, categorySlug, mobileTitle }: FiltersProps) {
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [subcategory, setSubcategory] = useState(initialSubcategory || "");
   const [priceFrom, setPriceFrom] = useState("");
@@ -138,20 +139,26 @@ export default function Filters({ initialSubcategory, categorySlug}: FiltersProp
             />
       </div>
 
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden z-50 bg-[#2AAEF7] w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
-      >
-        <svg
-          width="26"
-          height="26"
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
+      <div className="lg:hidden flex items-center justify-between gap-3">
+        {mobileTitle && (
+          <h1 className="text-black font-bold text-2xl truncate">{mobileTitle}</h1>
+        )}
+
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex-shrink-0 z-50 bg-[#2AAEF7] w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
         >
-          <path d="M3 6h20M6 13h14M10 20h6" />
-        </svg>
-      </button>
+          <svg
+            width="26"
+            height="26"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+          >
+            <path d="M3 6h20M6 13h14M10 20h6" />
+          </svg>
+        </button>
+      </div>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-[999] bg-black/40">
@@ -230,6 +237,37 @@ function FiltersBody({
   setExtraValues,
   handleShow,
 }: FiltersBodyProps) {
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
+
+  const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocation(value);
+
+    if (value.length < 3) {
+      setLocationSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `https://api.maptiler.com/geocoding/${encodeURIComponent(value)}.json?key=${MAPTILER_KEY}&language=en`
+      );
+      const data = await res.json();
+
+      if (data?.features) {
+        setLocationSuggestions(data.features);
+      }
+    } catch (err) {
+      console.error("MapTiler forward geocoding error:", err);
+    }
+  };
+
+  const handleLocationSuggestionClick = (suggestion: any) => {
+    setLocation(suggestion.place_name || suggestion.text);
+    setLocationSuggestions([]);
+  };
+
   return (
   <div className=" w-full pr-8 bg-white rounded-3xl">
   <h1 className="text-black font-bold text-3xl py-4">Filters</h1>
@@ -273,24 +311,40 @@ function FiltersBody({
   </div>
 
   <div className="mb-4">
-    <label className="flex flex-col w-full">
+    <label className="flex flex-col w-full relative">
       <span className="text-black font-semibold text-xl mb-2">Location</span>
       <input
         type="text"
         value={location}
-        onChange={(e) => setLocation(e.target.value)}
+        onChange={handleLocationChange}
         className="px-4 py-2 border-0.5 border text-gray-900 border-black rounded-3xl"
         placeholder="City, region..."
+        autoComplete="off"
       />
+
+      {locationSuggestions.length > 0 && (
+        <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-50 max-h-60 overflow-auto shadow-lg">
+          {locationSuggestions.map((sug, index) => (
+            <li
+              key={index}
+              className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-900"
+              onClick={() => handleLocationSuggestionClick(sug)}
+            >
+              {sug.place_name || sug.text}
+            </li>
+          ))}
+        </ul>
+      )}
     </label>
 
     <div className="mt-3">
-      <span className="text-black font-semibold text-base mb-2 block">Radius</span>
+      <span className="text-black font-semibold text-base mb-2 block">Search radius</span>
       <div className="flex flex-wrap gap-2 mb-2">
         {[
-          { label: "Recommended", value: "" },
+          { label: "1 mi", value: "1" },
+          { label: "5 mi", value: "5" },
+          { label: "10 mi", value: "10" },
           { label: "20 mi", value: "20" },
-          { label: "40 mi", value: "40" },
           { label: "60 mi", value: "60" },
           { label: "100 mi", value: "100" },
         ].map((opt) => (

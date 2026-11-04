@@ -10,6 +10,7 @@ import { apiFetch } from "@/src/shared/api/base";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import Sidebar from "@/src/widgets/sidebar";
 import { AdBanner } from "@/src/widgets/ad";
+import AdThumbnail from "@/src/shared/ui/AdThumbnail";
 import { useAds } from "@/src/features/hooks/use-ad";
 import LoadingScreen from "@/src/components/LoadingScreen";
 
@@ -79,12 +80,10 @@ export default function Favorites() {
                           transition
                           bg-gray-100 rounded-2xl ">
                         <div className="lg:mr-4 flex-shrink-0">
-                            <img
+                            <AdThumbnail
                             src={ad.images[0]?.image}
                             alt={ad.title}
                             className="rounded-2xl lg:h-48 lg:w-72 min-h-48 max-h-52 w-full object-cover"
-                            width={288}
-                            height={192}
                             />
                         </div>
                         <div className="w-full lg:mr-4 lg:mt-0 mt-4 flex flex-col lg:p-2 px-4 py-3">

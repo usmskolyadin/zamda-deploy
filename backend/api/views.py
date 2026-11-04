@@ -684,9 +684,9 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
-        # filters.OrderingFilter,
+        filters.OrderingFilter,
     ]
-    
+
     filterset_class = AdvertisementFilter
 
     search_fields = [
@@ -1294,7 +1294,7 @@ class ChatViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Chat.objects.filter(
             Q(buyer=self.request.user) | Q(seller=self.request.user)
-        ).prefetch_related("messages", "buyer__profile", "seller__profile")
+        ).prefetch_related("messages", "buyer__profile", "seller__profile").order_by("-created_at")
 
     def perform_create(self, serializer):
         ad = serializer.validated_data["ad"]
@@ -1303,6 +1303,13 @@ class ChatViewSet(viewsets.ModelViewSet):
 
         if buyer == seller:
             raise ValidationError("Нельзя создать чат с самим собой")
+
+        from .models import BlockedUser
+
+        if BlockedUser.objects.filter(
+            Q(blocker=buyer, blocked=seller) | Q(blocker=seller, blocked=buyer)
+        ).exists():
+            raise ValidationError("Chat is not available between these users")
 
         chat, created = Chat.objects.get_or_create(
             ad=ad,
@@ -1335,6 +1342,11 @@ class ChatViewSet(viewsets.ModelViewSet):
     def block_user(self, request, pk=None):
         chat = self.get_object()
         blocked_user = chat.buyer if chat.seller == request.user else chat.seller
+
+        from .models import BlockedUser
+
+        BlockedUser.objects.get_or_create(blocker=request.user, blocked=blocked_user)
+
         chat.delete()
         return Response({"detail": f"User {blocked_user.username} blocked and chat deleted"}, status=status.HTTP_200_OK)
 
@@ -2092,8 +2104,50 @@ class FollowersView(APIView):
         ]
 
         return Response(data)
-    
-    
+
+
+class BlockedUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        blocked = User.objects.filter(
+            blocked_by__blocker=request.user
+        ).select_related("profile")
+
+        data = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "first_name": u.first_name,
+                "last_name": u.last_name,
+                "avatar": (
+                    u.profile.avatar.url
+                    if getattr(u, "profile", None) and u.profile.avatar
+                    else None
+                ),
+            }
+            for u in blocked
+        ]
+
+        return Response(data)
+
+
+class UnblockUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        from .models import BlockedUser
+
+        deleted, _ = BlockedUser.objects.filter(
+            blocker=request.user, blocked_id=user_id
+        ).delete()
+
+        if not deleted:
+            return Response({"error": "Block relation not found"}, status=404)
+
+        return Response({"detail": "User unblocked"})
+
+
 class FollowingView(APIView):
     permission_classes = [AllowAny]
 

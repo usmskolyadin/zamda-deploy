@@ -10,6 +10,7 @@ import { apiFetch } from "@/src/shared/api/base";
 import { Profile } from "../profile/[id]/page";
 import Sidebar from "@/src/widgets/sidebar";
 import LoadingScreen from '@/src/components/LoadingScreen';
+import AdThumbnail from "@/src/shared/ui/AdThumbnail";
 import { apiFetchAuth } from "@/src/shared/api/auth.client";
 import { useRouter } from "next/navigation";
 import { useAds } from "@/src/features/hooks/use-ad";
@@ -227,12 +228,10 @@ export const AdListings = ({
           transition
           bg-gray-100 rounded-3xl  cursor-pointer">
       <div className="lg:mr-4 flex-shrink-0">
-        <img
+        <AdThumbnail
           src={ad.images[0]?.image}
           alt={ad.title}
           className="rounded-2xl lg:h-56 lg:w-72 h-52 w-full object-cover"
-          width={288}
-          height={192}
         />
       </div>
 
