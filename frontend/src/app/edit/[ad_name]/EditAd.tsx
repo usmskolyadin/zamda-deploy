@@ -454,7 +454,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
             </label>
 
-            <div className="w-full col-span-2 z-20 h-60 border border-black rounded-3xl overflow-hidden mt-2">
+            <div className="relative w-full col-span-2 z-20 h-60 border border-black rounded-3xl overflow-hidden mt-2">
               {isClient && defaultIcon && (
                 <MapContainer center={latLng} zoom={13} style={{ height: "100%", width: "100%" }}>
                 <TileLayer
