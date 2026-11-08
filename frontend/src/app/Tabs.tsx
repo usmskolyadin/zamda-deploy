@@ -25,15 +25,6 @@ export default function TabsExample() {
   const [loading, setLoading] = useState(false);
 
 
-  const sortPinnedFirst = (items: Advertisement[]) => {
-    return [...items].sort((a, b) => {
-      if (a.is_pinned === b.is_pinned) return 0;
-      return a.is_pinned ? -1 : 1;
-    });
-  };
-
-
-
   useEffect(() => {
     if (!user) return;
 
@@ -58,14 +49,13 @@ export default function TabsExample() {
 
       const data = await apiFetch<PaginatedResponse<Advertisement>>(url);
 
-      const sorted = [...data.results].sort(
-        (a,b)=>Number(b.is_pinned)-Number(a.is_pinned)
-      );
-
+      // Pinned ads are already ordered first by the backend across the
+      // whole result set (not just within a page), so no client-side
+      // re-sort is needed here.
       setAds(prev =>
         pageNum === 1
-          ? sorted
-          : [...prev, ...sorted]
+          ? data.results
+          : [...prev, ...data.results]
       );
 
       setHasNext(Boolean(data.next));

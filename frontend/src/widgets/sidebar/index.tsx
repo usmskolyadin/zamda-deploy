@@ -122,7 +122,7 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                         <button className="w-full mt-2 px-4 text-white py-2.5 bg-[#36B731] rounded-3xl cursor-pointer hover:bg-green-500 transition ">Edit profile</button>
                       </Link>
                       <div className='pt-4'>
-                          <button onClick={logout} className="w-full text-white mt-2 px-4 py-2.5 bg-red-400 rounded-3xl cursor-pointer hover:bg-red-500 transition ">Logout</button>
+                          <button onClick={logout} className="w-full text-black mt-2 px-4 py-2.5 bg-white border border-black rounded-3xl cursor-pointer hover:bg-gray-100 transition ">Logout</button>
                       </div>
                     </div>
                     </div>

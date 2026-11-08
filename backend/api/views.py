@@ -626,6 +626,39 @@ class AdvertisementFilter(FilterSet):
         field_name="subcategory__category__slug",
         lookup_expr="iexact"
     )
+    search = django_filters.CharFilter(method="filter_search")
+
+    def filter_search(self, queryset, name, value):
+        """
+        Whole-word match on title/description/owner username, so searching
+        "car" doesn't pick up unrelated ads just because the word "careful"
+        or "carats" happens to contain that substring.
+
+        Done as a cheap DB-side icontains prefilter (cross-backend safe)
+        followed by a precise Python-side word-boundary match, instead of
+        a DB regex, since Postgres (prod) and SQLite (local/dev) disagree
+        on word-boundary regex syntax (\\y vs \\b).
+        """
+        term = value.strip()
+        if not term:
+            return queryset
+
+        candidates = queryset.filter(
+            Q(title__icontains=term)
+            | Q(description__icontains=term)
+            | Q(owner__username__icontains=term)
+        ).values_list("id", "title", "description", "owner__username")
+
+        pattern = re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)
+        matched_ids = [
+            ad_id
+            for ad_id, title, description, username in candidates
+            if pattern.search(title or "")
+            or pattern.search(description or "")
+            or pattern.search(username or "")
+        ]
+
+        return queryset.filter(id__in=matched_ids)
 
     def filter_extra(self, queryset, name, value):
         """
@@ -645,7 +678,7 @@ class AdvertisementFilter(FilterSet):
 
     class Meta:
         model = Advertisement
-        fields = ["category", "subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email']
+        fields = ["category", "subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email', 'search']
 
 from django.db.models import F, ExpressionWrapper, DurationField
 from django.utils.timezone import now
@@ -683,20 +716,29 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 
     filter_backends = [
         DjangoFilterBackend,
-        filters.SearchFilter,
         filters.OrderingFilter,
     ]
 
     filterset_class = AdvertisementFilter
 
-    search_fields = [
-        "title",
-        "description",
-        "owner__username",
-    ]
-
     ordering_fields = ["created_at", "price"]
     ordering = ["-created_at"]
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+
+        # OrderingFilter always calls queryset.order_by(...) itself (even
+        # with no ?ordering= param, it falls back to the `ordering`
+        # class attribute), which replaces get_queryset()'s
+        # "-is_pinned" ordering outright. Re-prepend it here, after every
+        # other filter backend (including sort) has already run, so
+        # pinned ads stay on top of the list regardless of sort choice.
+        if self.action == "list":
+            current_order = queryset.query.order_by or self.ordering
+            if not any(o.lstrip("-") == "is_pinned" for o in current_order):
+                queryset = queryset.order_by("-is_pinned", *current_order)
+
+        return queryset
 
     def filter_extra(self, queryset, name, value):
         for key, val in value.items():

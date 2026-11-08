@@ -42,7 +42,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
           <AdThumbnail
             src={ad.images[0]?.image}
             alt={ad.title}
-            className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-2xl mb-2"
+            className="w-full lg:max-h-[200px] lg:min-h-[200px] h-36 object-cover rounded-t-2xl mb-2"
           />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-50 group-hover:opacity-100 transition" />
           {ad.is_pinned && (

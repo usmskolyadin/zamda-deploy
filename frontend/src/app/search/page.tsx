@@ -1,6 +1,5 @@
 import { Advertisement } from "@/src/entities/advertisment/model/types";
 import { API_URL } from "@/src/shared/api/base";
-import AdsBlock from "@/src/widgets/ad/AdBannerClient";
 import StickyAdBlock from "@/src/widgets/ad/StickyBanner";
 import Filters from "@/src/widgets/filters";
 import SortDropdown from "@/src/widgets/sort-dropdown";
@@ -93,7 +92,7 @@ export default async function SearchPage({ searchParams }: Props) {
             </p>
             </div>
             ) : (
-              <div className="grid lg:grid-cols-4 grid-cols-2 gap-4">
+              <div className="grid lg:grid-cols-3 grid-cols-2 gap-4">
                 {ads.map((ad) => (
                   <ProductCard key={ad.id} ad={ad} />
                 ))}

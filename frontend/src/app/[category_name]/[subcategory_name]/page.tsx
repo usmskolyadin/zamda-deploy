@@ -88,7 +88,7 @@ export default async function AdsBySubcategory({ params, searchParams }: Props) 
 
                 </div>
               ) : (
-                <div className="grid lg:grid-cols-4 grid-cols-2 gap-4">
+                <div className="grid lg:grid-cols-3 grid-cols-2 gap-4">
                   {ads.map((ad) => (
                     <ProductCard key={ad.id} ad={ad} />
                   ))}
