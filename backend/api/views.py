@@ -616,7 +616,29 @@ class ExtraFieldDefinitionViewSet(viewsets.ModelViewSet):
 class AdvertisementFilter(FilterSet):
     price_min = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
     price_max = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
-    location = django_filters.CharFilter(field_name="location", lookup_expr="icontains")
+    location = django_filters.CharFilter(method="filter_location")
+
+    def filter_location(self, queryset, name, value):
+        """
+        A picked suggestion is a full "City, Region, Country" string, which
+        is almost never a literal substring of an ad's own (differently
+        formatted) location field. Match on any of its comma-separated
+        parts instead (city OR region), dropping the country-level part
+        so it doesn't make this effectively unfiltered.
+        """
+        parts = [p.strip() for p in value.split(",") if p.strip()]
+        parts = [
+            p for p in parts
+            if p.lower() not in ("united states", "united states of america", "usa", "us")
+        ]
+        if not parts:
+            return queryset
+
+        q = Q()
+        for part in parts:
+            q |= Q(location__icontains=part)
+
+        return queryset.filter(q)
     subcategory = django_filters.CharFilter(field_name="subcategory__slug", lookup_expr="iexact")
     created_after = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
     owner_username = django_filters.CharFilter(field_name="owner__username", lookup_expr="iexact")

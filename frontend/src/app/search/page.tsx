@@ -55,7 +55,7 @@ export default async function SearchPage({ searchParams }: Props) {
     <div className=" w-full">
       <section className="bg-[#ffffff] pt-8 ">
         <div className="max-w-screen-xl mx-auto mx-auto px-4 sm:px-6 lg:px-12">
-          <p className="text-gray-500 pb-2"><Link href="/">Home</Link> / <Link href="/">Search</Link></p>
+          <p className="text-gray-500 pb-2"><Link className="hover:underline" href="/">Home</Link> / <span>Search</span></p>
         </div>
       </section>
     <section className="bg-[#ffffff] pb-16 p-4 ">

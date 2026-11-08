@@ -273,6 +273,7 @@ function FiltersBody({
 }: FiltersBodyProps) {
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
   const MAPTILER_KEY = "E79NjVBIGfDWGtSv4mOP";
+  const locationBoxRef = useRef<HTMLLabelElement>(null);
 
   const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -285,7 +286,7 @@ function FiltersBody({
 
     try {
       const res = await fetch(
-        `https://api.maptiler.com/geocoding/${encodeURIComponent(value)}.json?key=${MAPTILER_KEY}&language=en`
+        `https://api.maptiler.com/geocoding/${encodeURIComponent(value)}.json?key=${MAPTILER_KEY}&language=en&country=us`
       );
       const data = await res.json();
 
@@ -301,6 +302,22 @@ function FiltersBody({
     setLocation(suggestion.place_name || suggestion.text);
     setLocationSuggestions([]);
   };
+
+  useEffect(() => {
+    if (locationSuggestions.length === 0) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        locationBoxRef.current &&
+        !locationBoxRef.current.contains(e.target as Node)
+      ) {
+        setLocationSuggestions([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [locationSuggestions.length]);
 
   return (
   <div className=" w-full pr-8 bg-white rounded-3xl">
@@ -363,7 +380,7 @@ function FiltersBody({
   </div>
 
   <div className="mb-4">
-    <label className="flex flex-col w-full relative z-30">
+    <label ref={locationBoxRef} className="flex flex-col w-full relative z-30">
       <span className="text-black font-semibold text-xl mb-2">Location</span>
       <input
         type="text"
