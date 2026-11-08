@@ -95,7 +95,7 @@ export default function ProductCard({ ad, loading }: ProductCardProps) {
         </div>
 
         <div className="lg:p-4 p-2 flex-col items-center justify-center">
-          <h3 className="font-semibold lg:text-lg text-base text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden line-clamp-2">
+          <h3 className="font-semibold lg:text-lg text-base leading-5 lg:leading-6 text-left mb-2 ml-2 text-[#2AAEF7] break-words overflow-hidden line-clamp-2 min-h-[2.5rem] lg:min-h-[3rem]">
             {ad.title}
           </h3>
           <div className="pl-2 pr-2 hidden lg:block">
