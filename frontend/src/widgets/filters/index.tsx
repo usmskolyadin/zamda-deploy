@@ -47,6 +47,7 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
   const [priceFrom, setPriceFrom] = useState("");
   const [priceTo, setPriceTo] = useState("");
   const [location, setLocation] = useState("");
+  const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState("");
   const [customRadius, setCustomRadius] = useState("50");
   const [freshness, setFreshness] = useState("");
@@ -110,6 +111,10 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
     if (priceFrom) params.append("price_min", priceFrom);
     if (priceTo) params.append("price_max", priceTo);
     if (location) params.append("location", location);
+    if (locationCoords) {
+      params.append("lat", String(locationCoords.lat));
+      params.append("lng", String(locationCoords.lng));
+    }
     if (radius === "custom" && customRadius) {
       params.append("radius", customRadius);
     } else if (radius) {
@@ -153,6 +158,7 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
               setPriceTo={setPriceTo}
               location={location}
               setLocation={setLocation}
+              setLocationCoords={setLocationCoords}
               radius={radius}
               setRadius={setRadius}
               customRadius={customRadius}
@@ -207,6 +213,7 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
               setPriceTo={setPriceTo}
               location={location}
               setLocation={setLocation}
+              setLocationCoords={setLocationCoords}
               radius={radius}
               setRadius={setRadius}
               customRadius={customRadius}
@@ -237,6 +244,7 @@ type FiltersBodyProps = {
   setPriceTo: (v: string) => void;
   location: string;
   setLocation: (v: string) => void;
+  setLocationCoords: (v: { lat: number; lng: number } | null) => void;
   radius: string;
   setRadius: (v: string) => void;
   customRadius: string;
@@ -262,6 +270,7 @@ function FiltersBody({
   setPriceTo,
   location,
   setLocation,
+  setLocationCoords,
   radius,
   setRadius,
   customRadius,
@@ -278,6 +287,7 @@ function FiltersBody({
   const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocation(value);
+    setLocationCoords(null);
 
     if (value.length < 3) {
       setLocationSuggestions([]);
@@ -300,6 +310,12 @@ function FiltersBody({
 
   const handleLocationSuggestionClick = (suggestion: any) => {
     setLocation(suggestion.place_name || suggestion.text);
+
+    const [lng, lat] = suggestion.center || suggestion.geometry?.coordinates || [];
+    setLocationCoords(
+      typeof lat === "number" && typeof lng === "number" ? { lat, lng } : null
+    );
+
     setLocationSuggestions([]);
   };
 

@@ -40,6 +40,8 @@ export interface Advertisement {
   reject_reason: string;
   category_slug: string
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   images: { id: number; image: string; image_original?: string | null }[];
   time_left: number;
   status: string;

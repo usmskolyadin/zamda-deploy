@@ -52,6 +52,11 @@ export default function EditAd() {
   const [description, setDescription] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [latLng, setLatLng] = useState<LatLngExpression>([38.5816, -121.4944]);
+  // Only the map click / suggestion pick (or loading the ad's own saved
+  // coordinates) actually make latLng trustworthy — plain typing doesn't
+  // move the pin, so without this we'd resubmit a stale pin position
+  // that no longer matches the newly typed text.
+  const [hasConfirmedCoords, setHasConfirmedCoords] = useState(false);
   const [isActive, setIsActive] = useState<boolean>(true);
   const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [locationInput, setLocationInput] = useState<string>('');
@@ -158,7 +163,10 @@ const [mapStyle, setMapStyle] = useState("openstreetmap");
             url: img.image,
           }))
         );
-        if (ad.lat && ad.lng) setLatLng([ad.lat, ad.lng]);
+        if (ad.latitude && ad.longitude) {
+          setLatLng([ad.latitude, ad.longitude]);
+          setHasConfirmedCoords(true);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -180,6 +188,7 @@ useEffect(() => {
 
 const handleMapClick = async (lat: number, lng: number) => {
   setLatLng([lat, lng]);
+  setHasConfirmedCoords(true);
 
   try {
     const res = await fetch(
@@ -203,6 +212,7 @@ const handleMapClick = async (lat: number, lng: number) => {
 const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const value = e.target.value;
   setLocationInput(value);
+  setHasConfirmedCoords(false);
 
   if (value.length < 3) {
     setSuggestions([]);
@@ -228,6 +238,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const [lon, lat] = suggestion.center || suggestion.geometry?.coordinates || [];
     const displayName = suggestion.place_name || suggestion.text;
     setLatLng([lat, lon]);
+    setHasConfirmedCoords(true);
     setLocation(displayName);
     setLocationInput(displayName);
     setSuggestions([]);
@@ -245,6 +256,11 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     formData.append('description', description);
     formData.append('is_active', String(isActive));
     formData.append('location', locationInput || location);
+    if (hasConfirmedCoords && Array.isArray(latLng)) {
+      const [lat, lng] = latLng as [number, number];
+      formData.append('latitude', String(lat));
+      formData.append('longitude', String(lng));
+    }
     formData.append('extra', JSON.stringify(extraValues));
 
     const imageOrder = imageItems.map((item) => {

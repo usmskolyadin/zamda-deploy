@@ -479,6 +479,8 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "price",
             "description",
             "location",
+            "latitude",
+            "longitude",
             "images",
             "created_at",
             "views_count",

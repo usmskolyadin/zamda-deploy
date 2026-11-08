@@ -1,5 +1,6 @@
 import os
 import re
+import math
 from django.forms import ValidationError
 from django.shortcuts import render
 from django.db import IntegrityError
@@ -613,6 +614,15 @@ class ExtraFieldDefinitionViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'key']
 
 
+def _haversine_miles(lat1, lng1, lat2, lng2):
+    earth_radius_miles = 3958.8
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return 2 * earth_radius_miles * math.asin(min(1, math.sqrt(a)))
+
+
 class AdvertisementFilter(FilterSet):
     price_min = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
     price_max = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
@@ -625,7 +635,14 @@ class AdvertisementFilter(FilterSet):
         formatted) location field. Match on any of its comma-separated
         parts instead (city OR region), dropping the country-level part
         so it doesn't make this effectively unfiltered.
+
+        Skipped entirely when a real coordinate-based radius search is
+        also being run (lat/lng/radius all present) — that's strictly
+        more precise, so text matching would only narrow it incorrectly.
         """
+        if self.data.get("lat") and self.data.get("lng") and self.data.get("radius"):
+            return queryset
+
         parts = [p.strip() for p in value.split(",") if p.strip()]
         parts = [
             p for p in parts
@@ -639,6 +656,56 @@ class AdvertisementFilter(FilterSet):
             q |= Q(location__icontains=part)
 
         return queryset.filter(q)
+
+    lat = django_filters.NumberFilter(method="noop_filter")
+    lng = django_filters.NumberFilter(method="noop_filter")
+    radius = django_filters.NumberFilter(method="filter_radius")
+
+    def noop_filter(self, queryset, name, value):
+        # lat/lng only mean something together with radius (see
+        # filter_radius below); on their own they filter nothing.
+        return queryset
+
+    def filter_radius(self, queryset, name, value):
+        lat_raw = self.data.get("lat")
+        lng_raw = self.data.get("lng")
+        if not lat_raw or not lng_raw:
+            return queryset
+
+        try:
+            origin_lat = float(lat_raw)
+            origin_lng = float(lng_raw)
+            radius_miles = float(value)
+        except (TypeError, ValueError):
+            return queryset
+
+        if radius_miles <= 0:
+            return queryset
+
+        # Cheap DB-side bounding-box prefilter (degrees-per-mile varies
+        # with latitude, so pad generously), then a precise per-row
+        # Haversine check in Python — avoids relying on PostGIS/SQL
+        # trig functions that may not be available on every backend.
+        lat_pad = radius_miles / 69.0
+        lng_pad = radius_miles / (69.0 * max(math.cos(math.radians(origin_lat)), 0.1))
+
+        candidates = queryset.filter(
+            latitude__isnull=False,
+            longitude__isnull=False,
+            latitude__gte=origin_lat - lat_pad,
+            latitude__lte=origin_lat + lat_pad,
+            longitude__gte=origin_lng - lng_pad,
+            longitude__lte=origin_lng + lng_pad,
+        ).values_list("id", "latitude", "longitude")
+
+        matched_ids = [
+            ad_id
+            for ad_id, lat, lng in candidates
+            if _haversine_miles(origin_lat, origin_lng, lat, lng) <= radius_miles
+        ]
+
+        return queryset.filter(id__in=matched_ids)
+
     subcategory = django_filters.CharFilter(field_name="subcategory__slug", lookup_expr="iexact")
     created_after = django_filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
     owner_username = django_filters.CharFilter(field_name="owner__username", lookup_expr="iexact")
@@ -700,7 +767,7 @@ class AdvertisementFilter(FilterSet):
 
     class Meta:
         model = Advertisement
-        fields = ["category", "subcategory", "location", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email', 'search']
+        fields = ["category", "subcategory", "location", "lat", "lng", "radius", "price_min", "price_max", "created_after", 'subcategory__category', 'owner_username', 'owner_email', 'search']
 
 from django.db.models import F, ExpressionWrapper, DurationField
 from django.utils.timezone import now
