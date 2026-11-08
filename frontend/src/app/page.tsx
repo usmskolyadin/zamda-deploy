@@ -18,34 +18,58 @@ export default async function Home() {
   }
 
   const bgColors = [
-    "bg-[rgba(54,183,50,0.1)]",   
-    "bg-[rgba(0,123,255,0.1)]",   
-    "bg-[rgba(255,193,7,0.1)]",   
-    "bg-[rgba(220,53,69,0.1)]",   
-    "bg-[rgba(102,16,242,0.1)]",  
+    "bg-[rgba(54,183,50,0.1)]",   // green
+    "bg-[rgba(0,123,255,0.1)]",   // blue
+    "bg-[rgba(255,193,7,0.1)]",   // yellow
+    "bg-[rgba(220,53,69,0.1)]",   // red
+    "bg-[rgba(102,16,242,0.1)]",  // purple
+    "bg-[rgba(255,109,0,0.1)]",   // orange
+    "bg-[rgba(0,188,212,0.1)]",   // cyan
+    "bg-[rgba(233,30,99,0.1)]",   // pink
+    "bg-[rgba(0,150,136,0.1)]",   // teal
+    "bg-[rgba(121,85,72,0.1)]",   // brown
   ];
 
-  const cards = categories.map((cat, index) => ({
-    title: cat.name, 
+  // Mobile grid is 2 cols, desktop is 5 cols — avoid repeating a color
+  // next to its left neighbor (-1) or the card above it in either
+  // layout (-2 for mobile, -5 for desktop).
+  const assignBgColors = (count: number) => {
+    const assigned: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const forbidden = new Set(
+        [i - 1, i - 2, i - 5].filter((j) => j >= 0).map((j) => assigned[j])
+      );
+      const choices = bgColors.filter((c) => !forbidden.has(c));
+      const pool = choices.length > 0 ? choices : bgColors;
+      assigned.push(pool[i % pool.length]);
+    }
+    return assigned;
+  };
+
+  const sortedCategories = [...categories].sort(
+    (a, b) => Number(b.priority) - Number(a.priority)
+  );
+  const cardColors = assignBgColors(sortedCategories.length);
+
+  const cards = sortedCategories.map((cat, index) => ({
+    title: cat.name,
     image: cat.image || "/car.png",
-    href: `/${cat.slug}`, 
-    bg: bgColors[index % bgColors.length],
-    priority: cat.priority
+    href: `/${cat.slug}`,
+    bg: cardColors[index],
+    priority: cat.priority,
   }));
 
   return (
     <div className="w-full">
       <section className="bg-white pb-16 pt-6 p-4">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
-        <h1 className="text-4xl font-bold text-black text-center">Buy & Sell Locally Across the U.S.</h1>
+        <h1 className="text-2xl lg:text-4xl font-bold text-black text-center">Buy & Sell Locally Across the U.S.</h1>
         <h1 className="text-md mt-4 font-bold text-black text-center">Cars, homes, jobs, services, and more.</h1>
         <div className="max-w-screen-xl mx-auto mt-8">
           <div className="grid md:grid-cols-5 grid-cols-2 lg:gap-14 gap-8">
-            {cards
-            .sort((a, b) => Number(b.priority) - Number(a.priority))
-            .map((card, index) => (
+            {cards.map((card, index) => (
               <Link key={index} href={card.href}>
-                <div className={`${card.bg} lg:w-[195px] hover:opacity-80  transition w-full lg:h-[170px] h-[170px] rounded-2xl p-4`}>
+                <div className={`${card.bg} lg:w-[195px] hover:opacity-80  transition w-full lg:h-[170px] h-auto min-h-[170px] rounded-2xl p-4`}>
                   <img
                     src={card.image}
                     width={200}
@@ -53,7 +77,7 @@ export default async function Home() {
                     className="lg:h-[95px] h-[95px] object-contain"
                     alt={card.title}
                   />
-                  <h2 className="font-bold text-black lg:text-lg pt-1 truncate">{card.title}</h2>
+                  <h2 className="font-bold text-black text-sm lg:text-lg pt-1 line-clamp-2 lg:truncate leading-tight break-words">{card.title}</h2>
                 </div>
               </Link>
             ))}

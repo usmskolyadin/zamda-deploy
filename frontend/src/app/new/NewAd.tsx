@@ -519,7 +519,7 @@ const handleSubmit = async (e: FormEvent) => {
             <div>
             </div>
                         <div>
-              <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 relative">
+              <label className="w-full max-w-md flex-col flex font-semibold text-gray-800 relative z-30">
                 <p className="font-semibold text-black text-xl">Location</p>
                 <p className="text-gray-700 text-sm font-medium">Your full location for delivery etc.</p>
 
@@ -534,7 +534,7 @@ const handleSubmit = async (e: FormEvent) => {
                 />
 
                 {suggestions.length > 0 && (
-                  <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-50 max-h-60 overflow-auto shadow-lg">
+                  <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-[9999] max-h-60 overflow-auto shadow-lg">
                     {suggestions.map((sug, index) => (
                       <li
                         key={index}

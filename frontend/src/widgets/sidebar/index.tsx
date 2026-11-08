@@ -135,7 +135,6 @@ export default function Sidebar({notHideOnPhone, hideBanner}: SidebarProps) {
                     <Link className="hover:underline text-[#2AAEF7]" href="/notifications"><span className="text-[#2AAEF7] text-md h-12">Notificaitons</span></Link>
                     <Link className="hover:underline text-[#2AAEF7]" href="/favorites"><span className="text-[#2AAEF7] text-md h-12">Favorites</span></Link>
                     <Link className="hover:underline text-[#2AAEF7]" href="/messages"><span className="text-[#2AAEF7] text-md h-12">Messages</span></Link>
-                    <Link className="hover:underline text-[#2AAEF7]" href="/blocked-users"><span className="text-[#2AAEF7] text-md h-12">Blocked Users</span></Link>
                     {(user?.is_staff || user?.is_superuser) && (
                       <div className='flex flex-col mt-4 py-2 border-t border-gray-300'>
                         <h2 className='text-lg text-black font-semibold text-gray-800'>Admin tools</h2>

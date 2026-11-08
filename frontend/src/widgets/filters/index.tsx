@@ -6,15 +6,22 @@ import { API_URL } from "@/src/shared/api/base";
 import { useAuth } from "@/src/features/context/auth-context";
 import LocationMap from "../location-map/LocationMap";
 import AdsBlock from "../ad/AdBannerClient";
-import { StickyAdBlock } from "../ad/StickyBanner";
+import StickyAdBlock from "../ad/StickyBanner";
 
 interface SubCategory {
   id: number;
   name: string;
+  slug: string;
   category: {
     id: number;
     name: string;
   };
+}
+
+interface CategoryOption {
+  id: number;
+  name: string;
+  slug: string;
 }
 
 export type ExtraFieldDefinition = {
@@ -33,6 +40,8 @@ interface FiltersProps {
 }
 
 export default function Filters({ initialSubcategory, categorySlug, mobileTitle }: FiltersProps) {
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [category, setCategory] = useState(categorySlug || "");
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
   const [subcategory, setSubcategory] = useState(initialSubcategory || "");
   const [priceFrom, setPriceFrom] = useState("");
@@ -55,15 +64,27 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
   }, [user]);
 
   useEffect(() => {
-    const url = categorySlug
-      ? `${API_URL}/api/subcategories/?category=${categorySlug}`
+    fetch(`${API_URL}/api/categories/`)
+      .then(r => r.json())
+      .then(d => setCategories(Array.isArray(d) ? d : d.results || []))
+      .catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    const url = category
+      ? `${API_URL}/api/subcategories/?category=${category}`
       : `${API_URL}/api/subcategories/`;
 
     fetch(url)
       .then(r => r.json())
       .then(d => setSubcategories(Array.isArray(d) ? d : d.results || []))
       .catch(() => setSubcategories([]));
-  }, [categorySlug]);
+  }, [category]);
+
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    setSubcategory("");
+  };
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -84,6 +105,7 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
   const handleShow = () => {
     const params = new URLSearchParams();
 
+    if (category) params.append("category", category);
     if (subcategory) params.append("subcategory", subcategory);
     if (priceFrom) params.append("price_min", priceFrom);
     if (priceTo) params.append("price_max", priceTo);
@@ -119,6 +141,9 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
     <>
       <div className="hidden lg:block mr-2">
             <FiltersBody
+              categories={categories}
+              category={category}
+              setCategory={handleCategoryChange}
               subcategories={subcategories}
               subcategory={subcategory}
               setSubcategory={setSubcategory}
@@ -146,7 +171,7 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
 
         <button
           onClick={() => setMobileOpen(true)}
-          className="flex-shrink-0 z-50 bg-[#2AAEF7] w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+          className="flex-shrink-0 z-30 bg-[#2AAEF7] w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
         >
           <svg
             width="26"
@@ -170,6 +195,9 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
               ×
             </button>
             <FiltersBody
+              categories={categories}
+              category={category}
+              setCategory={handleCategoryChange}
               subcategories={subcategories}
               subcategory={subcategory}
               setSubcategory={setSubcategory}
@@ -197,6 +225,9 @@ export default function Filters({ initialSubcategory, categorySlug, mobileTitle 
 
 
 type FiltersBodyProps = {
+  categories: CategoryOption[];
+  category: string;
+  setCategory: (v: string) => void;
   subcategories: SubCategory[];
   subcategory: string;
   setSubcategory: (v: string) => void;
@@ -219,6 +250,9 @@ type FiltersBodyProps = {
 };
 
 function FiltersBody({
+  categories,
+  category,
+  setCategory,
   subcategories,
   subcategory,
   setSubcategory,
@@ -274,6 +308,24 @@ function FiltersBody({
 
   <div className="mb-4">
     <label className="flex flex-col w-full">
+      <span className="text-black font-semibold text-xl mb-2">Category</span>
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="cursor-pointer px-4 py-3 border-0.5 border text-gray-900 border-black rounded-3xl appearance-none"
+      >
+        <option value="">All categories</option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.slug}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  </div>
+
+  <div className="mb-4">
+    <label className="flex flex-col w-full">
       <span className="text-black font-semibold text-xl mb-2">Subcategory</span>
       <select
         value={subcategory}
@@ -311,7 +363,7 @@ function FiltersBody({
   </div>
 
   <div className="mb-4">
-    <label className="flex flex-col w-full relative">
+    <label className="flex flex-col w-full relative z-30">
       <span className="text-black font-semibold text-xl mb-2">Location</span>
       <input
         type="text"
@@ -323,7 +375,7 @@ function FiltersBody({
       />
 
       {locationSuggestions.length > 0 && (
-        <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-50 max-h-60 overflow-auto shadow-lg">
+        <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-[9999] max-h-60 overflow-auto shadow-lg">
           {locationSuggestions.map((sug, index) => (
             <li
               key={index}

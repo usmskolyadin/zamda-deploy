@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/features/context/auth-context";
 import { API_URL } from "@/src/shared/api/base";
@@ -461,6 +462,38 @@ const updateGeneral = async (e: React.FormEvent) => {
                       </button>
                     </div>
                   </div>
+
+                  <div className="space-y-4 border-t pt-6">
+                    <div>
+                      <p className="font-semibold text-black text-xl">
+                        Privacy
+                      </p>
+
+                      <p className="text-gray-700 text-sm font-medium">
+                        Manage users you've blocked
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/blocked-users"
+                      className="flex items-center justify-between gap-3 border border-gray-200 rounded-2xl px-5 py-4 hover:bg-gray-50 transition"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-black">
+                          Blocked users
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          View and unblock users you've blocked
+                        </p>
+                      </div>
+
+                      <span className="text-[#2AAEF7] text-sm font-medium flex-shrink-0">
+                        View
+                      </span>
+                    </Link>
+                  </div>
+
                   <button
                     type="submit"
                     className="cursor-pointer mt-4 bg-black w-[160px] h-[44px] rounded-[50px] flex justify-center items-center text-white"

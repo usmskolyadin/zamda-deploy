@@ -40,12 +40,12 @@ export default function ScrollToTopButton() {
     <button
       onClick={scrollToTop}
       className={`
-        fixed lg:right-32 right-4 cursor-pointer z-50
+        fixed lg:right-6 right-4 cursor-pointer z-50
         transition-all duration-300 ease-out
         w-12 text-lg h-12 rounded-full
-        bg-[#2AAEF7] text-white shadow-lg
+        bg-white text-black shadow-lg border border-gray-200
         flex items-center justify-center
-        hover:bg-blue-500
+        hover:bg-gray-100
       `}
       style={{
         bottom: Math.min(40 + offset * 0.02, 120), 

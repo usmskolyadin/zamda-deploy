@@ -102,7 +102,7 @@ const badges = [
     key: "phone",
     label: "Phone",
     icon: PhoneIcon,
-    colorClass: "text-[#2AAEF7]",
+    colorClass: "text-[#1877F2]",
     getVerified: (v?: VerificationStatus | null) =>
       Boolean(v?.phone_verified),
   },

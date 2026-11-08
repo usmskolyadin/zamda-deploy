@@ -416,7 +416,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
             )}
 
-            <label className="w-full  flex-col flex font-semibold text-gray-800 relative col-span-2">
+            <label className="w-full  flex-col flex font-semibold text-gray-800 relative z-30 col-span-2">
               <p className="font-semibold text-black text-xl">Location</p>
               <input
                 type="text"
@@ -427,7 +427,7 @@ const handleLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 autoComplete="off"
               />
               {suggestions.length > 0 && (
-                <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-50 max-h-60 overflow-auto shadow-lg">
+                <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-xl mt-1 z-[9999] max-h-60 overflow-auto shadow-lg">
                   {suggestions.map((sug, index) => (
                     <li key={index} onClick={() => handleSuggestionClick(sug)}
                         className="p-2 hover:bg-gray-200 cursor-pointer text-sm">
