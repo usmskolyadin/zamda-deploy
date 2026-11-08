@@ -44,7 +44,7 @@ export default function ScrollToTopButton() {
         transition-all duration-300 ease-out
         w-12 text-lg h-12 rounded-full
         bg-white text-black shadow-lg border border-gray-200
-        flex items-center justify-center
+        hidden lg:flex items-center justify-center
         hover:bg-gray-100
       `}
       style={{
