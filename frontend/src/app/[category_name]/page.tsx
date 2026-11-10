@@ -75,7 +75,7 @@ export default async function SubCategoriesPage({ params }: Props) {
               ))}
           </div>
         </div>
-            <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:p-0">
+            <div className="bg-[#E5E9F2] min-h-screen  p-4 lg:px-0 lg:pt-0 lg:pb-16">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-12">
               <div className="max-w-screen-xl mx-auto lg:mt-12 mt-0">
                 <div className="pt-4 hidden lg:block">

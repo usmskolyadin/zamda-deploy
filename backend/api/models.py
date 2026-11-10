@@ -144,7 +144,11 @@ class Advertisement(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     is_pinned = models.BooleanField(default=False)
-    
+    pin_priority = models.IntegerField(
+        default=0,
+        help_text="Higher shows first among pinned ads. Ignored when is_pinned is off."
+    )
+
     location = models.CharField(max_length=255)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)

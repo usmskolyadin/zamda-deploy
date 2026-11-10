@@ -16,6 +16,7 @@ class AdminAdvertisementListSerializer(serializers.ModelSerializer):
         model = Advertisement
         fields = (
             "id", "slug", "title", "owner", "status", "reject_reason", "is_pinned",
+            "pin_priority",
             "price", "thumbnail", "views_count", "likes_count", "report_count",
             "created_at", "updated_at", "status_changed_at",
         )

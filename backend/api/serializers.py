@@ -493,6 +493,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "time_left",
             "owner_profile_id",
             "is_pinned",
+            "pin_priority",
         )
 
         read_only_fields = (
@@ -501,6 +502,8 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "status",
             "reject_reason",
             "extra_values",
+            "is_pinned",
+            "pin_priority",
         )
 
     def get_time_left(self, obj):

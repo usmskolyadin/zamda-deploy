@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ClientLayout from "./ClientLayout";
 import Script from "next/script";
@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     shortcut: "/icons/favicon.ico",
     apple: "/icons/favicon.ico",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

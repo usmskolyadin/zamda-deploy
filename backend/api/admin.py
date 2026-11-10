@@ -108,12 +108,19 @@ class AdvertisementAdmin(admin.ModelAdmin):
         "title",
         "owner",
         "status",
+        "is_pinned",
+        "pin_priority",
         "created_at",
+    )
+
+    list_editable = (
+        "pin_priority",
     )
 
     list_filter = (
         "status",
         "subcategory",
+        "is_pinned",
     )
 
     search_fields = (
@@ -144,6 +151,7 @@ class AdvertisementAdmin(admin.ModelAdmin):
                 "location",
                 "views_count",
                 "is_pinned",
+                "pin_priority",
             )
         }),
         ("Модерация", {

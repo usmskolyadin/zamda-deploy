@@ -821,11 +821,12 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         # class attribute), which replaces get_queryset()'s
         # "-is_pinned" ordering outright. Re-prepend it here, after every
         # other filter backend (including sort) has already run, so
-        # pinned ads stay on top of the list regardless of sort choice.
+        # pinned ads stay on top of the list regardless of sort choice,
+        # with pin_priority breaking ties between multiple pinned ads.
         if self.action == "list":
             current_order = queryset.query.order_by or self.ordering
             if not any(o.lstrip("-") == "is_pinned" for o in current_order):
-                queryset = queryset.order_by("-is_pinned", *current_order)
+                queryset = queryset.order_by("-is_pinned", "-pin_priority", *current_order)
 
         return queryset
 
@@ -887,7 +888,7 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
             status=AdvertisementStatus.ACTIVE
         )
 
-        return qs.order_by("-is_pinned", "-created_at")
+        return qs.order_by("-is_pinned", "-pin_priority", "-created_at")
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
